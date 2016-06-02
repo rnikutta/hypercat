@@ -1,14 +1,15 @@
 import os
-import numpy as N
-import pyfits
-import h5py
-import ndiminterpolation_vectorized
-import padarray
 import logging
 logging.basicConfig(level=logging.INFO,format='%(levelname)s: %(message)s')
+import numpy as N
+from scipy import ndimage
+import pyfits
+import h5py
+import padarray
+import ndiminterpolation_vectorized
 
 
-__version__ = '20160601'   #yyymmdd
+__version__ = '20160602'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling CLUMPY image files."""
@@ -48,7 +49,7 @@ class ModelCube:
         self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
 
         if ndinterpolator is True:
-            logging.info("Instatiationg n-dim interpolation object ...")
+            logging.info("Instantiating n-dim interpolation object ...")
             self.ip = ndiminterpolation_vectorized.NdimInterpolation(self.data,self.theta,mode='lin')
 
         logging.info("Done. Closing HDF5 file.")
@@ -152,6 +153,17 @@ class ModelCube:
 #        return image.squeeze()
 
 
+
+#class Image:
+#
+#    def __init__(self,imgarray):
+#
+#        self.image = imgarray
+#        assert (self.image.ndim == 2), "'imgarray' must be 2-dimensional (but is %d)" % self.image.ndim
+#        assert (self.image.shape[0] == self.image.shape[1])
+
+
+
 def mirror_halfimage(halfimage):
 
     """Take half-sized image (image cube) and return the full version.
@@ -173,7 +185,7 @@ def mirror_halfimage(halfimage):
     shape = list(halfimage.shape)
     nx, ny = shape[:2]
 
-    assert (nx == (ny/2 + 1)), "Image/cube doesn't seem to contain a half-sized array (dims = (%s). Not mirorring." % (','.join([str(s) for s in shape]))
+    assert (nx == (ny/2 + 1)), "Image/cube doesn't seem to contain a half-sized array (dims = (%s). Not mirroring." % (','.join([str(s) for s in shape]))
 
     shape[0] = 2*nx-1
     
@@ -185,6 +197,50 @@ def mirror_halfimage(halfimage):
     
     return fullimage
 
+
+def rotate_image(image,angle,direction='NE'):
+
+    """Rotate an image around its central pixel by 'angle' degrees.
+
+    The parts of 'image' which after rotation are outside the frame,
+    will be dropped. Areas in the rotated image which are empty will
+    be filled will zeros.
+
+    The rotation is performed using high-quality cubic spline
+    interpolation.
+
+    Parameters:
+    -----------
+
+    image : 2D array
+        The square image array to be rotated.
+
+    angle : float or int
+        Image will be rotated by that many degrees.
+
+    direction : str
+        Rotation direction. Default is 'NE', i.e. from North to East,
+        i.e. anti-clockwise, which is astronomical standard. To rotate
+        clockwise instead, give direction='NW'.
+
+    Returns:
+    --------
+
+    rotimage : 2D array
+        The 'image', rotated by 'angle' degrees towards 'direction'.
+
+    """
+    
+    assert (image.ndim == 2), "'image' must be 2-dimensional (but is %d)" % image.ndim
+    assert (image.shape[0] == image.shape[1]), "'image' must be square (but has shape (%s))" % ','.join(list(image.shape))
+
+    if direction == 'NW':
+        angle = angle
+    
+    rotimage = ndimage.rotate(image,angle,reshape=False)
+
+    return rotimage
+    
 
 def get_clean_file_list(d,suffix='.fits'):
 
