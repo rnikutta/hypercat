@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ndiminterpolation_vectorized &mdash; hypercat  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="hypercat  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">hypercat  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ndiminterpolation_vectorized</h1><div class="highlight"><pre>
+<span></span><span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&quot;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20160626&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">ndimage</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="c1"># Convert RuntimeWarnings, e.g. division by zero in some array elements, to Exceptions</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NdimInterpolation"><a class="viewcode-back" href="../ndiminterpolation_vectorized.html#ndiminterpolation_vectorized.NdimInterpolation">[docs]</a><span class="k">class</span> <span class="nc">NdimInterpolation</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;N-dimensional interpolation on data hypercubes.</span>
+
+<span class="sd">    Operates on image(index) coordinates. Multi-linear or cubic-spline</span>
+<span class="sd">    (default).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Initialize an interpolator object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : n-dim array or 1-d array</span>
+<span class="sd">            Model database to be interpolated. Sampled on a</span>
+<span class="sd">            rectilinear grid (it need not be regular!). &#39;data&#39; is</span>
+<span class="sd">            either an n-dimensional array (hypercube), or a</span>
+<span class="sd">            1-dimensional array. If hypercube, each axis corresponds</span>
+<span class="sd">            to one of the model parameters, and the index location</span>
+<span class="sd">            along each axis grows with the parameter value. The last</span>
+<span class="sd">            axis is the &#39;wavelength&#39; axis. If &#39;data&#39; is a 1-d array of</span>
+<span class="sd">            values, it will be converted into the hypercube</span>
+<span class="sd">            format. This means that the order of entries in the 1-d</span>
+<span class="sd">            array must be as if constructed via looping over all axes,</span>
+<span class="sd">            i.e.</span>
+
+<span class="sd">            .. code:: python</span>
+
+<span class="sd">                counter = 0</span>
+<span class="sd">                for j0 in theta[0]:</span>
+<span class="sd">                    for j1 in theta[1]:</span>
+<span class="sd">                        for j2 in theta[2]:</span>
+<span class="sd">                            ...</span>
+<span class="sd">                            hypercube[j0,j1,j2,...] = onedarray[counter]</span>
+<span class="sd">                            counter += 1</span>
+
+<span class="sd">        theta : list</span>
+<span class="sd">            List of 1-d arrays, each holding in ascending order the</span>
+<span class="sd">            unique values for one of the model parameters. The last</span>
+<span class="sd">            1-d array in theta is the wavelength array. Example: for</span>
+<span class="sd">            the CLUMPY models of AGN tori (Nenkova et al. 2008)</span>
+
+<span class="sd">              theta = [{i}, {tv}, {q}, {N0}, {sig}, {Y}, {wave}]</span>
+
+<span class="sd">            where the {.} are 1-d arrays of unique model parameter</span>
+<span class="sd">            values, e.g.</span>
+
+<span class="sd">              {i} = array([0,10,20,30,40,50,60,70,80,90]) (degrees).</span>
+
+<span class="sd">        order : int</span>
+<span class="sd">            Order of interpolation spline to be used. order=1</span>
+<span class="sd">            (default) is multi-linear interpolation, ``order=3`` is</span>
+<span class="sd">            cubic-spline (quite a bit slower, and not necessarily</span>
+<span class="sd">            better, especially for complicated n-dim</span>
+<span class="sd">            functions. ``order=1`` is recommended.</span>
+
+<span class="sd">        mode : str</span>
+<span class="sd">            ``log`` is default, and will take log10(data) first, which</span>
+<span class="sd">            severely improves the interpolation accuracy if the data</span>
+<span class="sd">            span many orders of magnitude. This is of course only</span>
+<span class="sd">            applicable if all entries in `data` are greater than</span>
+<span class="sd">            0. Any string other that ``log`` will keep `data` as-is.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        NdimInterpolation instance.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        General way to use ndiminterpolation</span>
+
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            # to be written</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>   <span class="c1"># list of lists of parameter values, unique, in correct order</span>
+
+        <span class="n">shape_</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
+
+        <span class="c1"># determine if data is hypercube or list of 1d arrays</span>
+        <span class="k">if</span> <span class="n">shape_</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="s1">&#39;hypercube&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape_</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+
+        <span class="c1"># interpolation orders</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">order</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="s2">&quot;Interpolation spline order not supported! Must be 1 (linear) or 3 (cubic).&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+
+        <span class="c1"># interpolate in log10 space?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;log&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeWarning</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">,</span> <span class="s2">&quot;For mode=&#39;log&#39; all entries in &#39;data&#39; must be &gt; 0.&quot;</span>
+
+        <span class="c1"># set up n 1-d linear interpolators for all n parameters in theta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ips</span> <span class="o">=</span> <span class="p">[]</span>   <span class="c1"># list of 1-d interpolator objects</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mf">1.</span><span class="p">),</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s2">&quot;Evaluating cubic spline coefficients for subsequent use, please wait...&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coeffs</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">spline_filter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;Done.&quot;</span>
+
+
+<div class="viewcode-block" id="NdimInterpolation.get_coords"><a class="viewcode-back" href="../ndiminterpolation_vectorized.html#ndiminterpolation_vectorized.NdimInterpolation.get_coords">[docs]</a>    <span class="k">def</span> <span class="nf">get_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vec</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;Construct a full 2D matrix of coordinates in pixel-space from a</span>
+<span class="sd">           vector of coordinates in real space.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vec : tuple</span>
+
+<span class="sd">            Tuple of lenght len(self.theta), with each element either</span>
+<span class="sd">            a single value of theta_i (of the i-th parameter), or</span>
+<span class="sd">            itself a tuple (of arbitrary length). If an element of vec</span>
+<span class="sd">            is itself a tuple (of length m), then m*(n-1) combinations</span>
+<span class="sd">            of all parameters will be added to the resulting 2D matrix</span>
+<span class="sd">            of coordinates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        coorinates_pix : 2D array</span>
+<span class="sd">            2D array of coordinates in pixel space, on which then the</span>
+<span class="sd">            multi-dim interpolation can be performed.</span>
+
+<span class="sd">            Overall, A = N.prod([len(vec_i) for vec_i in vec])</span>
+<span class="sd">            coordinate sets, for B = len(self.theta) parameters, will</span>
+<span class="sd">            be generated, i.e. the returned coordinate matrix has</span>
+<span class="sd">            coordinates.shape = (A,B).</span>
+
+<span class="sd">        shape_ : tuple</span>
+<span class="sd">           The shape tuple to reshape coords_pix with to obtain a</span>
+<span class="sd">           properly shaped interpolated array.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            self.parameters</span>
+<span class="sd">                array([&#39;a&#39;, &#39;b&#39;, &#39;c&#39;])</span>
+
+<span class="sd">            [t.size for t in self.theta]</span>
+<span class="sd">                (3,5,2)</span>
+
+<span class="sd">            self.theta</span>
+<span class="sd">                [array(1.,2.,3.,), array(10.,15,18,24,26), array(100.,126)]</span>
+
+<span class="sd">            # vector of real-space coordinate to interpolate self.data_hypercube on</span>
+<span class="sd">            vec = (1.5,18.,110.)</span>
+<span class="sd">        </span>
+<span class="sd">            # compute pixel-space vector matrix, and shape of resulting array</span>
+<span class="sd">            coords_pix, shape_ = self.get_coords(vec)</span>
+
+
+<span class="sd">        Old example, rework it:</span>
+
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            vec = (0,1,2,3,(0,1,2),(3,4,5),6)</span>
+<span class="sd">            vectup = [e if isinstance(e,tuple) else (e,) for e in vec]</span>
+<span class="sd">               [(0,), (1,), (2,), (3,), (0, 1, 2), (3, 4, 5), (6,)]</span>
+<span class="sd">            coords = N.array([e for e in itertools.product(*vectup)])  # in pixel space</span>
+<span class="sd">               array([[0, 1, 2, 3, 0, 3, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 0, 4, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 0, 5, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 1, 3, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 1, 4, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 1, 5, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 2, 3, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 2, 4, 6],</span>
+<span class="sd">                      [0, 1, 2, 3, 2, 5, 6]])</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<span class="c1">#        print &quot;vec = &quot;, vec</span>
+
+        <span class="n">vectup</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="n">e</span><span class="p">,)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">vec</span><span class="p">]</span>
+<span class="c1">#        print &quot;vectup = &quot;, vectup</span>
+        <span class="n">shape_</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">vectup</span><span class="p">]</span>
+
+        <span class="n">coords_real</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">vectup</span><span class="p">)])</span>  <span class="c1"># use ip(.) here</span>
+<span class="c1">#        print &quot;coords_pix, coords_pix.shape = &quot;, coords_pix, coords_pix.shape</span>
+        
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">coords_real</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="c1">#        print &quot;columns, len(columns) = &quot;, columns, len(columns)</span>
+        
+        <span class="n">coords_pix</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="bp">self</span><span class="o">.</span><span class="n">ips</span><span class="p">[</span><span class="n">j</span><span class="p">](</span><span class="n">columns</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span> <span class="p">])</span>
+<span class="c1">#        print &quot;coords_pix.shape = &quot;, coords_pix.shape</span>
+<span class="c1">#        print &quot;self.data_hypercube.shape = &quot;, self.data_hypercube.shape</span>
+        
+        <span class="k">return</span> <span class="n">coords_pix</span><span class="p">,</span> <span class="n">shape_</span></div>
+
+
+<div class="viewcode-block" id="NdimInterpolation.__call__"><a class="viewcode-back" href="../ndiminterpolation_vectorized.html#ndiminterpolation_vectorized.NdimInterpolation.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vector</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Interpolate in N dimensions, using mapping to image coordinates.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">coords</span><span class="p">,</span> <span class="n">shape_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_coords</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">map_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_hypercube</span><span class="p">,</span><span class="n">coords</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape_</span><span class="p">)</span>
+<span class="c1"># temporarily disabled order==3, b/c not yet tested</span>
+<span class="c1">#        elif self.order == 3:</span>
+<span class="c1">#            aux = ndimage.map_coordinates(self.coeffs,self.get_coords(vector,pivots=pivots),order=3,prefilter=False)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;log&#39;</span><span class="p">:</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">**</span><span class="n">aux</span>
+
+        <span class="k">return</span> <span class="n">aux</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">hypercat  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Robert Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+    </div>
+  </body>
+</html>

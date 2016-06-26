@@ -1,5 +1,5 @@
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20150601'
+__version__ = '20160626'
 
 import numpy as N
 import warnings
@@ -38,13 +38,15 @@ class NdimInterpolation:
             array must be as if constructed via looping over all axes,
             i.e.
 
-              counter = 0
-              for j0 in theta[0]:
-                  for j1 in theta[1]:
-                     for j2 in theta[2]:
-                         ...
-                         hypercube[j0,j1,j2,...] = onedarray[counter]
-                         counter += 1
+            .. code:: python
+
+                counter = 0
+                for j0 in theta[0]:
+                    for j1 in theta[1]:
+                        for j2 in theta[2]:
+                            ...
+                            hypercube[j0,j1,j2,...] = onedarray[counter]
+                            counter += 1
 
         theta : list
             List of 1-d arrays, each holding in ascending order the
@@ -61,17 +63,17 @@ class NdimInterpolation:
 
         order : int
             Order of interpolation spline to be used. order=1
-            (default) is multi-linear interpolation, order=3 is
+            (default) is multi-linear interpolation, ``order=3`` is
             cubic-spline (quite a bit slower, and not necessarily
-            better, especially for complicated n-dim functions. order=1
-            is recommended.
+            better, especially for complicated n-dim
+            functions. ``order=1`` is recommended.
 
         mode : str
-            'log' is default, and will take log10(data) first, which
+            ``log`` is default, and will take log10(data) first, which
             severely improves the interpolation accuracy if the data
             span many orders of magnitude. This is of course only
-            applicable if all entries in 'data' are greater than
-            0. Any string other that 'log' will keep 'data' as-is.
+            applicable if all entries in `data` are greater than
+            0. Any string other that ``log`` will keep `data` as-is.
 
         Returns
         -------
@@ -81,11 +83,10 @@ class NdimInterpolation:
         -------
         General way to use ndiminterpolation
 
-          ipython --pylab
-          In[0]: import ndiminterpolation as nd
-          In[1]: ip, datacube, theta, mywave = nd.example()
+        .. code:: python
 
-        See also example.py in the same repository.
+            # to be written
+
         """
         
         self.theta = theta   # list of lists of parameter values, unique, in correct order
@@ -128,9 +129,8 @@ class NdimInterpolation:
         """Construct a full 2D matrix of coordinates in pixel-space from a
            vector of coordinates in real space.
         
-        Parameters:
-        -----------
-
+        Parameters
+        ----------
         vec : tuple
 
             Tuple of lenght len(self.theta), with each element either
@@ -140,8 +140,8 @@ class NdimInterpolation:
             of all parameters will be added to the resulting 2D matrix
             of coordinates.
 
-        Returns:
-        --------
+        Returns
+        -------
         coorinates_pix : 2D array
             2D array of coordinates in pixel space, on which then the
             multi-dim interpolation can be performed.
@@ -155,40 +155,43 @@ class NdimInterpolation:
            The shape tuple to reshape coords_pix with to obtain a
            properly shaped interpolated array.
 
-        Example:
-        --------
-        self.parameters
-            array(['a', 'b', 'c'])
+        Example
+        -------
+        .. code:: python
 
-        [t.size for t in self.theta]
-            (3,5,2)
+            self.parameters
+                array(['a', 'b', 'c'])
 
-        self.theta
-            [array(1.,2.,3.,), array(10.,15,18,24,26), array(100.,126)]
+            [t.size for t in self.theta]
+                (3,5,2)
 
-        # vector of real-space coordinate to interpolate self.data_hypercube on
-        vec = (1.5,18.,110.)
+            self.theta
+                [array(1.,2.,3.,), array(10.,15,18,24,26), array(100.,126)]
+
+            # vector of real-space coordinate to interpolate self.data_hypercube on
+            vec = (1.5,18.,110.)
         
-        # compute pixel-space vector matrix, and shape of resulting array
-        coords_pix, shape_ = self.get_coords(vec)
-
+            # compute pixel-space vector matrix, and shape of resulting array
+            coords_pix, shape_ = self.get_coords(vec)
 
 
         Old example, rework it:
 
-        vec = (0,1,2,3,(0,1,2),(3,4,5),6)
-        vectup = [e if isinstance(e,tuple) else (e,) for e in vec]
-           [(0,), (1,), (2,), (3,), (0, 1, 2), (3, 4, 5), (6,)]
-        coords = N.array([e for e in itertools.product(*vectup)])  # in pixel space
-           array([[0, 1, 2, 3, 0, 3, 6],
-                  [0, 1, 2, 3, 0, 4, 6],
-                  [0, 1, 2, 3, 0, 5, 6],
-                  [0, 1, 2, 3, 1, 3, 6],
-                  [0, 1, 2, 3, 1, 4, 6],
-                  [0, 1, 2, 3, 1, 5, 6],
-                  [0, 1, 2, 3, 2, 3, 6],
-                  [0, 1, 2, 3, 2, 4, 6],
-                  [0, 1, 2, 3, 2, 5, 6]])
+        .. code:: python
+
+            vec = (0,1,2,3,(0,1,2),(3,4,5),6)
+            vectup = [e if isinstance(e,tuple) else (e,) for e in vec]
+               [(0,), (1,), (2,), (3,), (0, 1, 2), (3, 4, 5), (6,)]
+            coords = N.array([e for e in itertools.product(*vectup)])  # in pixel space
+               array([[0, 1, 2, 3, 0, 3, 6],
+                      [0, 1, 2, 3, 0, 4, 6],
+                      [0, 1, 2, 3, 0, 5, 6],
+                      [0, 1, 2, 3, 1, 3, 6],
+                      [0, 1, 2, 3, 1, 4, 6],
+                      [0, 1, 2, 3, 1, 5, 6],
+                      [0, 1, 2, 3, 2, 3, 6],
+                      [0, 1, 2, 3, 2, 4, 6],
+                      [0, 1, 2, 3, 2, 5, 6]])
 
         """
 

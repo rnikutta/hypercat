@@ -1,0 +1,1199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>hypercat &mdash; hypercat  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="hypercat  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">hypercat  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hypercat</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span><span class="n">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1">: </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">N</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">nddata</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="kn">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">import</span> <span class="nn">pyfits</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">padarray</span>
+<span class="kn">import</span> <span class="nn">ndiminterpolation_vectorized</span>
+
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20160626&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
+
+<span class="sd">.. automodule:: hypercat</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># CLASSES</span>
+
+<div class="viewcode-block" id="ModelCube"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube">[docs]</a><span class="k">class</span> <span class="nc">ModelCube</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">hdffile</span><span class="o">=</span><span class="s1">&#39;clumpy_img_cube_2200models_19waves_halfsized_uncompressed.hdf5&#39;</span><span class="p">,</span>\
+                 <span class="n">hypercube</span><span class="o">=</span><span class="s1">&#39;imgdata&#39;</span><span class="p">,</span>\
+                 <span class="n">ndinterpolator</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Model hypercube of CLUMPY images.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        hdffile : str</span>
+<span class="sd">            Path to the model hdf5 file. Default:</span>
+<span class="sd">            `clumpy_img_cube_2200models_19waves_halfsized.hdf5`</span>
+
+<span class="sd">        hypercube : str</span>
+<span class="sd">            Name of the hypercube within `hdffile` to use (currently</span>
+<span class="sd">            either ``imgdata`` or ``clddata``). Default&quot; ``imgdata``.</span>
+
+<span class="sd">        ndinterpolator : bool</span>
+<span class="sd">            If ``True`` (default), an interpolation object for</span>
+<span class="sd">            N-dimensional interpolation of the hypercube will be</span>
+<span class="sd">            instantiated, and accessible via :func:`get_image`.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # instantiate</span>
+<span class="sd">            M = ModelCube() </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening HDF5 file: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">hdffile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdffile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">hypercube</span><span class="p">]</span>
+        
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading sampling parameters.&quot;</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;hypercubeshape&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">select</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">shape</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>  <span class="c1"># selector mask: only theta_i with more than one element</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">padarray</span><span class="o">.</span><span class="n">PadArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">unpad</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">select</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)[</span><span class="n">select</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;wave&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">ramgigs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;hypercube&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mi">4</span><span class="o">/</span><span class="mi">1024</span><span class="o">**</span><span class="mf">3.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading hypercube &#39;</span><span class="si">%s</span><span class="s2">&#39; to RAM (~</span><span class="si">%.2f</span><span class="s2"> GB required) ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hypercube</span><span class="p">,</span><span class="n">ramgigs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;hypercube&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>  <span class="c1"># drop from ndim-index all dimensions with length-one</span>
+
+        <span class="k">if</span> <span class="n">ndinterpolator</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Instantiating n-dim interpolation object ...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ndiminterpolation_vectorized</span><span class="o">.</span><span class="n">NdimInterpolation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;lin&#39;</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done. Closing HDF5 file.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="ModelCube.print_sampling"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.print_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">print_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%7.3f</span><span class="s2">&quot;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Print a summary table of the parameters and sampled values in the</span>
+<span class="sd">        hypercube.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The first `n` sampled elements of every parameter will be</span>
+<span class="sd">            printed. If the list is shorter than `n`, all of it will</span>
+<span class="sd">            be printed. Default: 11.</span>
+
+<span class="sd">        fmt : str</span>
+<span class="sd">            Format string to use for a single value. Default: &#39;%7.3f&#39;</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            M.print_sampling(n=6)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">maxstr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%%% d</span><span class="s2">s  &quot;</span> <span class="o">%</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">])</span>  <span class="c1"># longest parameter name</span>
+        <span class="n">maxn</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">])</span>  <span class="c1"># largest parameter cardinality</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;Parameter Range                Nvalues  Values</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">72</span>
+        <span class="k">print</span> <span class="n">header</span>
+        
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">):</span>
+
+            <span class="n">srange</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; - </span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># range string</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">v</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>  <span class="c1"># print n elements or all if number of elements smaller than n</span>
+
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[:</span><span class="n">m</span><span class="p">]]</span>
+            <span class="n">svals</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>  <span class="c1"># all values to be printed, as a single string</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">svals</span> <span class="o">+=</span> <span class="s1">&#39;, ...&#39;</span>  <span class="c1"># continuation indicator, if any</span>
+
+            <span class="c1"># bring everything together</span>
+            <span class="k">print</span> <span class="n">maxstr</span> <span class="o">%</span> <span class="n">p</span> <span class="o">+</span> <span class="s2">&quot;    </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">srange</span> <span class="o">+</span> <span class="s2">&quot;  (</span><span class="si">%%%d</span><span class="s2">d)   &quot;</span> <span class="o">%</span> <span class="n">maxn</span> <span class="o">%</span> <span class="n">v</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span>  <span class="n">svals</span></div>
+
+
+<div class="viewcode-block" id="ModelCube.get_image"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vector</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Extract hyperslice from the hypercube via N-dim interpolation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vector : seq</span>
+<span class="sd">            A vector of model parameter values at which the imaged</span>
+<span class="sd">            should be interpolated. This is very flexible and can</span>
+<span class="sd">            return variously-shaped arrays, from standard 2D images</span>
+<span class="sd">            (x,y) to multi-dimensional hyper-slices of the CLUMPY</span>
+<span class="sd">            hypercube. See `Examples` below.</span>
+
+<span class="sd">        full : bool</span>
+<span class="sd">            If ``True`` (default), the extracted image (which by</span>
+<span class="sd">            default is a half-image due to CLUMPY&#39;s inherent axial</span>
+<span class="sd">            symmetry) is left-right mirrored, and a full-sized</span>
+<span class="sd">            (square) image is returned.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            # vector of parameter values; pixel axes are implied (i.e. don&#39;t specify them)</span>
+<span class="sd">            theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)</span>
+<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            print image.shape</span>
+<span class="sd">              (221,221)   # (x,y)</span>
+
+<span class="sd">            # multi-wavelength cube</span>
+<span class="sd">            theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values</span>
+<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            print image.shape</span>
+<span class="sd">              (221,221,3)   # (x,y,lambda)</span>
+<span class="sd">            </span>
+<span class="sd">            # multi-wavelength and multi-viewing angle</span>
+<span class="sd">            theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas</span>
+<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            print image.shape</span>
+<span class="sd">              (4,221,221,3)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># this is for the current array layout: [&#39;sig&#39;, &#39;i&#39;, &#39;N&#39;, &#39;q&#39;, &#39;tv&#39;, &#39;x&#39;, &#39;y&#39;, &#39;wave&#39;]</span>
+
+        <span class="n">vec</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+        <span class="n">vec</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="n">vec</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="n">vec</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+        
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+<span class="c1">#        image = image.reshape((self.x.size,self.y.size))</span>
+<span class="c1">#        </span>
+        <span class="k">if</span> <span class="n">full</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">mirror_halfimage</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">image</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div></div>
+    
+
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../hypercat.html#hypercat.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">:</span>
+
+    <span class="c1"># Class constants</span>
+    <span class="n">UNITS_ANGULAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">,</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="s1">&#39;milliarcsecond&#39;</span><span class="p">,</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span><span class="s1">&#39;rad&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized angular units, e.g. for pixel scale.</span>
+    <span class="n">UNITS_LINEAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;cm&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;kpc&#39;</span><span class="p">,</span><span class="s1">&#39;Mpc&#39;</span><span class="p">,</span><span class="s1">&#39;lyr&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized linear units (either for pixel scale, or for source distance, etc.)</span>
+    <span class="n">CUNITS</span> <span class="o">=</span> <span class="n">UNITS_ANGULAR</span> <span class="o">+</span> <span class="n">UNITS_LINEAR</span>  <span class="c1">#: Their union.</span>
+    <span class="c1"># TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)</span>
+    <span class="n">UNITS_BRIGHTNESS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy/pix&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/pix&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized units for brightness-per-pixel.</span>
+<span class="c1">#        self.UNITS_BRIGHTNESS_SOLIDANGLE = (&#39;Jy/arcsec^2&#39;,&#39;Jy/mas^2&#39;,&#39;Jy/milliarcsec^2&#39;,&#39;mJy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;mJy/milliarcsec^2&#39;)</span>
+
+    <span class="n">pix</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">pix</span>  <span class="c1">#: ``u.pix`` alias, defined for convenience.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 arcsec&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1 Jy/pix&#39;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;From a 2D array instantiate an Image object, with members for</span>
+<span class="sd">        pixelscale, brightness, unit conversions, etc.  The way to</span>
+<span class="sd">        specify most arguments follows roughly the CASA (Common</span>
+<span class="sd">        Astronomy Software Applications package) philosophy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image : float array (2D)</span>
+<span class="sd">            Monochromatic relative brightness per pixel. Will be</span>
+<span class="sd">            scaled to physical values via arguments &#39;pixelscale&#39; and</span>
+<span class="sd">            &#39;peak_pixel_brightness&#39; (see below).</span>
+
+<span class="sd">        pixelscale : str</span>
+<span class="sd">            Pixel scale of a single pixel. See docstring of</span>
+<span class="sd">            setPixelscale() function.</span>
+
+<span class="sd">        distance : str|None</span>
+<span class="sd">            Physical distance to the source. Only required if</span>
+<span class="sd">            &#39;pixelscale&#39; was specified in linear (not angular)</span>
+<span class="sd">            units. See docstring of setPixelscale() function.</span>
+
+<span class="sd">        peak_pixel_brightness : str</span>
+<span class="sd">            Physical brightness value of the max pixel in `image`. The</span>
+<span class="sd">            entire image will be scaled this this peak value. See</span>
+<span class="sd">            docstring of setBrightness() function.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # get raw image (see :class:`ModelCube`:func:`get_image`)</span>
+<span class="sd">            theta = (30,0,3,0,20,9.7)</span>
+<span class="sd">            image = M.get_image(theta)</span>
+
+<span class="sd">            # init `Image` instance using angular pixel scale</span>
+<span class="sd">            I = Image(image,pixelscale=&#39;1 arcsec&#39;,peak_pixel_brightness=&#39;3.0 mJy/pix&#39;)</span>
+<span class="sd">            print I.pixelscale; print I.data.max()</span>
+<span class="sd">              1.0 arcsec</span>
+<span class="sd">              3.0 mJy / pix</span>
+
+<span class="sd">            # init using linear pixel scale and source distance</span>
+<span class="sd">            I = Image(image,pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;,peak_pixel_brightness=&#39;3.0 mJy/pix&#39;)</span>
+<span class="sd">            print I.pixelscale; print I.distance; print I.data.max()</span>
+<span class="sd">              1.0 arcsec</span>
+<span class="sd">              1.0 pc</span>
+<span class="sd">              3.0 mJy / pix</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># sanity checks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npix</span> <span class="o">=</span> <span class="n">checkImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        
+        <span class="c1"># PIXELSCALE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setPixelscale</span><span class="p">(</span><span class="n">pixelscale</span><span class="o">=</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">)</span>
+
+        <span class="c1"># IMAGE DATA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_raw</span> <span class="o">=</span> <span class="n">image</span>  <span class="c1"># keep original array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">image</span>   <span class="c1"># will rescale this array in setBrightness()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setBrightness</span><span class="p">(</span><span class="n">peak_pixel_brightness</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Image.setPixelscale"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.setPixelscale">[docs]</a>    <span class="k">def</span> <span class="nf">setPixelscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 arcsec&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Set size and area of a pixel from user input.</span>
+
+<span class="sd">        This does not touch the brightness per pixel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pixelscale : str or &#39;Quantity&#39; instance</span>
+<span class="sd">            Angular or linear scale of one pixel. See docstring of</span>
+<span class="sd">            :func:`getValueUnit` for the requirements.</span>
+
+<span class="sd">            Recognized angular units: (see ``UNITS_ANGULAR`` in :class:`Image`)</span>
+
+<span class="sd">            Recognized linear units: (see ``UNITS_LINEAR`` in :class:`Image`)</span>
+
+<span class="sd">            If linear unit, then it is the linear size of a pixel at</span>
+<span class="sd">            the distance of the source. Then the `distance` argument</span>
+<span class="sd">            must be also specified (see below).</span>
+
+<span class="sd">        distance : str | &#39;Quantity&#39; instance | None</span>
+<span class="sd">            If `pixelscale` was specified in linear units, then the</span>
+<span class="sd">            distance to the source must be not ``None``, but rather an</span>
+<span class="sd">            argument akin to &#39;pixelscale&#39; above, i.e. str or &#39;Quantity&#39; instance.</span>
+
+<span class="sd">            Recognized linear units: (see ``UNITS_LINEAR`` in :class:`Image`)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            I = Image(pixelscale=&#39;0.2 arsec&#39;)  # definition of an &#39;Image&#39; instance</span>
+<span class="sd">            print I.pixelscale; print I.pixelarea</span>
+<span class="sd">              0.2 arcsec</span>
+<span class="sd">              0.04 arcsec2 / pix</span>
+
+<span class="sd">            I.setPixelscale(pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;)</span>
+<span class="sd">            print I.pixelscale, I.pixelarea</span>
+<span class="sd">              1.0 arcsec</span>
+<span class="sd">              1.0 arcsec2 / pix</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cdelt</span><span class="p">,</span> <span class="n">cunit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">pixelscale</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">CUNITS</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="n">cdelt</span> <span class="o">*</span> <span class="n">cunit</span>
+
+        <span class="k">if</span> <span class="n">cunit</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">UNITS_LINEAR</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">distunit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">UNITS_LINEAR</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Must provide a value for &#39;distance&#39; argument. Current value is: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">))</span>
+                <span class="k">raise</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">dist</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">distunit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__computePixelarea</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__computeFOV</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Image.setBrightness"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.setBrightness">[docs]</a>    <span class="k">def</span> <span class="nf">setBrightness</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;Scale the brightness of the image to ``peak_pixel_brightness``.</span>
+
+<span class="sd">        Scale the ``self.data`` array such that the max pixel has</span>
+<span class="sd">        value `peak_pixel_brightness`. This does not touch the</span>
+<span class="sd">        ``self.pixelsize`` and ``self.pixelarea`` values of the image.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        peak_pixel_brightness : str | &#39;Quantity&#39; instance</span>
+<span class="sd">            Target brightness-per-pixe of the max pixel in</span>
+<span class="sd">            ``self.data``. See docstring of :func:`getValueUnit` for</span>
+<span class="sd">            the requirements.</span>
+
+<span class="sd">            Recognized brightness units: (see ``UNITS_BRIGHTNESS`` in :class:`Image`)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            print I.data_raw.max(); I.data.max()</span>
+<span class="sd">              1.0</span>
+<span class="sd">              1.5 mJy / pix</span>
+
+<span class="sd">            I.setBrightness(peak_pixel_brightness=&#39;3.3 Jy/pix&#39;)</span>
+<span class="sd">            print I.data_raw.max(); I.data.max()</span>
+<span class="sd">              1.0</span>
+<span class="sd">              3.3 Jy / pix</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">peak_pixel_target</span><span class="p">,</span> <span class="n">brightness_unit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">peak_pixel_brightness</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">UNITS_BRIGHTNESS</span><span class="p">)</span>
+        
+<span class="c1">#        self.peak_pixel_brightness = peak_pixel_brightness # store for later use, e.g. in embedInFOV()</span>
+        
+        <span class="n">numfactor</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_pixel_target</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="n">numfactor</span> <span class="o">*</span> <span class="n">brightness_unit</span></div>
+
+        
+<div class="viewcode-block" id="Image.getBrightnessInUnits"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.getBrightnessInUnits">[docs]</a>    <span class="k">def</span> <span class="nf">getBrightnessInUnits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">units</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Compute the image brightness in the requested &#39;units&#39; (brightness-per-solid-angle).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units : str</span>
+<span class="sd">            Units of brightness-per-solid-angle, to which the</span>
+<span class="sd">            self.data array will be converted using self.pixelscale</span>
+
+<span class="sd">            The units are quite flexible. An incomplete list of</span>
+<span class="sd">            possibilities: ``Jy/mas^2, mJy/arcsec^2, uJy/sr,</span>
+<span class="sd">            Jy/deg^2``, etc.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">             print I.pixelscale; print I.data.max(); print I.getBrightnessInUnits(&#39;Jy/arcsec^2&#39;)</span>
+<span class="sd">               1.0 arcsec</span>
+<span class="sd">               3.0 mJy / pix</span>
+<span class="sd">               0.003 Jy / arcsec2</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">brightness</span> <span class="o">=</span>  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Use valid brightness-per-solid-angle units, e.g. &#39;Jy/arcsec^2&#39; or &#39;mJy/sr&#39;, etc.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">brightness</span></div>
+    
+
+<div class="viewcode-block" id="Image.setFOV"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.setFOV">[docs]</a>    <span class="k">def</span> <span class="nf">setFOV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fov</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;From field-of-view `fov`, compute new ``pixelscale`` &amp; new ``pixelarea``.</span>
+
+<span class="sd">        ``self.npix`` remains the same, i.e. recomputes</span>
+<span class="sd">        ``self.pixelscale`` and ``self.pixelarea`` and sets</span>
+<span class="sd">        ``self.FOV``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fov : str or &#39;Quantity&#39; instance</span>
+<span class="sd">            Target angular size of the field-of-view. See docstring of</span>
+<span class="sd">            :func:`getValueUnit` for the requirements.</span>
+
+<span class="sd">            Recognized angular units: (see ``UNITS_ANGULAR`` in :class:`Image`)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            I = hypercat.Image(img,pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;,peak_pixel_brightness=&#39;4.0 mJy/pix&#39;)</span>
+<span class="sd">            print (&#39;%s\\n&#39;*4) % (I.pixelscale,I.FOV,I.data.max(),I.getBrightnessInUnits(&#39;mJy/arcsec^2&#39;).max())</span>
+<span class="sd">              1.0 arcsec</span>
+<span class="sd">              7.0 arcsec</span>
+<span class="sd">              4.0 mJy / pix</span>
+<span class="sd">              4.0 mJy / arcsec2</span>
+
+<span class="sd">            I.setFOV(fov=&#39;14.0 arcsec&#39;)</span>
+<span class="sd">            print (&#39;%s\\n&#39;*4) % (I.pixelscale,I.FOV,I.data.max(),I.getBrightnessInUnits(&#39;mJy/arcsec^2&#39;).max())</span>
+<span class="sd">              2.0 arcsec</span>
+<span class="sd">              14.0 arcsec</span>
+<span class="sd">              4.0 mJy / pix</span>
+<span class="sd">              1.0 mJy / arcsec2</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">fov_value</span><span class="p">,</span> <span class="n">fov_unit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">fov</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">UNITS_ANGULAR</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="p">(</span><span class="n">fov_value</span> <span class="o">*</span> <span class="n">fov_unit</span><span class="p">)</span> <span class="o">/</span> <span class="n">N</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__computePixelarea</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__computeFOV</span><span class="p">()</span></div>
+
+        
+<div class="viewcode-block" id="Image.embedInFOV"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.embedInFOV">[docs]</a>    <span class="k">def</span> <span class="nf">embedInFOV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fov</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Embed ``self.data`` in a new field of view `fov`, or crop to it.</span>
+
+<span class="sd">        If ``fov &gt; self.FOV``, embed self.data in a larger array. If</span>
+<span class="sd">        ``fov &lt; self.FOV``, crop the central pixels of ``self.data``</span>
+<span class="sd">        to `fov`. Cropping removes the cropped parts of the image</span>
+<span class="sd">        permanently.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fov : str or &#39;Quantity&#39; instance</span>
+<span class="sd">            Angular size of the target field of view (FOV). See</span>
+<span class="sd">            docstring of :func:`getValueUnit` for the requirements.</span>
+<span class="sd">            `fov` can be both larger or smaller than the current image</span>
+<span class="sd">            FOV ``self.FOV``.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Since the image is pixelated (discretized), embed/crop to the</span>
+<span class="sd">        nearest odd integer ``npix``, and use the corrected FOV, which is</span>
+<span class="sd">        not necessarily exactly the specified `fov`.</span>
+
+<span class="sd">        Note that ``self.pixelscale`` and ``self.pixelarea`` remain</span>
+<span class="sd">        unchanged!</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">fov_value</span><span class="p">,</span> <span class="n">fov_unit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">fov</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">UNITS_ANGULAR</span><span class="p">)</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="p">((</span><span class="n">fov_value</span><span class="o">*</span><span class="n">fov_unit</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">FOV</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">newsize_int</span><span class="p">,</span> <span class="n">newfactor</span> <span class="o">=</span> <span class="n">computeIntCorrections</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">factor</span><span class="p">)</span>
+        <span class="n">cpix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="n">newimage</span> <span class="o">=</span> <span class="n">nddata</span><span class="o">.</span><span class="n">extract_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="p">,(</span><span class="n">newsize_int</span><span class="p">,</span><span class="n">newsize_int</span><span class="p">),(</span><span class="n">cpix</span><span class="p">,</span><span class="n">cpix</span><span class="p">),</span><span class="n">fill_value</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">newimage</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span>
+
+        <span class="c1"># updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__computeFOV</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Image.resample"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.resample">[docs]</a>    <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">resamplingfactor</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Increase or decrease the image sampling in x and y by `resamplingfactor`.</span>
+
+<span class="sd">        The resampling is performed by third-order spline</span>
+<span class="sd">        interpolation. The FOV remains constant, but</span>
+<span class="sd">        ``self.pixelscale`` and ``self.pixelarea`` are adjusted.  The</span>
+<span class="sd">        brightness-per-pixel is adjusted according to the change in</span>
+<span class="sd">        pixel area, but total flux density is preserved.  Note that</span>
+<span class="sd">        consecutive application of :func:`resample` to the same image</span>
+<span class="sd">        can yield inexact results due to accumulated interpolation</span>
+<span class="sd">        errors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        resamplingfactor : float</span>
+<span class="sd">            The factor by which the the image sampling (number of</span>
+<span class="sd">            pixels) is increased (if &gt;1) or decreased (if &lt;1). Note</span>
+<span class="sd">            that `resamplingfactor` is adjusted because of the</span>
+<span class="sd">            requirement that ``npix_new`` be integer and odd-valued.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            theta = (30,0,3,0,20,9.7) # (sig,i,N0,q,tauv,lambda)</span>
+<span class="sd">            img = M.get_image(theta)  # raw model image</span>
+
+<span class="sd">            # `Image` instance</span>
+<span class="sd">            I = hypercat.Image(img,pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;,peak_pixel_brightness=&#39;1.0 mJy/pix&#39;)</span>
+<span class="sd">            print &quot;, &quot;.join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightnessInUnits(&#39;mJy/arcsec^2&#39;).max())])</span>
+<span class="sd">              221, 1.0 arcsec, 1.0 arcsec2 / pix, 221.0 arcsec, 1.0 mJy / pix, 1.0 mJy / arcsec2</span>
+<span class="sd">            print I.getTotalFluxDensity()</span>
+<span class="sd">              5.35844 Jy  # total flux density</span>
+
+<span class="sd">            # new instance, upsampled 2x</span>
+<span class="sd">            I = hypercat.Image(img,pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;,peak_pixel_brightness=&#39;1.0 mJy/pix&#39;)</span>
+<span class="sd">            I.resample(2.0)</span>
+<span class="sd">            print &quot;, &quot;.join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightnessInUnits(&#39;mJy/arcsec^2&#39;).max())])</span>
+<span class="sd">              443, 0.49887 arcsec, 0.24887 arcsec2 / pix, 221.0 arcsec, 0.26328 mJy / pix, 1.05787 mJy / arcsec2</span>
+<span class="sd">            print I.getTotaFluxDensity()</span>
+<span class="sd">              5.38289 Jy  # total flux density preserved; difference due to interpolation errors</span>
+
+<span class="sd">            # new instance, downsampled 0.5x</span>
+<span class="sd">            I = hypercat.Image(img,pixelscale=&#39;1 AU&#39;,distance=&#39;1 pc&#39;,peak_pixel_brightness=&#39;1.0 mJy/pix&#39;)</span>
+<span class="sd">            I.resample(0.5)</span>
+<span class="sd">            print &quot;, &quot;.join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightnessInUnits(&#39;mJy/arcsec^2&#39;).max())])</span>
+<span class="sd">              111, 1.99099099 arcsec, 3.96405 arcsec2 / pix, 221.0 arcsec, 3.92935 mJy / pix, 0.99125 mJy / arcsec2</span>
+<span class="sd">            print I.getTotalFluxDensity()</span>
+<span class="sd">              5.30354 Jy  # still preserved</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">newimage</span><span class="p">,</span> <span class="n">newfactor</span> <span class="o">=</span> <span class="n">resampleImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">resamplingfactor</span><span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">newimage</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setPixelscale</span><span class="p">(</span><span class="n">pixelscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="o">/</span><span class="n">newfactor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setBrightness</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="n">newfactor</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="Image.rotate"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.rotate">[docs]</a>    <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">angle</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;NE&#39;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Rotate ``self.data`` by `angle` degrees from North towards</span>
+<span class="sd">        `direction` (either East or West).</span>
+
+<span class="sd">        See docstring of :func:`rotateImage()`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">rotateImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">angle</span><span class="o">=</span><span class="n">angle</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Rotated image (see self.data) by </span><span class="si">%g</span><span class="s2"> degrees in direction &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">angle</span><span class="p">,</span><span class="n">direction</span><span class="p">))</span></div>
+
+        
+<div class="viewcode-block" id="Image.getTotalFluxDensity"><a class="viewcode-back" href="../hypercat.html#hypercat.Image.getTotalFluxDensity">[docs]</a>    <span class="k">def</span> <span class="nf">getTotalFluxDensity</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Compute the total flux density within the FOV.</span>
+
+<span class="sd">        The total flux density is the brightness integral over the solid</span>
+<span class="sd">        angle of the FOV.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        totalFluxDensity : float</span>
+<span class="sd">            Total flux density in Jy.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code:: python</span>
+
+<span class="sd">            total = I.getTotalFluxDensity()</span>
+<span class="sd">            print total; print total.to(&#39;mJy&#39;)  # can be easily converted to other units</span>
+<span class="sd">              0.0050459482673 Jy</span>
+<span class="sd">              5.0459482673 mJy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixelarea</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pix</span></div>
+
+        
+    <span class="k">def</span> <span class="nf">__computeFOV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">FOV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npix</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span>
+        
+        
+    <span class="k">def</span> <span class="nf">__computePixelarea</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixelarea</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">pix</span></div>
+        
+    
+<span class="c1"># HIGH-LEVEL HELPER FUNCTIONS</span>
+
+<div class="viewcode-block" id="mirror_halfimage"><a class="viewcode-back" href="../hypercat.html#hypercat.mirror_halfimage">[docs]</a><span class="k">def</span> <span class="nf">mirror_halfimage</span><span class="p">(</span><span class="n">halfimage</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Take half-sized image (image cube) and return the full version.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    halfimage : array</span>
+<span class="sd">        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),</span>
+<span class="sd">        and nx == ny/2 +1 must hold (or an exception will be raised).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fullimage : array</span>
+<span class="sd">        Array with first dimension mirrored, i.e. fullimage.shape =</span>
+<span class="sd">        (ny,ny,nz).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+        
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">halfimage</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">nx</span> <span class="o">!=</span> <span class="p">(</span><span class="n">ny</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Image/cube doesn&#39;t seem to contain a half-sized array (shape = (</span><span class="si">%s</span><span class="s2">)). Not mirroring.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">])))</span>
+    
+    <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mirroring half-cube / half-image.&quot;</span><span class="p">)</span>
+    
+    <span class="n">fullimage</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">N</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">fullimage</span><span class="p">[:</span><span class="n">nx</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">halfimage</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">fullimage</span><span class="p">[</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">:,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">halfimage</span><span class="p">[:,</span><span class="o">...</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">fullimage</span></div>
+
+
+<div class="viewcode-block" id="rotateImage"><a class="viewcode-back" href="../hypercat.html#hypercat.rotateImage">[docs]</a><span class="k">def</span> <span class="nf">rotateImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">angle</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;NE&#39;</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Rotate an image around its central pixel by `angle` degrees.</span>
+
+<span class="sd">    The parts of `image` which after rotation are outside the frame,</span>
+<span class="sd">    will be truncated. Areas in the rotated image which are empty will</span>
+<span class="sd">    be filled will zeros.</span>
+
+<span class="sd">    The rotation is performed using high-quality cubic spline</span>
+<span class="sd">    interpolation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : 2D array</span>
+<span class="sd">        The square image array to be rotated.</span>
+
+<span class="sd">    angle : float or int</span>
+<span class="sd">        Image will be rotated by that many degrees.</span>
+
+<span class="sd">    direction : str</span>
+<span class="sd">        Rotation direction. Default is &#39;NE&#39;, i.e. from North to East,</span>
+<span class="sd">        i.e. anti-clockwise, which is astronomical standard. To rotate</span>
+<span class="sd">        clockwise instead, give direction=&#39;NW&#39; (or negate the `angle`</span>
+<span class="sd">        argument).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rotimage : 2D array</span>
+<span class="sd">        The `image`, rotated by `angle` degrees towards `direction`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">checkImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;NW&#39;</span><span class="p">:</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="o">-</span><span class="n">angle</span>
+    
+    <span class="n">rotimage</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">angle</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rotimage</span></div>
+
+
+<div class="viewcode-block" id="resampleImage"><a class="viewcode-back" href="../hypercat.html#hypercat.resampleImage">[docs]</a><span class="k">def</span> <span class="nf">resampleImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">resamplingfactor</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Resample an image by `resamplingfactor`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : 2D array</span>
+<span class="sd">        The 2D image array to be resampled. npix must be odd-valued.</span>
+
+<span class="sd">    resamplingfactor : float</span>
+<span class="sd">        The factor by which the the image sampling (number of pixels)</span>
+<span class="sd">        is increased (if &gt;1) or decreased (if &lt;1). Note that</span>
+<span class="sd">        `resamplingfactor` may be adjusted because of the requirement</span>
+<span class="sd">        that ``npix_new`` be integer and odd-valued.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    newimage : 2d array</span>
+<span class="sd">        The resampled image. Final size ``npix`` is adjusted to the</span>
+<span class="sd">        nearest odd-valued integer.</span>
+
+<span class="sd">    newfactor : float</span>
+<span class="sd">        The actually used resampling factor. Adjusted, if necessary, by</span>
+<span class="sd">        the requirement that ``npix_new`` be integer and odd-valued.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">npix</span> <span class="o">=</span> <span class="n">checkImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">newsize_int</span><span class="p">,</span> <span class="n">newfactor</span> <span class="o">=</span> <span class="n">computeIntCorrections</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">resamplingfactor</span><span class="p">)</span>
+    <span class="n">newimage</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">newfactor</span><span class="p">)</span>
+
+    <span class="n">checkImage</span><span class="p">(</span><span class="n">newimage</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">newimage</span><span class="p">,</span> <span class="n">newfactor</span></div>
+    
+
+<span class="c1"># LOW-LEVEL HELPER FUNCTIONS</span>
+        
+<div class="viewcode-block" id="pprinter"><a class="viewcode-back" href="../hypercat.html#hypercat.pprinter">[docs]</a><span class="k">def</span> <span class="nf">pprinter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Very basic pretty-print of the parameter names and values.&quot;&quot;&quot;</span>
+    
+    <span class="kn">import</span> <span class="nn">pprint</span>
+
+    <span class="n">pp</span> <span class="o">=</span> <span class="n">pprint</span><span class="o">.</span><span class="n">PrettyPrinter</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">pp</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))</span></div>
+
+        
+<div class="viewcode-block" id="getStrRepr"><a class="viewcode-back" href="../hypercat.html#hypercat.getStrRepr">[docs]</a><span class="k">def</span> <span class="nf">getStrRepr</span><span class="p">(</span><span class="n">string_seq</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Join sequence of strings ``string_seq`` using join string ``sep``.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code:: python</span>
+
+<span class="sd">        strings = (&#39;a&#39;,&#39;b&#39;,&#39;c&#39;)</span>
+<span class="sd">        getStrRepr(strings,&#39; - &#39;)</span>
+<span class="sd">          a - b - c</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">string_seq</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="getValueUnit"><a class="viewcode-back" href="../hypercat.html#hypercat.getValueUnit">[docs]</a><span class="k">def</span> <span class="nf">getValueUnit</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Split `string` into value and units string.</span>
+
+<span class="sd">    Evaluate both and return the numerical value, and the units object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quantity : str or `Quantity` instance</span>
+<span class="sd">        If string, its format is `num units`, where `num` is the</span>
+<span class="sd">        string representation of a numerical value, and `units` is one</span>
+<span class="sd">        of the recognized units in the sequence of strings provided in</span>
+<span class="sd">        ``recognized_units``. `num` and `units` are separated by a</span>
+<span class="sd">        single whitespace. E.g. &#39;1.5 Jy/arcsec^2&#39;).</span>
+
+<span class="sd">        If instance of `Quantity`, ``quantity.value`` and</span>
+<span class="sd">        ``quantity.unit`` are the equivalents of `num` and `unit`.</span>
+
+<span class="sd">    recognized_units :  seq of strings</span>
+<span class="sd">        Sequence of strings representing units that the `units` part</span>
+<span class="sd">        of `string` will be checked against.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code:: python</span>
+
+<span class="sd">        recognized_units = (&#39;Jy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;uJy/sr&#39;)</span>
+<span class="sd">        getValueUnit(&#39;5.2 Jy/arcsec^2&#39;,recognized_units)</span>
+<span class="sd">          (5.2, Unit(&quot;Jy / arcsec2&quot;))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">quantity</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">quantity</span><span class="o">.</span><span class="n">unit</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">quantity</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;quantity&#39; is neither string nor instance of &#39;Quantity&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recognized_units</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specified unit &#39;</span><span class="si">%s</span><span class="s2">&#39; is not recognized. Recognized are: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recognized_units</span><span class="p">)))</span>
+
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span></div>
+    
+
+<div class="viewcode-block" id="checkInt"><a class="viewcode-back" href="../hypercat.html#hypercat.checkInt">[docs]</a><span class="k">def</span> <span class="nf">checkInt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;Check whether x is integer.&quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;x is not integer.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="checkOdd"><a class="viewcode-back" href="../hypercat.html#hypercat.checkOdd">[docs]</a><span class="k">def</span> <span class="nf">checkOdd</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Check whether x is integer and odd.&quot;&quot;&quot;</span>
+    
+    <span class="n">checkInt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;x is not odd.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="checkImage"><a class="viewcode-back" href="../hypercat.html#hypercat.checkImage">[docs]</a><span class="k">def</span> <span class="nf">checkImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Make a few common assertions for ``image``.</span>
+
+<span class="sd">    Verifies that ``image`` is 2D, square with shape (npix,npix), and</span>
+<span class="sd">    that npix is odd-valued. Raises various Exceptions if test fails.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : 2D array</span>
+<span class="sd">        The image (2D array) to be tested.</span>
+
+<span class="sd">    returnsize : bool</span>
+<span class="sd">        If ``True``, returns ``image.shape[0]``, i.e. the number of</span>
+<span class="sd">        pixels along `image`, if all test pass.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code:: python</span>
+
+<span class="sd">        # all tests pass, returns nothing</span>
+<span class="sd">        image = N.ones(11,11)</span>
+<span class="sd">        check(image,returnsize=False)</span>
+
+<span class="sd">        # fails with Exception if image not square</span>
+<span class="sd">        image = N.ones(11,10)</span>
+<span class="sd">        check(image,returnsize=False)</span>
+<span class="sd">          ...</span>
+<span class="sd">          ValueError: &#39;image&#39; must be square (nx=ny)</span>
+
+<span class="sd">        # fails with Exception if size not odd</span>
+<span class="sd">        image = N.ones(10,10)</span>
+<span class="sd">        check(image,returnsize=False)</span>
+<span class="sd">          &#39;image&#39; size in pixels (nx) must be odd and integer, but is nx =  10</span>
+<span class="sd">          ...</span>
+<span class="sd">          ValueError: x is not odd.</span>
+
+<span class="sd">        # fails with Exception if image not 2D</span>
+<span class="sd">        image = N.ones(11,11,3)</span>
+<span class="sd">        check(image,returnsize=False)</span>
+<span class="sd">          ...</span>
+<span class="sd">          ValueError: &#39;image&#39; must be 2D.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># image props assertions</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;image&#39; must be 2D.&quot;</span><span class="p">)</span>
+
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">nx</span> <span class="o">!=</span> <span class="n">ny</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;image&#39; must be square (nx=ny)&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">checkOdd</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;&#39;image&#39; size in pixels (nx) must be odd and integer, but is nx = &quot;</span><span class="p">,</span> <span class="n">nx</span>
+        <span class="k">raise</span>
+
+    <span class="k">if</span> <span class="n">returnsize</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nx</span></div>
+
+
+<div class="viewcode-block" id="computeIntCorrections"><a class="viewcode-back" href="../hypercat.html#hypercat.computeIntCorrections">[docs]</a><span class="k">def</span> <span class="nf">computeIntCorrections</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">factor</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Compute `newnpix` and `newfactor` such that `npix_new` is the</span>
+<span class="sd">    nearest odd-valued integer to ``npix*factor``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    npix : int</span>
+<span class="sd">        Odd-valued integer.</span>
+
+<span class="sd">    factor : float</span>
+<span class="sd">        Multiplicative factor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    newnpix : int</span>
+<span class="sd">        Nearest odd integer to ``npix*factor``.</span>
+
+<span class="sd">    newfactor : float</span>
+<span class="sd">        `factor` but corrected such that ``npix*newfactor = newnpix``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code:: python</span>
+<span class="sd">    </span>
+<span class="sd">        computeIntCorrections(3,2.)</span>
+<span class="sd">          (7, 2.33333)  # factor was corrected</span>
+
+<span class="sd">        computeIntCorrections(3,5)</span>
+<span class="sd">          (15, 5.0)  # no corrections necessary</span>
+
+<span class="sd">        computeIntCorrections(15,0.6)</span>
+<span class="sd">          (9, 0.6)  # can also scale down</span>
+
+<span class="sd">        computeIntCorrections(15,0.5)</span>
+<span class="sd">          (7, 0.46667)  # factor was corrected</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">checkOdd</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span>
+    <span class="n">newnpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">*</span><span class="n">factor</span>
+    <span class="n">newnpix</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">int</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">newnpix</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>  <span class="c1"># rounded up or down to the nearest odd integer</span>
+    <span class="n">newfactor</span> <span class="o">=</span> <span class="n">newnpix</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">newnpix</span><span class="p">,</span> <span class="n">newfactor</span></div>
+
+
+
+
+<span class="c1"># Test the functionality of this old func via combined self.resampleImage().embedInFOV(fov)</span>
+<span class="c1">#def zoomImage(image,zoomfactor=1.):</span>
+<span class="c1">#</span>
+<span class="c1">#    &quot;&quot;&quot;Zoom the image content, preserve the image shape (nx,ny).</span>
+<span class="c1">#    </span>
+<span class="c1">#    I.e. constant FOV, but object moves closer in / further out.</span>
+<span class="c1">#    If you zoom in (zoomfactor&gt;1.), cropping will occur.</span>
+<span class="c1">#    If you zoom out (zoomfactor&lt;1.), zero-padding around the original image will occur.</span>
+<span class="c1">#</span>
+<span class="c1">#    If you specify a zoomfactor that would lead to an even-dimensioned</span>
+<span class="c1">#    cropped/shrunk image, the zoomfactor will be modified slightly</span>
+<span class="c1">#    such that the resulting cropped/shrunk image is</span>
+<span class="c1">#    odd-dimensioned. The _actual_ zoomfactor used will be returned</span>
+<span class="c1">#    together with the final image.</span>
+<span class="c1">#</span>
+<span class="c1">#    &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#    nx = checkImage(image,returnsize=True)</span>
+<span class="c1">#    newsize = nx*zoomfactor</span>
+<span class="c1">#    newsize_int = N.int((2*N.floor(newsize/2)+1))  # rounded up or down to the nearest odd integer</span>
+<span class="c1">#</span>
+<span class="c1">#    newzoomfactor = newsize_int/float(nx)</span>
+<span class="c1">#</span>
+<span class="c1">#    print &quot;nx, zoomfactor,   newsize, newsize_int, newzoomfactor = &quot;, nx, zoomfactor, newsize, newsize_int, newzoomfactor</span>
+<span class="c1">#</span>
+<span class="c1">#    checkOdd(newsize_int)</span>
+<span class="c1">#</span>
+<span class="c1">#    image_zoomed = ndimage.zoom(image,newzoomfactor) #0.5)</span>
+<span class="c1">#</span>
+<span class="c1">#    # rewrite this to not use nddata</span>
+<span class="c1">#    if newzoomfactor &lt; 1.:</span>
+<span class="c1">#        # rewrite this to do zero-padding</span>
+<span class="c1">#        # embed in larger frame</span>
+<span class="c1">#        newimage = N.zeros_like(image)</span>
+<span class="c1">#        cpix = nx/2 #tuple(N.array(out.shape)/2)</span>
+<span class="c1">#        newimage = nddata.add_array(newimage,image_zoomed,(cpix,cpix))</span>
+<span class="c1">#    elif newzoomfactor &gt; 1.:</span>
+<span class="c1">#        # rewrite this to crop first, then resample</span>
+<span class="c1">#        cpix = image_zoomed.shape[0]/2</span>
+<span class="c1">#        newimage = nddata.extract_array(image_zoomed,image.shape,(cpix,cpix),mode=&#39;strict&#39;)</span>
+<span class="c1">#    else:</span>
+<span class="c1">#        newimage = image</span>
+<span class="c1">#</span>
+<span class="c1">#    return newimage, newzoomfactor</span>
+
+    
+
+
+
+<span class="c1"># PROBABLY HISTORICAL FUNCS, MAYBE DROP THEM</span>
+
+<div class="viewcode-block" id="get_clean_file_list"><a class="viewcode-back" href="../hypercat.html#hypercat.get_clean_file_list">[docs]</a><span class="k">def</span> <span class="nf">get_clean_file_list</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.fits&#39;</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Get a sorted list of file-paths ending in suffix, from directory d.&quot;&quot;&quot;</span>
+
+    <span class="n">sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">d</span><span class="o">+</span><span class="n">sep</span><span class="o">+</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">)])</span>
+
+    <span class="k">return</span> <span class="n">files</span></div>
+
+
+<div class="viewcode-block" id="get_sed_from_fitsfile"><a class="viewcode-back" href="../hypercat.html#hypercat.get_sed_from_fitsfile">[docs]</a><span class="k">def</span> <span class="nf">get_sed_from_fitsfile</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Compute SED from all image slices stored in fitsfile.</span>
+
+<span class="sd">    Computes for every image slice the area integral</span>
+
+<span class="sd">      \int I(x,y) dx dy = \Delta x \times \sum_j I_j</span>
+
+<span class="sd">    where j runs over all pixels of the image, and</span>
+<span class="sd">    \Delta x (= \Delta y) is the physical pixel size.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    fitsfile : str</span>
+<span class="sd">        Name/path of a CLUMPY (full-sized) FITS file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">    wave : array</span>
+<span class="sd">        Wavelength in micron.</span>
+
+<span class="sd">    sed : array</span>
+<span class="sd">        The SED lambda*F_lambda, area-integrated from the images.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">)</span>
+    <span class="n">wave</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;LAMB&#39;</span><span class="p">)])</span>  <span class="c1"># in micron</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">)</span>  <span class="c1"># uses first HDU by default</span>
+    <span class="n">sed</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">header</span><span class="p">[</span><span class="s1">&#39;CDELT1&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>   <span class="c1"># \int I(x,y) dx dy</span>
+
+    <span class="k">return</span> <span class="n">wave</span><span class="p">,</span> <span class="n">sed</span></div>
+
+
+<div class="viewcode-block" id="mirror_fitsfile"><a class="viewcode-back" href="../hypercat.html#hypercat.mirror_fitsfile">[docs]</a><span class="k">def</span> <span class="nf">mirror_fitsfile</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">hdus</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;IMGDATA&#39;</span><span class="p">,</span><span class="s1">&#39;CLDDATA&#39;</span><span class="p">),</span><span class="n">save_backup</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Mirror/flip a half-sized CLUMPY image cube (in fits file) along its x-axis.</span>
+
+<span class="sd">    CLUMPY image fits files come in two variants: full-sized (square</span>
+<span class="sd">    in x,y), and half-sized (reducing storage, b/c of the left-right</span>
+<span class="sd">    symmetry of the images).</span>
+
+<span class="sd">    This function expands all data cubes in a half-sized fits file to</span>
+<span class="sd">    full (square) size, and updates the fits file in-place. The</span>
+<span class="sd">    original file can be back-up automatically.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    fitsfile : str</span>
+<span class="sd">        Name/path of a CLUMPY half-sized FITS file.</span>
+
+<span class="sd">    hdus : tuple</span>
+<span class="sd">        HDU names to expand. Default: (&#39;IMGDATA&#39;,&#39;CLDDATA&#39;). If one of</span>
+<span class="sd">        the requested HDUs does not seem to conform to the half-sized</span>
+<span class="sd">        type, a warning will be printed, and this HDU will be skipped.</span>
+
+<span class="sd">    save_backup : bool</span>
+<span class="sd">        If True (default), the original half-size fits file will be</span>
+<span class="sd">        backed up before the expanded (full-sized) fits file will be</span>
+<span class="sd">        written under the original name. The backed up file will have</span>
+<span class="sd">        the suffix &#39;.bak&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening FITS file: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+
+    <span class="n">hdulist</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;update&#39;</span><span class="p">,</span><span class="n">save_backup</span><span class="o">=</span><span class="n">save_backup</span><span class="p">)</span>
+
+    <span class="n">hdunames</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hdulist</span><span class="p">]</span>
+    
+    <span class="k">for</span> <span class="n">hduname</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">:</span>
+        
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accessing HDU: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">hduname</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">hdu</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="n">hduname</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">%s</span><span class="s2">&#39; in file </span><span class="si">%s</span><span class="s2"> not found. Skipping this HDU.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hduname</span><span class="p">,</span><span class="n">fitsfile</span><span class="p">))</span>
+            <span class="k">continue</span>
+        
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hdu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">!=</span> <span class="p">(</span><span class="n">ny</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>   <span class="c1"># caution: integer division</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">%s</span><span class="s2">&#39; in file </span><span class="si">%s</span><span class="s2"> doesn&#39;t seem to contain a half-sized array (dims = (</span><span class="si">%s</span><span class="s2">). Skipping this HDU.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hduname</span><span class="p">,</span> <span class="n">fitsfile</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">])))</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span>
+        
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mirroring half-cube.&quot;</span><span class="p">)</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># x-flipped half-cube</span>
+        <span class="n">newdata</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">N</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">newdata</span><span class="p">[</span><span class="o">...</span><span class="p">,:</span><span class="n">nx</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="n">newdata</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="n">hdu</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">newdata</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Flushing and closing fits file.&#39;</span><span class="p">)</span>
+    <span class="n">hdulist</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">print</span></div>
+            
+
+<div class="viewcode-block" id="mirror_all_fitsfiles"><a class="viewcode-back" href="../hypercat.html#hypercat.mirror_all_fitsfiles">[docs]</a><span class="k">def</span> <span class="nf">mirror_all_fitsfiles</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span><span class="n">hdus</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;IMGDATA&#39;</span><span class="p">,</span><span class="s1">&#39;CLDDATA&#39;</span><span class="p">)):</span>
+
+    <span class="sd">&quot;&quot;&quot;Mirror/flip all half-sized CLUMPY image cubes (in fits files) along their x-axis.</span>
+
+<span class="sd">    Please see docstring of mirror_fitsfile() for details.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    d : str</span>
+<span class="sd">        Directory holding the files to be mirrored.</span>
+
+<span class="sd">    suffix : str</span>
+<span class="sd">        File ending of the fits files. Default: &#39;.fits&#39;</span>
+
+<span class="sd">    hdus : tuple</span>
+<span class="sd">        Sequence of HDU names to mirror/flip in every FITS file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">files</span> <span class="o">=</span> <span class="n">get_clean_file_list</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.fits&#39;</span><span class="p">)</span>
+    <span class="n">nfiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%d</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;-files in directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nfiles</span><span class="p">,</span><span class="n">suffix</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+    
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Working on file </span><span class="si">%s</span><span class="s2"> [</span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">nfiles</span><span class="p">))</span>
+        <span class="n">mirror_fitsfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">hdus</span><span class="o">=</span><span class="n">hdus</span><span class="p">)</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All files mirrored.&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">hypercat  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Robert Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+    </div>
+  </body>
+</html>

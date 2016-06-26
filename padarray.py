@@ -13,7 +13,6 @@ __version__ = "20150507"
 
 import numpy as N
 
-
 class PadArray:
 
     """Class for padding a ragged array.
@@ -29,8 +28,8 @@ class PadArray:
     returning a list of 1-d arrays, with the specified padval removed
     from them.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     inp : seq
         List or tuple of 1-d arrays of numbers (or things that are
         float()-able.
@@ -40,29 +39,31 @@ class PadArray:
         anything that can be converted by float(), e.g. '3', or 1e7,
         etc.
 
-    Example:
-    --------
-    # pad a list of 1-d arrays
-    inp = [array([1,2]),array([1,2,3]),array([1,2,3,4,5])]
-    pa = PadArray(inp)
-    pa.unpad
-      Out:   [array([1,2]),array([1,2,3]),array([1,2,3,4,5])]
-    pa.pad
-      Out:  array([[  1.,   2.,  nan,  nan,  nan],
-                   [  1.,   2.,   3.,  nan,  nan],
-                   [  1.,   2.,   3.,   4.,   5.]])
+    Example
+    -------
+    .. code:: python
 
-    # unpad a 2-d array
-    inp = array( [1.,2.,-1.,-1.,-1.],
+        # pad a list of 1-d arrays
+        inp = [array([1,2]),array([1,2,3]),array([1,2,3,4,5])]
+        pa = PadArray(inp)
+        pa.unpad
+          [array([1,2]),array([1,2,3]),array([1,2,3,4,5])]
+        pa.pad
+          array([[  1.,   2.,  nan,  nan,  nan],
+                 [  1.,   2.,   3.,  nan,  nan],
+                 [  1.,   2.,   3.,   4.,   5.]])
+
+        # unpad a 2-d array
+        inp = array( [1.,2.,-1.,-1.,-1.],
+                     [1.,2.,3., -1.,-1.],
+                     [1.,2.,3.,  4., 5.] )
+        pa = PadArray(inp,padval=-1)
+        pa.pad
+          array( [1.,2.,-1.,-1.,-1.],
                  [1.,2.,3., -1.,-1.],
                  [1.,2.,3.,  4., 5.] )
-    pa = PadArray(inp,padval=-1)
-    pa.pad
-      Out:  array( [1.,2.,-1.,-1.,-1.],
-                   [1.,2.,3., -1.,-1.],
-                   [1.,2.,3.,  4., 5.] )
-    pa.unpad
-      Out:  [array([ 1.,  2.]), array([ 1.,  2.,  3.]), array([ 1.,  2.,  3.,  4.,  5.])]
+        pa.unpad
+          [array([ 1.,  2.]), array([ 1.,  2.,  3.]), array([ 1.,  2.,  3.,  4.,  5.])]
 
     """
 

@@ -1,0 +1,868 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>hypercat module &mdash; hypercat  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="hypercat  documentation" href="index.html" />
+    <link rel="next" title="ndiminterpolation_vectorized module" href="ndiminterpolation_vectorized.html" />
+    <link rel="prev" title="hypercat API documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ndiminterpolation_vectorized.html" title="ndiminterpolation_vectorized module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="hypercat API documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hypercat  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-hypercat">
+<span id="hypercat-module"></span><h1>hypercat module<a class="headerlink" href="#module-hypercat" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="hypercat.ModelCube">
+<em class="property">class </em><code class="descclassname">hypercat.</code><code class="descname">ModelCube</code><span class="sig-paren">(</span><em>hdffile='clumpy_img_cube_2200models_19waves_halfsized_uncompressed.hdf5'</em>, <em>hypercube='imgdata'</em>, <em>ndinterpolator=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model hypercube of CLUMPY images.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>hdffile</strong> (<em>str</em>) &#8211; Path to the model hdf5 file. Default:
+<cite>clumpy_img_cube_2200models_19waves_halfsized.hdf5</cite></li>
+<li><strong>hypercube</strong> (<em>str</em>) &#8211; Name of the hypercube within <cite>hdffile</cite> to use (currently
+either <code class="docutils literal"><span class="pre">imgdata</span></code> or <code class="docutils literal"><span class="pre">clddata</span></code>). Default&#8221; <code class="docutils literal"><span class="pre">imgdata</span></code>.</li>
+<li><strong>ndinterpolator</strong> (<em>bool</em>) &#8211; If <code class="docutils literal"><span class="pre">True</span></code> (default), an interpolation object for
+N-dimensional interpolation of the hypercube will be
+instantiated, and accessible via <a class="reference internal" href="#hypercat.ModelCube.get_image" title="hypercat.ModelCube.get_image"><code class="xref py py-func docutils literal"><span class="pre">get_image()</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="c1"># instantiate</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">ModelCube</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<dl class="method">
+<dt id="hypercat.ModelCube.print_sampling">
+<code class="descname">print_sampling</code><span class="sig-paren">(</span><em>n=11</em>, <em>fmt='%7.3f'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube.print_sampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube.print_sampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a summary table of the parameters and sampled values in the
+hypercube.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n</strong> (<em>int</em>) &#8211; The first <cite>n</cite> sampled elements of every parameter will be
+printed. If the list is shorter than <cite>n</cite>, all of it will
+be printed. Default: 11.</li>
+<li><strong>fmt</strong> (<em>str</em>) &#8211; Format string to use for a single value. Default: &#8216;%7.3f&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="n">M</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.ModelCube.get_image">
+<code class="descname">get_image</code><span class="sig-paren">(</span><em>vector</em>, <em>full=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube.get_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract hyperslice from the hypercube via N-dim interpolation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>vector</strong> (<em>seq</em>) &#8211; A vector of model parameter values at which the imaged
+should be interpolated. This is very flexible and can
+return variously-shaped arrays, from standard 2D images
+(x,y) to multi-dimensional hyper-slices of the CLUMPY
+hypercube. See <cite>Examples</cite> below.</li>
+<li><strong>full</strong> (<em>bool</em>) &#8211; If <code class="docutils literal"><span class="pre">True</span></code> (default), the extracted image (which by
+default is a half-image due to CLUMPY&#8217;s inherent axial
+symmetry) is left-right mirrored, and a full-sized
+(square) image is returned.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="c1"># vector of parameter values; pixel axes are implied (i.e. don&#39;t specify them)</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">9.7</span><span class="p">)</span> <span class="c1"># here: (sig,i,N0,q,tauv,lambda)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+  <span class="p">(</span><span class="mi">221</span><span class="p">,</span><span class="mi">221</span><span class="p">)</span>   <span class="c1"># (x,y)</span>
+
+<span class="c1"># multi-wavelength cube</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,(</span><span class="mf">2.2</span><span class="p">,</span><span class="mf">9.7</span><span class="p">,</span><span class="mf">12.</span><span class="p">))</span> <span class="c1"># 3 lambda values</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+  <span class="p">(</span><span class="mi">221</span><span class="p">,</span><span class="mi">221</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>   <span class="c1"># (x,y,lambda)</span>
+
+<span class="c1"># multi-wavelength and multi-viewing angle</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">90</span><span class="p">),</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,(</span><span class="mf">2.2</span><span class="p">,</span><span class="mf">9.7</span><span class="p">,</span><span class="mf">12.</span><span class="p">))</span> <span class="c1"># 4 viewing angles, 3 lambdas</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
+  <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">221</span><span class="p">,</span><span class="mi">221</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="hypercat.Image">
+<em class="property">class </em><code class="descclassname">hypercat.</code><code class="descname">Image</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale='1 arcsec'</em>, <em>distance=None</em>, <em>peak_pixel_brightness='1 Jy/pix'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>From a 2D array instantiate an Image object, with members for
+pixelscale, brightness, unit conversions, etc.  The way to
+specify most arguments follows roughly the CASA (Common
+Astronomy Software Applications package) philosophy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>float array (2D)</em>) &#8211; Monochromatic relative brightness per pixel. Will be
+scaled to physical values via arguments &#8216;pixelscale&#8217; and
+&#8216;peak_pixel_brightness&#8217; (see below).</li>
+<li><strong>pixelscale</strong> (<em>str</em>) &#8211; Pixel scale of a single pixel. See docstring of
+setPixelscale() function.</li>
+<li><strong>distance</strong> (<em>str|None</em>) &#8211; Physical distance to the source. Only required if
+&#8216;pixelscale&#8217; was specified in linear (not angular)
+units. See docstring of setPixelscale() function.</li>
+<li><strong>peak_pixel_brightness</strong> (<em>str</em>) &#8211; Physical brightness value of the max pixel in <cite>image</cite>. The
+entire image will be scaled this this peak value. See
+docstring of setBrightness() function.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="c1"># get raw image (see :class:`ModelCube`:func:`get_image`)</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">9.7</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+<span class="c1"># init `Image` instance using angular pixel scale</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 arcsec&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;3.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+  <span class="mf">1.0</span> <span class="n">arcsec</span>
+  <span class="mf">3.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+
+<span class="c1"># init using linear pixel scale and source distance</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;3.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">distance</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+  <span class="mf">1.0</span> <span class="n">arcsec</span>
+  <span class="mf">1.0</span> <span class="n">pc</span>
+  <span class="mf">3.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+</pre></div>
+</div>
+</div>
+<dl class="attribute">
+<dt id="hypercat.Image.UNITS_ANGULAR">
+<code class="descname">UNITS_ANGULAR</code><em class="property"> = ('arcsec', 'mas', 'milliarcsecond', 'deg', 'rad')</em><a class="headerlink" href="#hypercat.Image.UNITS_ANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized angular units, e.g. for pixel scale.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="hypercat.Image.UNITS_LINEAR">
+<code class="descname">UNITS_LINEAR</code><em class="property"> = ('m', 'cm', 'pc', 'kpc', 'Mpc', 'lyr', 'AU')</em><a class="headerlink" href="#hypercat.Image.UNITS_LINEAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized linear units (either for pixel scale, or for source distance, etc.)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="hypercat.Image.CUNITS">
+<code class="descname">CUNITS</code><em class="property"> = ('arcsec', 'mas', 'milliarcsecond', 'deg', 'rad', 'm', 'cm', 'pc', 'kpc', 'Mpc', 'lyr', 'AU')</em><a class="headerlink" href="#hypercat.Image.CUNITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Their union.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="hypercat.Image.UNITS_BRIGHTNESS">
+<code class="descname">UNITS_BRIGHTNESS</code><em class="property"> = ('Jy/pix', 'mJy/pix')</em><a class="headerlink" href="#hypercat.Image.UNITS_BRIGHTNESS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized units for brightness-per-pixel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="hypercat.Image.pix">
+<code class="descname">pix</code><em class="property"> = Unit(&quot;pix&quot;)</em><a class="headerlink" href="#hypercat.Image.pix" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="docutils literal"><span class="pre">u.pix</span></code> alias, defined for convenience.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.setPixelscale">
+<code class="descname">setPixelscale</code><span class="sig-paren">(</span><em>pixelscale='1 arcsec'</em>, <em>distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.setPixelscale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.setPixelscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set size and area of a pixel from user input.</p>
+<p>This does not touch the brightness per pixel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pixelscale</strong> (<em>str or 'Quantity' instance</em>) &#8211; <p>Angular or linear scale of one pixel. See docstring of
+<a class="reference internal" href="#hypercat.getValueUnit" title="hypercat.getValueUnit"><code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code></a> for the requirements.</p>
+<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS_ANGULAR</span></code> in <a class="reference internal" href="#hypercat.Image" title="hypercat.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS_LINEAR</span></code> in <a class="reference internal" href="#hypercat.Image" title="hypercat.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+<p>If linear unit, then it is the linear size of a pixel at
+the distance of the source. Then the <cite>distance</cite> argument
+must be also specified (see below).</p>
+</li>
+<li><strong>distance</strong> (<em>str | 'Quantity' instance | None</em>) &#8211; <p>If <cite>pixelscale</cite> was specified in linear units, then the
+distance to the source must be not <code class="docutils literal"><span class="pre">None</span></code>, but rather an
+argument akin to &#8216;pixelscale&#8217; above, i.e. str or &#8216;Quantity&#8217; instance.</p>
+<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS_LINEAR</span></code> in <a class="reference internal" href="#hypercat.Image" title="hypercat.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;0.2 arsec&#39;</span><span class="p">)</span>  <span class="c1"># definition of an &#39;Image&#39; instance</span>
+<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span>
+  <span class="mf">0.2</span> <span class="n">arcsec</span>
+  <span class="mf">0.04</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span>
+
+<span class="n">I</span><span class="o">.</span><span class="n">setPixelscale</span><span class="p">(</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span>
+  <span class="mf">1.0</span> <span class="n">arcsec</span>
+  <span class="mf">1.0</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.setBrightness">
+<code class="descname">setBrightness</code><span class="sig-paren">(</span><em>peak_pixel_brightness</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.setBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.setBrightness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the brightness of the image to <code class="docutils literal"><span class="pre">peak_pixel_brightness</span></code>.</p>
+<p>Scale the <code class="docutils literal"><span class="pre">self.data</span></code> array such that the max pixel has
+value <cite>peak_pixel_brightness</cite>. This does not touch the
+<code class="docutils literal"><span class="pre">self.pixelsize</span></code> and <code class="docutils literal"><span class="pre">self.pixelarea</span></code> values of the image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peak_pixel_brightness</strong> (<em>str | 'Quantity' instance</em>) &#8211; <p>Target brightness-per-pixe of the max pixel in
+<code class="docutils literal"><span class="pre">self.data</span></code>. See docstring of <a class="reference internal" href="#hypercat.getValueUnit" title="hypercat.getValueUnit"><code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code></a> for
+the requirements.</p>
+<p>Recognized brightness units: (see <code class="docutils literal"><span class="pre">UNITS_BRIGHTNESS</span></code> in <a class="reference internal" href="#hypercat.Image" title="hypercat.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data_raw</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+  <span class="mf">1.0</span>
+  <span class="mf">1.5</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+
+<span class="n">I</span><span class="o">.</span><span class="n">setBrightness</span><span class="p">(</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;3.3 Jy/pix&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data_raw</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+  <span class="mf">1.0</span>
+  <span class="mf">3.3</span> <span class="n">Jy</span> <span class="o">/</span> <span class="n">pix</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.getBrightnessInUnits">
+<code class="descname">getBrightnessInUnits</code><span class="sig-paren">(</span><em>units</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.getBrightnessInUnits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.getBrightnessInUnits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the image brightness in the requested &#8216;units&#8217; (brightness-per-solid-angle).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>units</strong> (<em>str</em>) &#8211; <p>Units of brightness-per-solid-angle, to which the
+self.data array will be converted using self.pixelscale</p>
+<p>The units are quite flexible. An incomplete list of
+possibilities: <code class="docutils literal"><span class="pre">Jy/mas^2,</span> <span class="pre">mJy/arcsec^2,</span> <span class="pre">uJy/sr,</span>
+<span class="pre">Jy/deg^2</span></code>, etc.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">)</span>
+  <span class="mf">1.0</span> <span class="n">arcsec</span>
+  <span class="mf">3.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+  <span class="mf">0.003</span> <span class="n">Jy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.setFOV">
+<code class="descname">setFOV</code><span class="sig-paren">(</span><em>fov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.setFOV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.setFOV" title="Permalink to this definition">¶</a></dt>
+<dd><p>From field-of-view <cite>fov</cite>, compute new <code class="docutils literal"><span class="pre">pixelscale</span></code> &amp; new <code class="docutils literal"><span class="pre">pixelarea</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">self.npix</span></code> remains the same, i.e. recomputes
+<code class="docutils literal"><span class="pre">self.pixelscale</span></code> and <code class="docutils literal"><span class="pre">self.pixelarea</span></code> and sets
+<code class="docutils literal"><span class="pre">self.FOV</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fov</strong> (<em>str or 'Quantity' instance</em>) &#8211; <p>Target angular size of the field-of-view. See docstring of
+<a class="reference internal" href="#hypercat.getValueUnit" title="hypercat.getValueUnit"><code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code></a> for the requirements.</p>
+<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS_ANGULAR</span></code> in <a class="reference internal" href="#hypercat.Image" title="hypercat.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;4.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+  <span class="mf">1.0</span> <span class="n">arcsec</span>
+  <span class="mf">7.0</span> <span class="n">arcsec</span>
+  <span class="mf">4.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+  <span class="mf">4.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+
+<span class="n">I</span><span class="o">.</span><span class="n">setFOV</span><span class="p">(</span><span class="n">fov</span><span class="o">=</span><span class="s1">&#39;14.0 arcsec&#39;</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+  <span class="mf">2.0</span> <span class="n">arcsec</span>
+  <span class="mf">14.0</span> <span class="n">arcsec</span>
+  <span class="mf">4.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
+  <span class="mf">1.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.embedInFOV">
+<code class="descname">embedInFOV</code><span class="sig-paren">(</span><em>fov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.embedInFOV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.embedInFOV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Embed <code class="docutils literal"><span class="pre">self.data</span></code> in a new field of view <cite>fov</cite>, or crop to it.</p>
+<p>If <code class="docutils literal"><span class="pre">fov</span> <span class="pre">&gt;</span> <span class="pre">self.FOV</span></code>, embed self.data in a larger array. If
+<code class="docutils literal"><span class="pre">fov</span> <span class="pre">&lt;</span> <span class="pre">self.FOV</span></code>, crop the central pixels of <code class="docutils literal"><span class="pre">self.data</span></code>
+to <cite>fov</cite>. Cropping removes the cropped parts of the image
+permanently.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fov</strong> (<em>str or 'Quantity' instance</em>) &#8211; Angular size of the target field of view (FOV). See
+docstring of <a class="reference internal" href="#hypercat.getValueUnit" title="hypercat.getValueUnit"><code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code></a> for the requirements.
+<cite>fov</cite> can be both larger or smaller than the current image
+FOV <code class="docutils literal"><span class="pre">self.FOV</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Since the image is pixelated (discretized), embed/crop to the
+nearest odd integer <code class="docutils literal"><span class="pre">npix</span></code>, and use the corrected FOV, which is
+not necessarily exactly the specified <cite>fov</cite>.</p>
+<p>Note that <code class="docutils literal"><span class="pre">self.pixelscale</span></code> and <code class="docutils literal"><span class="pre">self.pixelarea</span></code> remain
+unchanged!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.resample">
+<code class="descname">resample</code><span class="sig-paren">(</span><em>resamplingfactor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.resample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.resample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increase or decrease the image sampling in x and y by <cite>resamplingfactor</cite>.</p>
+<p>The resampling is performed by third-order spline
+interpolation. The FOV remains constant, but
+<code class="docutils literal"><span class="pre">self.pixelscale</span></code> and <code class="docutils literal"><span class="pre">self.pixelarea</span></code> are adjusted.  The
+brightness-per-pixel is adjusted according to the change in
+pixel area, but total flux density is preserved.  Note that
+consecutive application of <a class="reference internal" href="#hypercat.Image.resample" title="hypercat.Image.resample"><code class="xref py py-func docutils literal"><span class="pre">resample()</span></code></a> to the same image
+can yield inexact results due to accumulated interpolation
+errors.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resamplingfactor</strong> (<em>float</em>) &#8211; The factor by which the the image sampling (number of
+pixels) is increased (if &gt;1) or decreased (if &lt;1). Note
+that <cite>resamplingfactor</cite> is adjusted because of the
+requirement that <code class="docutils literal"><span class="pre">npix_new</span></code> be integer and odd-valued.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">9.7</span><span class="p">)</span> <span class="c1"># (sig,i,N0,q,tauv,lambda)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>  <span class="c1"># raw model image</span>
+
+<span class="c1"># `Image` instance</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+  <span class="mi">221</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+  <span class="mf">5.35844</span> <span class="n">Jy</span>  <span class="c1"># total flux density</span>
+
+<span class="c1"># new instance, upsampled 2x</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="n">I</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+  <span class="mi">443</span><span class="p">,</span> <span class="mf">0.49887</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">0.24887</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">0.26328</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">1.05787</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotaFluxDensity</span><span class="p">()</span>
+  <span class="mf">5.38289</span> <span class="n">Jy</span>  <span class="c1"># total flux density preserved; difference due to interpolation errors</span>
+
+<span class="c1"># new instance, downsampled 0.5x</span>
+<span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
+<span class="n">I</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightnessInUnits</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+  <span class="mi">111</span><span class="p">,</span> <span class="mf">1.99099099</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">3.96405</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">3.92935</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">0.99125</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
+<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+  <span class="mf">5.30354</span> <span class="n">Jy</span>  <span class="c1"># still preserved</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.rotate">
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>angle</em>, <em>direction='NE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate <code class="docutils literal"><span class="pre">self.data</span></code> by <cite>angle</cite> degrees from North towards
+<cite>direction</cite> (either East or West).</p>
+<p>See docstring of <a class="reference internal" href="#hypercat.rotateImage" title="hypercat.rotateImage"><code class="xref py py-func docutils literal"><span class="pre">rotateImage()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Image.getTotalFluxDensity">
+<code class="descname">getTotalFluxDensity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Image.getTotalFluxDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Image.getTotalFluxDensity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the total flux density within the FOV.</p>
+<p>The total flux density is the brightness integral over the solid
+angle of the FOV.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>totalFluxDensity</strong> &#8211; Total flux density in Jy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">total</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+<span class="nb">print</span> <span class="n">total</span><span class="p">;</span> <span class="nb">print</span> <span class="n">total</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mJy&#39;</span><span class="p">)</span>  <span class="c1"># can be easily converted to other units</span>
+  <span class="mf">0.0050459482673</span> <span class="n">Jy</span>
+  <span class="mf">5.0459482673</span> <span class="n">mJy</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.mirror_halfimage">
+<code class="descclassname">hypercat.</code><code class="descname">mirror_halfimage</code><span class="sig-paren">(</span><em>halfimage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#mirror_halfimage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.mirror_halfimage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take half-sized image (image cube) and return the full version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>halfimage</strong> (<em>array</em>) &#8211; Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
+and nx == ny/2 +1 must hold (or an exception will be raised).</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>fullimage</strong> &#8211; Array with first dimension mirrored, i.e. fullimage.shape =
+(ny,ny,nz).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.rotateImage">
+<code class="descclassname">hypercat.</code><code class="descname">rotateImage</code><span class="sig-paren">(</span><em>image</em>, <em>angle</em>, <em>direction='NE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#rotateImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.rotateImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate an image around its central pixel by <cite>angle</cite> degrees.</p>
+<p>The parts of <cite>image</cite> which after rotation are outside the frame,
+will be truncated. Areas in the rotated image which are empty will
+be filled will zeros.</p>
+<p>The rotation is performed using high-quality cubic spline
+interpolation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>2D array</em>) &#8211; The square image array to be rotated.</li>
+<li><strong>angle</strong> (<em>float or int</em>) &#8211; Image will be rotated by that many degrees.</li>
+<li><strong>direction</strong> (<em>str</em>) &#8211; Rotation direction. Default is &#8216;NE&#8217;, i.e. from North to East,
+i.e. anti-clockwise, which is astronomical standard. To rotate
+clockwise instead, give direction=&#8217;NW&#8217; (or negate the <cite>angle</cite>
+argument).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rotimage</strong> &#8211; The <cite>image</cite>, rotated by <cite>angle</cite> degrees towards <cite>direction</cite>.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">2D array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.resampleImage">
+<code class="descclassname">hypercat.</code><code class="descname">resampleImage</code><span class="sig-paren">(</span><em>image</em>, <em>resamplingfactor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#resampleImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.resampleImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resample an image by <cite>resamplingfactor</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>2D array</em>) &#8211; The 2D image array to be resampled. npix must be odd-valued.</li>
+<li><strong>resamplingfactor</strong> (<em>float</em>) &#8211; The factor by which the the image sampling (number of pixels)
+is increased (if &gt;1) or decreased (if &lt;1). Note that
+<cite>resamplingfactor</cite> may be adjusted because of the requirement
+that <code class="docutils literal"><span class="pre">npix_new</span></code> be integer and odd-valued.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>newimage</strong> (<em>2d array</em>) &#8211; The resampled image. Final size <code class="docutils literal"><span class="pre">npix</span></code> is adjusted to the
+nearest odd-valued integer.</li>
+<li><strong>newfactor</strong> (<em>float</em>) &#8211; The actually used resampling factor. Adjusted, if necessary, by
+the requirement that <code class="docutils literal"><span class="pre">npix_new</span></code> be integer and odd-valued.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.pprinter">
+<code class="descclassname">hypercat.</code><code class="descname">pprinter</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#pprinter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.pprinter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Very basic pretty-print of the parameter names and values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.getStrRepr">
+<code class="descclassname">hypercat.</code><code class="descname">getStrRepr</code><span class="sig-paren">(</span><em>string_seq</em>, <em>sep='</em>, <em>'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#getStrRepr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.getStrRepr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join sequence of strings <code class="docutils literal"><span class="pre">string_seq</span></code> using join string <code class="docutils literal"><span class="pre">sep</span></code>.</p>
+<div class="admonition-example admonition">
+<p class="first admonition-title">Example</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">strings</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">)</span>
+<span class="n">getStrRepr</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span><span class="s1">&#39; - &#39;</span><span class="p">)</span>
+  <span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">-</span> <span class="n">c</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.getValueUnit">
+<code class="descclassname">hypercat.</code><code class="descname">getValueUnit</code><span class="sig-paren">(</span><em>quantity</em>, <em>recognized_units</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#getValueUnit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.getValueUnit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split <cite>string</cite> into value and units string.</p>
+<p>Evaluate both and return the numerical value, and the units object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>quantity</strong> (str or <cite>Quantity</cite> instance) &#8211; <p>If string, its format is <cite>num units</cite>, where <cite>num</cite> is the
+string representation of a numerical value, and <cite>units</cite> is one
+of the recognized units in the sequence of strings provided in
+<code class="docutils literal"><span class="pre">recognized_units</span></code>. <cite>num</cite> and <cite>units</cite> are separated by a
+single whitespace. E.g. &#8216;1.5 Jy/arcsec^2&#8217;).</p>
+<p>If instance of <cite>Quantity</cite>, <code class="docutils literal"><span class="pre">quantity.value</span></code> and
+<code class="docutils literal"><span class="pre">quantity.unit</span></code> are the equivalents of <cite>num</cite> and <cite>unit</cite>.</p>
+</li>
+<li><strong>recognized_units</strong> (<em>seq of strings</em>) &#8211; Sequence of strings representing units that the <cite>units</cite> part
+of <cite>string</cite> will be checked against.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">recognized_units</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/mas^2&#39;</span><span class="p">,</span><span class="s1">&#39;uJy/sr&#39;</span><span class="p">)</span>
+<span class="n">getValueUnit</span><span class="p">(</span><span class="s1">&#39;5.2 Jy/arcsec^2&#39;</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">)</span>
+  <span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="n">Unit</span><span class="p">(</span><span class="s2">&quot;Jy / arcsec2&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.checkInt">
+<code class="descclassname">hypercat.</code><code class="descname">checkInt</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#checkInt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.checkInt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether x is integer.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.checkOdd">
+<code class="descclassname">hypercat.</code><code class="descname">checkOdd</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#checkOdd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.checkOdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether x is integer and odd.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.checkImage">
+<code class="descclassname">hypercat.</code><code class="descname">checkImage</code><span class="sig-paren">(</span><em>image</em>, <em>returnsize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#checkImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.checkImage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a few common assertions for <code class="docutils literal"><span class="pre">image</span></code>.</p>
+<p>Verifies that <code class="docutils literal"><span class="pre">image</span></code> is 2D, square with shape (npix,npix), and
+that npix is odd-valued. Raises various Exceptions if test fails.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>2D array</em>) &#8211; The image (2D array) to be tested.</li>
+<li><strong>returnsize</strong> (<em>bool</em>) &#8211; If <code class="docutils literal"><span class="pre">True</span></code>, returns <code class="docutils literal"><span class="pre">image.shape[0]</span></code>, i.e. the number of
+pixels along <cite>image</cite>, if all test pass.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="c1"># all tests pass, returns nothing</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># fails with Exception if image not square</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="o">...</span>
+  <span class="ne">ValueError</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span> <span class="n">must</span> <span class="n">be</span> <span class="n">square</span> <span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="n">ny</span><span class="p">)</span>
+
+<span class="c1"># fails with Exception if size not odd</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="s1">&#39;image&#39;</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">pixels</span> <span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="n">must</span> <span class="n">be</span> <span class="n">odd</span> <span class="ow">and</span> <span class="n">integer</span><span class="p">,</span> <span class="n">but</span> <span class="ow">is</span> <span class="n">nx</span> <span class="o">=</span>  <span class="mi">10</span>
+  <span class="o">...</span>
+  <span class="ne">ValueError</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">odd</span><span class="o">.</span>
+
+<span class="c1"># fails with Exception if image not 2D</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+  <span class="o">...</span>
+  <span class="ne">ValueError</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span> <span class="n">must</span> <span class="n">be</span> <span class="mi">2</span><span class="n">D</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.computeIntCorrections">
+<code class="descclassname">hypercat.</code><code class="descname">computeIntCorrections</code><span class="sig-paren">(</span><em>npix</em>, <em>factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#computeIntCorrections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.computeIntCorrections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute <cite>newnpix</cite> and <cite>newfactor</cite> such that <cite>npix_new</cite> is the
+nearest odd-valued integer to <code class="docutils literal"><span class="pre">npix*factor</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>npix</strong> (<em>int</em>) &#8211; Odd-valued integer.</li>
+<li><strong>factor</strong> (<em>float</em>) &#8211; Multiplicative factor.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>newnpix</strong> (<em>int</em>) &#8211; Nearest odd integer to <code class="docutils literal"><span class="pre">npix*factor</span></code>.</li>
+<li><strong>newfactor</strong> (<em>float</em>) &#8211; <cite>factor</cite> but corrected such that <code class="docutils literal"><span class="pre">npix*newfactor</span> <span class="pre">=</span> <span class="pre">newnpix</span></code>.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-examples admonition">
+<p class="first admonition-title">Examples</p>
+<div class="code python last highlight-default"><div class="highlight"><pre><span></span><span class="n">computeIntCorrections</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mf">2.</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mf">2.33333</span><span class="p">)</span>  <span class="c1"># factor was corrected</span>
+
+<span class="n">computeIntCorrections</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>  <span class="c1"># no corrections necessary</span>
+
+<span class="n">computeIntCorrections</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mf">0.6</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)</span>  <span class="c1"># can also scale down</span>
+
+<span class="n">computeIntCorrections</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mf">0.46667</span><span class="p">)</span>  <span class="c1"># factor was corrected</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.get_clean_file_list">
+<code class="descclassname">hypercat.</code><code class="descname">get_clean_file_list</code><span class="sig-paren">(</span><em>d</em>, <em>suffix='.fits'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#get_clean_file_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.get_clean_file_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sorted list of file-paths ending in suffix, from directory d.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.get_sed_from_fitsfile">
+<code class="descclassname">hypercat.</code><code class="descname">get_sed_from_fitsfile</code><span class="sig-paren">(</span><em>fitsfile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#get_sed_from_fitsfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.get_sed_from_fitsfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute SED from all image slices stored in fitsfile.</p>
+<p>Computes for every image slice the area integral</p>
+<blockquote>
+<div>int I(x,y) dx dy = Delta x      imes sum_j I_j</div></blockquote>
+<p>where j runs over all pixels of the image, and
+Delta x (= Delta y) is the physical pixel size.</p>
+<dl class="docutils">
+<dt>fitsfile</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name/path of a CLUMPY (full-sized) FITS file.</dd>
+</dl>
+<dl class="docutils">
+<dt>wave</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array</span><dd>Wavelength in micron.</dd>
+<dt>sed</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array</span><dd>The SED lambda*F_lambda, area-integrated from the images.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.mirror_fitsfile">
+<code class="descclassname">hypercat.</code><code class="descname">mirror_fitsfile</code><span class="sig-paren">(</span><em>fitsfile</em>, <em>hdus=('IMGDATA'</em>, <em>'CLDDATA')</em>, <em>save_backup=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#mirror_fitsfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.mirror_fitsfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mirror/flip a half-sized CLUMPY image cube (in fits file) along its x-axis.</p>
+<p>CLUMPY image fits files come in two variants: full-sized (square
+in x,y), and half-sized (reducing storage, b/c of the left-right
+symmetry of the images).</p>
+<p>This function expands all data cubes in a half-sized fits file to
+full (square) size, and updates the fits file in-place. The
+original file can be back-up automatically.</p>
+<dl class="docutils">
+<dt>fitsfile</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name/path of a CLUMPY half-sized FITS file.</dd>
+<dt>hdus</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span><dd>HDU names to expand. Default: (&#8216;IMGDATA&#8217;,&#8217;CLDDATA&#8217;). If one of
+the requested HDUs does not seem to conform to the half-sized
+type, a warning will be printed, and this HDU will be skipped.</dd>
+<dt>save_backup</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>If True (default), the original half-size fits file will be
+backed up before the expanded (full-sized) fits file will be
+written under the original name. The backed up file will have
+the suffix &#8216;.bak&#8217;.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hypercat.mirror_all_fitsfiles">
+<code class="descclassname">hypercat.</code><code class="descname">mirror_all_fitsfiles</code><span class="sig-paren">(</span><em>d</em>, <em>suffix='.fits'</em>, <em>hdus=('IMGDATA'</em>, <em>'CLDDATA')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#mirror_all_fitsfiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.mirror_all_fitsfiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mirror/flip all half-sized CLUMPY image cubes (in fits files) along their x-axis.</p>
+<p>Please see docstring of mirror_fitsfile() for details.</p>
+<dl class="docutils">
+<dt>d</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Directory holding the files to be mirrored.</dd>
+<dt>suffix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>File ending of the fits files. Default: &#8216;.fits&#8217;</dd>
+<dt>hdus</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple</span><dd>Sequence of HDU names to mirror/flip in every FITS file.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">hypercat API documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ndiminterpolation_vectorized.html"
+                        title="next chapter">ndiminterpolation_vectorized module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/hypercat.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ndiminterpolation_vectorized.html" title="ndiminterpolation_vectorized module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="hypercat API documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hypercat  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Robert Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+    </div>
+  </body>
+</html>
