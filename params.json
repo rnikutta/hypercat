@@ -1,0 +1,6 @@
+{
+  "name": "Hypercat",
+  "tagline": "Hypercube of (clumpy) AGN tori",
+  "body": "hypercat\r\n========\r\nHypercubes of (clumpy) AGN tori\r\n\r\n**Author:** Robert Nikutta\r\n\r\n**Team:** Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa, Chris Packham, Nancy Levenson, (and others tbd)\r\n\r\n**Version:** 2016-06-02\r\n\r\n**License:** BSD 3-clause, please see [LICENSE](./LICENSE) file\r\n\r\n**Attribution:** Please cite this repository, and the following 3-paper series:\r\n\r\n[Nikutta+2016](link)\r\n\r\n[Lopez-Rodriguez+2016](link)\r\n\r\n[Ichikawa+2016](link)\r\n\r\n**Synopsis:** Handle a hypercube of CLUMPY brightness\r\nmaps. Easy-to-use classes and functions are provided to interpolate\r\nimages in many dimensions (spanned by the model parameters), extract\r\nmonochromatic or multi-color images, as well as rotate images, zoom in\r\nand out, apply PSFs, extract interferometric signals, etc.\r\n\r\n**Example:**\r\nFor usage examples, please see [hypercat.ipynb](./hypercat.ipynb)\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
