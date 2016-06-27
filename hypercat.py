@@ -3,15 +3,15 @@ import logging
 logging.basicConfig(level=logging.INFO,format='%(levelname)s: %(message)s')
 import numpy as N
 from scipy import ndimage
-from astropy import nddata
+from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
 from astropy import units as u
 import pyfits
 import h5py
-import padarray
-import ndiminterpolation_vectorized
+import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
+import ndiminterpolation_vectorized  # re-integrate ndiminterpolation_vectorized back into ndiminterpolation
 
 
-__version__ = '20160626'   #yyymmdd
+__version__ = '20160627'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -359,7 +359,7 @@ class Image:
 
         peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,self.UNITS_BRIGHTNESS)
         
-#        self.peak_pixel_brightness = peak_pixel_brightness # store for later use, e.g. in embedInFOV()
+#        self.peak_pixel_brightness = peak_pixel_brightness # store for later use, e.g. in embedInFOV() ?
         
         numfactor = (peak_pixel_target / self.data.max())
         
@@ -472,7 +472,7 @@ class Image:
         """
         
         fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
-        factor = ((fov_value*fov_unit)/self.FOV).value
+        factor = ((fov_value*fov_unit)/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
         cpix = self.npix/2
 
@@ -546,7 +546,7 @@ class Image:
         self.setBrightness((self.data.value.max()/newfactor**2.)*self.data.unit)
 
         
-    def rotate(self,angle,direction='NE'):
+    def rotate(self,angle,direction='NE',returnimage=False):
 
         """Rotate ``self.data`` by `angle` degrees from North towards
         `direction` (either East or West).
@@ -558,6 +558,9 @@ class Image:
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
         logging.info("Rotated image (see self.data) by %g degrees in direction '%s'." % (angle,direction))
 
+        if returnimage:
+            return self.data
+        
         
     def getTotalFluxDensity(self):
 
@@ -581,9 +584,12 @@ class Image:
               5.0459482673 mJy
         """
         
-        return self.getBrightnessInUnits('Jy/arcsec^2').sum() * self.pixelarea * self.pix
+        aux = self.pixelarea*self.pix
+        units = 'Jy/'+aux.unit.to_string()
 
-        
+        return self.getBrightnessInUnits(units).sum() * self.pixelarea * self.pix
+
+    
     def __computeFOV(self):
 
         self.FOV = self.npix * self.pixelscale
@@ -914,56 +920,6 @@ def computeIntCorrections(npix,factor):
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor
-
-
-
-
-# Test the functionality of this old func via combined self.resampleImage().embedInFOV(fov)
-#def zoomImage(image,zoomfactor=1.):
-#
-#    """Zoom the image content, preserve the image shape (nx,ny).
-#    
-#    I.e. constant FOV, but object moves closer in / further out.
-#    If you zoom in (zoomfactor>1.), cropping will occur.
-#    If you zoom out (zoomfactor<1.), zero-padding around the original image will occur.
-#
-#    If you specify a zoomfactor that would lead to an even-dimensioned
-#    cropped/shrunk image, the zoomfactor will be modified slightly
-#    such that the resulting cropped/shrunk image is
-#    odd-dimensioned. The _actual_ zoomfactor used will be returned
-#    together with the final image.
-#
-#    """
-#
-#    nx = checkImage(image,returnsize=True)
-#    newsize = nx*zoomfactor
-#    newsize_int = N.int((2*N.floor(newsize/2)+1))  # rounded up or down to the nearest odd integer
-#
-#    newzoomfactor = newsize_int/float(nx)
-#
-#    print "nx, zoomfactor,   newsize, newsize_int, newzoomfactor = ", nx, zoomfactor, newsize, newsize_int, newzoomfactor
-#
-#    checkOdd(newsize_int)
-#
-#    image_zoomed = ndimage.zoom(image,newzoomfactor) #0.5)
-#
-#    # rewrite this to not use nddata
-#    if newzoomfactor < 1.:
-#        # rewrite this to do zero-padding
-#        # embed in larger frame
-#        newimage = N.zeros_like(image)
-#        cpix = nx/2 #tuple(N.array(out.shape)/2)
-#        newimage = nddata.add_array(newimage,image_zoomed,(cpix,cpix))
-#    elif newzoomfactor > 1.:
-#        # rewrite this to crop first, then resample
-#        cpix = image_zoomed.shape[0]/2
-#        newimage = nddata.extract_array(image_zoomed,image.shape,(cpix,cpix),mode='strict')
-#    else:
-#        newimage = image
-#
-#    return newimage, newzoomfactor
-
-    
 
 
 
