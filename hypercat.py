@@ -1,17 +1,4 @@
-import os
-import logging
-logging.basicConfig(level=logging.INFO,format='%(levelname)s: %(message)s')
-import numpy as N
-from scipy import ndimage
-from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
-from astropy import units as u
-import pyfits
-import h5py
-import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
-import ndiminterpolation_vectorized  # re-integrate ndiminterpolation_vectorized back into ndiminterpolation
-
-
-__version__ = '20160627'   #yyymmdd
+__version__ = '20170114'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -19,13 +6,56 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: hypercat
 """
 
+import os
+import sys
+import logging
+from collections import OrderedDict
+from operator import itemgetter
+import numpy as N
+from scipy import ndimage
+from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
+from astropy import units as u
+from astropy.io import fits as pyfits
+import h5py
+import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
+import ndiminterpolation_vectorized  # re-integrate ndiminterpolation_vectorized back into ndiminterpolation
+import bigfileops as bfo
+
+
+# Custom formatter for logger
+class LogFormatter(logging.Formatter):
+
+    def __init__(self, fmt="%(levelno)s: %(msg)s"):
+        logging.Formatter.__init__(self, fmt)
+
+    def format(self, record):
+
+        # Replace the original format with one customized by logging level
+        if record.levelno == logging.INFO:
+            self._fmt = '%(message)s'
+        else:
+            self._fmt = '%(levelname)s: %(message)s'
+
+        # return formatted msg
+        return logging.Formatter.format(self, record)
+
+# set up logger
+hdlr = logging.StreamHandler(sys.stdout)
+hdlr.setFormatter(LogFormatter())
+logging.root.addHandler(hdlr)
+logging.root.setLevel(logging.INFO)
+    
+
 # CLASSES
 
 class ModelCube:
 
-    def __init__(self,hdffile='clumpy_img_cube_2200models_19waves_halfsized_uncompressed.hdf5',\
+    def __init__(self,hdffile='hypercat_20170109.hdf5',\
                  hypercube='imgdata',\
-                 ndinterpolator=True):
+                 ndinterpolator=True,\
+                 subcube_selection='interactive',
+                 subcube_selection_save=None,
+                 omit=('x','y')):
 
         """Model hypercube of CLUMPY images.
 
@@ -53,39 +83,93 @@ class ModelCube:
             M = ModelCube() 
         """
 
+        self.omit = omit
+
         logging.info("Opening HDF5 file: %s " % hdffile)
         self.h = h5py.File(hdffile,'r')
         self.group = self.h[hypercube]
         
         logging.info("Loading sampling parameters.")
-        shape = self.group['hypercubeshape'].value
-        select = N.argwhere(shape>1).flatten()  # selector mask: only theta_i with more than one element
-        
-        self.theta = (padarray.PadArray(self.group['theta'].value).unpad)
-        self.theta = [self.theta[j] for j in select]
+        self.paramnames = self.group['paramnames'].value.tolist()
+        self.theta = padarray.PadArray(self.group['theta'].value).unpad
+        self.idxes = [xrange(len(t)) for t in self.theta]
+        logging.info("Closing HDF5 file.")
+        self.h.close()
+       
+        # compute total byte size
+        self.fullcubeshape = [t.size for t in self.theta]
+        self.nvoxels = N.prod(self.fullcubeshape)
+        self.wordsize = 4.
+        self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
+        self.subcubesize = self.fullcubesize
 
-        self.paramnames = (self.group['paramnames'].value)[select]
+#        self.paramnames = (self.group['paramnames'].value)[select]
 
+        # SELECT A SUB-HYPERCUBE
+        if subcube_selection is not None:
+
+            if subcube_selection == 'interactive':
+                self.theta, self.idxes, self.subcubesize =\
+                    bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
+
+                if subcube_selection_save is not None:
+                    bfo.storejson(subcube_selection_save,{'idxes':self.idxes})
+                        
+            else:
+                d = bfo.loadjson(subcube_selection)
+                self.idxes = d['idxes']
+                self.theta = [self.theta[j][self.idxes[j]] for j in xrange(len(self.theta))]
+                self.subcubesize = bfo.get_bytesize(self.idxes)
+
+        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+            
+        if self.subcubesize != self.fullcubesize:
+            hypercubestr = 'hyperslab [shape: (%s)] from' % tup2str([len(_) for _ in self.theta])
+        else:
+            hypercubestr = ''
+            
+        logging.info("Loading %s hypercube '%s' [shape: (%s)] to RAM (%.2f %s required) ..." % (hypercubestr,hypercube,tup2str(self.fullcubeshape),prefix,suffix))
+        dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
+        self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
+        logging.info("Done.")
+
+#        print "cube shape AFTER: ", self.data.shape
+
+       
+#        if self.paramnames[-1] == 'wave':
+#            self.x = self.theta[-3]
+#            self.y = self.theta[-2]
+#            self.wave = self.theta[-1]
+#        else:
+#            self.x = self.theta[-2]
+#            self.y = self.theta[-1]
+
+        self.x = self.theta[-2]
+        self.y = self.theta[-1]
         if self.paramnames[-1] == 'wave':
             self.x = self.theta[-3]
             self.y = self.theta[-2]
             self.wave = self.theta[-1]
-        else:
-            self.x = self.theta[-2]
-            self.y = self.theta[-1]
 
-        ramgigs = self.data = self.group['hypercube'].size*4/1024**3.
-        logging.info("Loading hypercube '%s' to RAM (~%.2f GB required) ..." % (hypercube,ramgigs))
-        self.data = self.group['hypercube'][...]
+
+        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
+        logging.info("Squeezing all dim-1 axes...")
+        sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
+        self.theta = itemgetter(*sel)(self.theta)
+        self.paramnames = itemgetter(*sel)(self.paramnames)
         self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
-
+        logging.info("Done. New shape: (%s)" % tup2str(self.data.shape))
+        
+        # instantiate an n-dim interpolator object
         if ndinterpolator is True:
             logging.info("Instantiating n-dim interpolation object ...")
             self.ip = ndiminterpolation_vectorized.NdimInterpolation(self.data,self.theta,mode='lin')
 
-        logging.info("Done. Closing HDF5 file.")
-        self.h.close()
-
+        logging.info("Done.")
+        
+        print "Inspect loaded hypercube with .print_sampling()\n"
+        self.print_sampling()
+        
 
     def print_sampling(self,n=11,fmt="%7.3f"):
 
@@ -110,11 +194,14 @@ class ModelCube:
 
         """
 
-        maxstr = "%%% ds  " % max([len(p) for p in self.paramnames])  # longest parameter name
+        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
         maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality
 
-        header = "Parameter Range                Nvalues  Values\n" + "-"*72
+        header = "Parameter  Range                Nvalues  Sampled values"
+        len_ = len(header)
+        rule = "-"*len_
         print header
+        print rule
         
         for p,v in zip(self.paramnames,self.theta):
 
@@ -127,7 +214,17 @@ class ModelCube:
                 svals += ', ...'  # continuation indicator, if any
 
             # bring everything together
-            print maxstr % p + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals
+            parstr = maxstr % p
+            asterisk = " "
+            if p not in self.omit:
+                parstr = "\033[1m" + parstr
+                asterisk = "*"
+                svals = svals  + "\033[0m"
+                
+            print parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals
+            
+        print rule
+        print "Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolatable."
 
 
     def get_image(self,vector,full=True):
@@ -175,19 +272,24 @@ class ModelCube:
         # this is for the current array layout: ['sig', 'i', 'N', 'q', 'tv', 'x', 'y', 'wave']
 
         vec = list(vector)
-        vec.insert(-1,tuple(self.x.tolist()))
-        vec.insert(-1,tuple(self.y.tolist()))
+        vec.append(tuple(self.x.tolist()))
+        vec.append(tuple(self.y.tolist()))
+            
         vec = tuple(vec)
         
         image = self.ip(vec)
         image = image.squeeze()
 #        image = image.reshape((self.x.size,self.y.size))
-#        
+
         if full is True:
             image = mirror_halfimage(image)
                 
         return image.squeeze()
-    
+
+
+def tup2str(seq,jstr=','):
+    return jstr.join([str(_) for _ in seq])
+
 
 class Image:
 
