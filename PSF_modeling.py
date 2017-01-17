@@ -29,7 +29,7 @@ def PSF_model(image,wavelength=1.25,diameter=30.0,\
         Diameter of the telescope in meters
 
     pxscale: array
-        Pixel-scale of the instrument in "/px
+        Pixel-scale of the instrument in arcsec/px
         
     strehl: array
         Strehl of the model PSF
