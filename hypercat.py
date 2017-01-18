@@ -6,6 +6,14 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: hypercat
 """
 
+# Class constants
+UNITS_ANGULAR = ('arcsec','mas','milliarcsecond','deg','rad')  #: Recognized angular units, e.g. for pixel scale.
+UNITS_LINEAR = ('m','cm','pc','kpc','Mpc','lyr','AU')  #: Recognized linear units (either for pixel scale, or for source distance, etc.)
+CUNITS = UNITS_ANGULAR + UNITS_LINEAR  #: Their union.
+# TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)
+UNITS_BRIGHTNESS = ('Jy/pix','mJy/pix')  #: Recognized units for brightness-per-pixel.
+#        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
+
 import os
 import sys
 import logging
@@ -20,7 +28,7 @@ import h5py
 import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
 import ndiminterpolation_vectorized  # re-integrate ndiminterpolation_vectorized back into ndiminterpolation
 import bigfileops as bfo
-
+import PSF_modeling
 
 # Custom formatter for logger
 class LogFormatter(logging.Formatter):
@@ -272,19 +280,29 @@ class ModelCube:
         # this is for the current array layout: ['sig', 'i', 'N', 'q', 'tv', 'x', 'y', 'wave']
 
         vec = list(vector)
+
+        # sub-vectors can be arrays or lists; convert to tuples
+        for j,v in enumerate(vec):
+            if isinstance(v,N.ndarray):
+                vec[j] = tuple(v.tolist())
+            elif isinstance(v,list):
+                vec[j] = tuple(v)
+        
         vec.append(tuple(self.x.tolist()))
         vec.append(tuple(self.y.tolist()))
-            
+        
         vec = tuple(vec)
         
         image = self.ip(vec)
         image = image.squeeze()
-#        image = image.reshape((self.x.size,self.y.size))
 
         if full is True:
-            image = mirror_halfimage(image)
-                
-        return image.squeeze()
+            if (2*image.shape[-2] - 1 == image.shape[-1]):
+                image = mirror_axis(image)
+            else:
+                logging.warn("x dimension seems not suitable for mirroring. Try with full=False")
+            
+        return image
 
 
 def tup2str(seq,jstr=','):
@@ -293,17 +311,10 @@ def tup2str(seq,jstr=','):
 
 class Image:
 
-    # Class constants
-    UNITS_ANGULAR = ('arcsec','mas','milliarcsecond','deg','rad')  #: Recognized angular units, e.g. for pixel scale.
-    UNITS_LINEAR = ('m','cm','pc','kpc','Mpc','lyr','AU')  #: Recognized linear units (either for pixel scale, or for source distance, etc.)
-    CUNITS = UNITS_ANGULAR + UNITS_LINEAR  #: Their union.
-    # TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)
-    UNITS_BRIGHTNESS = ('Jy/pix','mJy/pix')  #: Recognized units for brightness-per-pixel.
-#        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
-
     pix = u.pix  #: ``u.pix`` alias, defined for convenience.
 
-    def __init__(self,image,pixelscale='1 arcsec',distance=None,peak_pixel_brightness='1 Jy/pix'):
+#    def __init__(self,image,pixelscale='1 arcsec',distance=None,peak_pixel_brightness='1 Jy/pix'):
+    def __init__(self,image,pixelscale='1 arcsec',distance=None,peak_pixel_brightness='1 Jy/pix',psf=None,psfdict={}):
 
         """From a 2D array instantiate an Image object, with members for
         pixelscale, brightness, unit conversions, etc.  The way to
@@ -363,8 +374,42 @@ class Image:
         # IMAGE DATA
         self.data_raw = image  # keep original array
         self.data = image   # will rescale this array in setBrightness()
-        self.setBrightness(peak_pixel_brightness)
 
+        self.applyPSF(psf,psfdict)
+
+#        self.setBrightness(peak_pixel_brightness)
+
+
+    def applyPSF(self,psf,psfdict):
+    
+        if psf is not None:
+
+            if psf == 'model':
+                wavelength, diameter, strehl = psfdict['wavelength'], psfdict['diameter'], psfdict['strehl']
+                self.psf_image = PSF_modeling.PSF_model(self.data,wavelength=wavelength,diameter=diameter,pxscale=self.pixelscale.to('arcsec').value,strehl=strehl)
+                    
+            elif psf.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCL
+
+                try:
+                    hdukw = psfdict['hdukw']
+                except KeyError:
+                    hdukw = 0
+
+                try:
+                    pixelscalekw = psfdict['pixelscalekw']
+                except KeyError:
+                    pixelscalekw = 'pixelscl'  # WebbPSF names pixelscale 'pixelscl' in their fits files
+                
+                header = pyfits.getheader(psf,hdukw)
+                self.psf_image = pyfits.getdata(psf,hdukw)
+
+                pixelscale = header[pixelscalekw]
+                if pixelscale != self.pixelscale:
+                    self.psf_image_raw = self.psf_image[...]
+                    self.psf_image, newfactor_ = resampleImage(self.psf_image,pixelscale/self.pixelscale.to('arcsec').value)
+                    
+            self.data_psfed = PSF_modeling.PSF_conv(self.data,self.psf_image)
+            
 
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
 
@@ -409,13 +454,16 @@ class Image:
 
         """
 
-        cdelt, cunit = getValueUnit(pixelscale,self.CUNITS)
+#T        cdelt, cunit = getValueUnit(pixelscale,self.CUNITS)
+        cdelt, cunit = getValueUnit(pixelscale,CUNITS)
         
         self.pixelscale = cdelt * cunit
 
-        if cunit.to_string() in self.UNITS_LINEAR:
+#T        if cunit.to_string() in self.UNITS_LINEAR:
+        if cunit.to_string() in UNITS_LINEAR:
             try:
-                dist, self.distunit = getValueUnit(distance,self.UNITS_LINEAR)
+#T                dist, self.distunit = getValueUnit(distance,self.UNITS_LINEAR)
+                dist, self.distunit = getValueUnit(distance,UNITS_LINEAR)
             except AttributeError:
                 logging.error("Must provide a value for 'distance' argument. Current value is: "+str(distance))
                 raise
@@ -459,7 +507,8 @@ class Image:
 
         """
 
-        peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,self.UNITS_BRIGHTNESS)
+#T        peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,self.UNITS_BRIGHTNESS)
+        peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,UNITS_BRIGHTNESS)
         
 #        self.peak_pixel_brightness = peak_pixel_brightness # store for later use, e.g. in embedInFOV() ?
         
@@ -538,7 +587,8 @@ class Image:
 
         """
 
-        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
+#T        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
+        fov_value, fov_unit = getValueUnit(fov,UNITS_ANGULAR)
 
         self.pixelscale = (fov_value * fov_unit) / N.float(self.npix)
         self.__computePixelarea()
@@ -573,7 +623,8 @@ class Image:
 
         """
         
-        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
+#T        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
+        fov_value, fov_unit = getValueUnit(fov,UNITS_ANGULAR)
         factor = ((fov_value*fov_unit)/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
         cpix = self.npix/2
@@ -704,39 +755,71 @@ class Image:
     
 # HIGH-LEVEL HELPER FUNCTIONS
 
-def mirror_halfimage(halfimage):
+#def mirror_halfimage(halfimage):
+#
+#    """Take half-sized image (image cube) and return the full version.
+#
+#    Parameters
+#    ----------
+#    halfimage : array
+#        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
+#        and nx == ny/2 +1 must hold (or an exception will be raised).
+#
+#    Returns
+#    -------
+#    fullimage : array
+#        Array with first dimension mirrored, i.e. fullimage.shape =
+#        (ny,ny,nz).
+#
+#    """
+#        
+#    shape = list(halfimage.shape)
+#    nx, ny = shape[:2]
+#
+#    if nx != (ny/2 + 1):
+#        raise ValueError("Image/cube doesn't seem to contain a half-sized array (shape = (%s)). Not mirroring." % (','.join([str(s) for s in shape])))
+#    
+#    shape[0] = 2*nx-1
+#    
+#    logging.info("Mirroring half-cube / half-image.")
+#    
+#    fullimage = N.zeros(shape,dtype=N.float32)
+#    fullimage[:nx,...] = halfimage[::-1,...]
+#    fullimage[nx-1:,...] = halfimage[:,...]
+#    
+#    return fullimage
 
-    """Take half-sized image (image cube) and return the full version.
+
+def mirror_axis(cube,axis=-2):
+    
+    """Mirror one axis of a cube.
 
     Parameters
     ----------
-    halfimage : array
-        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
-        and nx == ny/2 +1 must hold (or an exception will be raised).
+    cube : array
+        Expected shape of cube: (...,nx,...).
+
+    axis : int
+        axis index to be mirrored. Default: -2. Mirroring assummes a
+        central columns of elements, i.e. nx is odd.
 
     Returns
     -------
-    fullimage : array
-        Array with first dimension mirrored, i.e. fullimage.shape =
-        (ny,ny,nz).
+    newcube : array
+        Array with 'axis' dimension mirrored, i.e.  newcube.shape =
+        (...,nx*2-1,...).
 
     """
         
-    shape = list(halfimage.shape)
-    nx, ny = shape[:2]
-
-    if nx != (ny/2 + 1):
-        raise ValueError("Image/cube doesn't seem to contain a half-sized array (shape = (%s)). Not mirroring." % (','.join([str(s) for s in shape])))
+    shape = list(cube.shape)
+    nx = shape[axis]
+    newshape = shape[:]
+    newshape[axis] = 2*nx-1
+    newcube = N.zeros(newshape,dtype=N.float32)
+    newcube[...,:nx,:] = cube[...,::-1,:]
+    newcube[...,nx-1:,:] = cube[...,:,:]
     
-    shape[0] = 2*nx-1
-    
-    logging.info("Mirroring half-cube / half-image.")
-    
-    fullimage = N.zeros(shape,dtype=N.float32)
-    fullimage[:nx,...] = halfimage[::-1,...]
-    fullimage[nx-1:,...] = halfimage[:,...]
-    
-    return fullimage
+    return newcube
 
 
 def rotateImage(image,angle,direction='NE'):
@@ -1016,7 +1099,9 @@ def computeIntCorrections(npix,factor):
 
     """
     
+    print "npix, factor", npix, factor
     checkOdd(npix)
+    print "npix, factor", npix, factor
     newnpix = npix*factor
     newnpix = N.int((2*N.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
@@ -1166,3 +1251,33 @@ def mirror_all_fitsfiles(d,suffix='.fits',hdus=('IMGDATA','CLDDATA')):
         mirror_fitsfile(f,hdus=hdus)
     
     logging.info("All files mirrored.")
+
+
+def get_Rd(lum,tsub=1500.,outunit='pc'):
+
+    """Get dust sublimation radius Rd from luminosity of source and dust
+    sublimation temperature.
+    """
+
+    pc = 0.4*N.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
+
+    return pc.to(outunit)
+
+
+def get_pixelscale(linsize,distance,outunit='arcsec',npix=None):
+
+    cdelt_linsize, cunit__linsize = getValueUnit(linsize,UNITS_LINEAR)
+    cdelt_distance, cunit__distance = getValueUnit(distance,UNITS_LINEAR)
+    
+    linsize = cdelt_linsize * cunit__linsize
+    distance = cdelt_distance * cunit__distance
+
+    angular = N.arctan2(linsize,distance).to(outunit)
+
+    angular_per_linsize = angular / linsize  # e.g. arcsec/pc
+
+    if npix is not None:
+        angular_per_pixel = angular / (float(npix)*u.pix)  # e.g. arcsec/pixel
+    
+    return angular, angular_per_linsize, angular_per_pixel
+
