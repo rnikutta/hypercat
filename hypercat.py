@@ -280,19 +280,29 @@ class ModelCube:
         # this is for the current array layout: ['sig', 'i', 'N', 'q', 'tv', 'x', 'y', 'wave']
 
         vec = list(vector)
+
+        # sub-vectors can be arrays or lists; convert to tuples
+        for j,v in enumerate(vec):
+            if isinstance(v,N.ndarray):
+                vec[j] = tuple(v.tolist())
+            elif isinstance(v,list):
+                vec[j] = tuple(v)
+        
         vec.append(tuple(self.x.tolist()))
         vec.append(tuple(self.y.tolist()))
-            
+        
         vec = tuple(vec)
         
         image = self.ip(vec)
         image = image.squeeze()
-#        image = image.reshape((self.x.size,self.y.size))
 
         if full is True:
-            image = mirror_halfimage(image)
-                
-        return image.squeeze()
+            if (2*image.shape[-2] - 1 == image.shape[-1]):
+                image = mirror_axis(image)
+            else:
+                logging.warn("x dimension seems not suitable for mirroring. Try with full=False")
+            
+        return image
 
 
 def tup2str(seq,jstr=','):
@@ -300,14 +310,6 @@ def tup2str(seq,jstr=','):
 
 
 class Image:
-
-#    # Class constants
-#    UNITS_ANGULAR = ('arcsec','mas','milliarcsecond','deg','rad')  #: Recognized angular units, e.g. for pixel scale.
-#    UNITS_LINEAR = ('m','cm','pc','kpc','Mpc','lyr','AU')  #: Recognized linear units (either for pixel scale, or for source distance, etc.)
-#    CUNITS = UNITS_ANGULAR + UNITS_LINEAR  #: Their union.
-#    # TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)
-#    UNITS_BRIGHTNESS = ('Jy/pix','mJy/pix')  #: Recognized units for brightness-per-pixel.
-##        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
 
     pix = u.pix  #: ``u.pix`` alias, defined for convenience.
 
@@ -753,39 +755,71 @@ class Image:
     
 # HIGH-LEVEL HELPER FUNCTIONS
 
-def mirror_halfimage(halfimage):
+#def mirror_halfimage(halfimage):
+#
+#    """Take half-sized image (image cube) and return the full version.
+#
+#    Parameters
+#    ----------
+#    halfimage : array
+#        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
+#        and nx == ny/2 +1 must hold (or an exception will be raised).
+#
+#    Returns
+#    -------
+#    fullimage : array
+#        Array with first dimension mirrored, i.e. fullimage.shape =
+#        (ny,ny,nz).
+#
+#    """
+#        
+#    shape = list(halfimage.shape)
+#    nx, ny = shape[:2]
+#
+#    if nx != (ny/2 + 1):
+#        raise ValueError("Image/cube doesn't seem to contain a half-sized array (shape = (%s)). Not mirroring." % (','.join([str(s) for s in shape])))
+#    
+#    shape[0] = 2*nx-1
+#    
+#    logging.info("Mirroring half-cube / half-image.")
+#    
+#    fullimage = N.zeros(shape,dtype=N.float32)
+#    fullimage[:nx,...] = halfimage[::-1,...]
+#    fullimage[nx-1:,...] = halfimage[:,...]
+#    
+#    return fullimage
 
-    """Take half-sized image (image cube) and return the full version.
+
+def mirror_axis(cube,axis=-2):
+    
+    """Mirror one axis of a cube.
 
     Parameters
     ----------
-    halfimage : array
-        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
-        and nx == ny/2 +1 must hold (or an exception will be raised).
+    cube : array
+        Expected shape of cube: (...,nx,...).
+
+    axis : int
+        axis index to be mirrored. Default: -2. Mirroring assummes a
+        central columns of elements, i.e. nx is odd.
 
     Returns
     -------
-    fullimage : array
-        Array with first dimension mirrored, i.e. fullimage.shape =
-        (ny,ny,nz).
+    newcube : array
+        Array with 'axis' dimension mirrored, i.e.  newcube.shape =
+        (...,nx*2-1,...).
 
     """
         
-    shape = list(halfimage.shape)
-    nx, ny = shape[:2]
-
-    if nx != (ny/2 + 1):
-        raise ValueError("Image/cube doesn't seem to contain a half-sized array (shape = (%s)). Not mirroring." % (','.join([str(s) for s in shape])))
+    shape = list(cube.shape)
+    nx = shape[axis]
+    newshape = shape[:]
+    newshape[axis] = 2*nx-1
+    newcube = N.zeros(newshape,dtype=N.float32)
+    newcube[...,:nx,:] = cube[...,::-1,:]
+    newcube[...,nx-1:,:] = cube[...,:,:]
     
-    shape[0] = 2*nx-1
-    
-    logging.info("Mirroring half-cube / half-image.")
-    
-    fullimage = N.zeros(shape,dtype=N.float32)
-    fullimage[:nx,...] = halfimage[::-1,...]
-    fullimage[nx-1:,...] = halfimage[:,...]
-    
-    return fullimage
+    return newcube
 
 
 def rotateImage(image,angle,direction='NE'):
@@ -1246,3 +1280,4 @@ def get_pixelscale(linsize,distance,outunit='arcsec',npix=None):
         angular_per_pixel = angular / (float(npix)*u.pix)  # e.g. arcsec/pixel
     
     return angular, angular_per_linsize, angular_per_pixel
+
