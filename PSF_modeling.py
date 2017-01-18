@@ -100,7 +100,7 @@ def PSF_conv(image,PSF):
     Result = PSF_conv()
     """
 
-    result = convolve_fft(image,PSF)
+    result = convolve_fft(image,PSF,normalize_kernel=True)
 
     return result
 
