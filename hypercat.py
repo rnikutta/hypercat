@@ -1,4 +1,4 @@
-__version__ = '20170114'   #yyymmdd
+__version__ = '20170120'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -30,6 +30,8 @@ import ndiminterpolation_vectorized  # re-integrate ndiminterpolation_vectorized
 import bigfileops as bfo
 import PSF_modeling
 
+# CLASSES
+
 # Custom formatter for logger
 class LogFormatter(logging.Formatter):
 
@@ -52,9 +54,7 @@ hdlr = logging.StreamHandler(sys.stdout)
 hdlr.setFormatter(LogFormatter())
 logging.root.addHandler(hdlr)
 logging.root.setLevel(logging.INFO)
-    
 
-# CLASSES
 
 class ModelCube:
 
@@ -69,10 +69,9 @@ class ModelCube:
 
         Parameters
         ----------
-        
         hdffile : str
             Path to the model hdf5 file. Default:
-            `clumpy_img_cube_2200models_19waves_halfsized.hdf5`
+            `hypercat_20170109.hdf5`
 
         hypercube : str
             Name of the hypercube within `hdffile` to use (currently
@@ -83,12 +82,40 @@ class ModelCube:
             N-dimensional interpolation of the hypercube will be
             instantiated, and accessible via :func:`get_image`.
 
+        subcube_selection : str
+
+            'interactive' or the name of a json file containing the
+            indices to select for every axis in the `hypercube` in the
+            `hdffile`.
+
+            If 'interactive', a simple selection dialog will be
+            launched int the terminal/session, allowing to
+            select/unselect entries from every axis (one at a
+            time). Once done, the corresponding list of index lists is
+            created, and the hyper-slab (sub-cube) loaded from disk to
+            RAM.
+
+            If a json file, it is a file that can be created with
+            subcube_selection=True, and providing as
+            subcube_selection_save a file path to the to-be-stored
+            json file.
+
+        subcube_selection_save : str | None
+            If not None, it a the path to a json file withe the list
+            of index lists that select a subcube from the full
+            'hypercube'.
+
+        omit : tuple
+
+            Tuple of parameter names (as strings) to omit from subcube selection, and from
+
         Example
         -------
         .. code-block:: python
 
             # instantiate
-            M = ModelCube() 
+            M = ModelCube()
+
         """
 
         self.omit = omit
@@ -132,25 +159,14 @@ class ModelCube:
         prefix, suffix = bfo.get_bytes_human(self.subcubesize)
             
         if self.subcubesize != self.fullcubesize:
-            hypercubestr = 'hyperslab [shape: (%s)] from' % tup2str([len(_) for _ in self.theta])
+            hypercubestr = 'hyperslab [shape: (%s)] from' % seq2str([len(_) for _ in self.theta])
         else:
             hypercubestr = ''
             
-        logging.info("Loading %s hypercube '%s' [shape: (%s)] to RAM (%.2f %s required) ..." % (hypercubestr,hypercube,tup2str(self.fullcubeshape),prefix,suffix))
+        logging.info("Loading %s hypercube '%s' [shape: (%s)] to RAM (%.2f %s required) ..." % (hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
         dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
         logging.info("Done.")
-
-#        print "cube shape AFTER: ", self.data.shape
-
-       
-#        if self.paramnames[-1] == 'wave':
-#            self.x = self.theta[-3]
-#            self.y = self.theta[-2]
-#            self.wave = self.theta[-1]
-#        else:
-#            self.x = self.theta[-2]
-#            self.y = self.theta[-1]
 
         self.x = self.theta[-2]
         self.y = self.theta[-1]
@@ -159,14 +175,13 @@ class ModelCube:
             self.y = self.theta[-2]
             self.wave = self.theta[-1]
 
-
         # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
         logging.info("Squeezing all dim-1 axes...")
         sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
         self.theta = itemgetter(*sel)(self.theta)
         self.paramnames = itemgetter(*sel)(self.paramnames)
         self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
-        logging.info("Done. New shape: (%s)" % tup2str(self.data.shape))
+        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
         
         # instantiate an n-dim interpolator object
         if ndinterpolator is True:
@@ -242,7 +257,7 @@ class ModelCube:
         Parameters
         ----------
         vector : seq
-            A vector of model parameter values at which the imaged
+            A vector of model parameter values at which the image
             should be interpolated. This is very flexible and can
             return variously-shaped arrays, from standard 2D images
             (x,y) to multi-dimensional hyper-slices of the CLUMPY
@@ -258,27 +273,25 @@ class ModelCube:
         --------
         .. code:: python
 
-            # vector of parameter values; pixel axes are implied (i.e. don't specify them)
+            # vector of parameter values; pixel axes are implicit (i.e. don't specify them)
             theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)
             image = M.get_image(theta)
             print image.shape
-              (221,221)   # (x,y)
+              (441,441)   # (x,y)
 
             # multi-wavelength cube
             theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values
             image = M.get_image(theta)
             print image.shape
-              (221,221,3)   # (x,y,lambda)
+              (3,441,441)   # (x,y,lambda)
             
             # multi-wavelength and multi-viewing angle
             theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas
             image = M.get_image(theta)
             print image.shape
-              (4,221,221,3)
+              (4,3,441,441)
         """
         
-        # this is for the current array layout: ['sig', 'i', 'N', 'q', 'tv', 'x', 'y', 'wave']
-
         vec = list(vector)
 
         # sub-vectors can be arrays or lists; convert to tuples
@@ -305,21 +318,24 @@ class ModelCube:
         return image
 
 
-def tup2str(seq,jstr=','):
-    return jstr.join([str(_) for _ in seq])
-
-
 class Image:
 
     pix = u.pix  #: ``u.pix`` alias, defined for convenience.
 
-#    def __init__(self,image,pixelscale='1 arcsec',distance=None,peak_pixel_brightness='1 Jy/pix'):
-    def __init__(self,image,pixelscale='1 arcsec',distance=None,peak_pixel_brightness='1 Jy/pix',psf=None,psfdict={}):
+    def __init__(self,image,\
+                 pixelscale='1 arcsec',distance=None,\
+                 peak_pixel_brightness='1 Jy/pix',\
+                 pa=0.,\
+                 psf=None,psfdict={},\
+                 pixelscale_detector=None):
 
-        """From a 2D array instantiate an Image object, with members for
-        pixelscale, brightness, unit conversions, etc.  The way to
-        specify most arguments follows roughly the CASA (Common
-        Astronomy Software Applications package) philosophy.
+        """From a 2D array instantiate an Image object.
+
+        The instance has members for pixelscale, brightness, unit
+        conversions, etc.  The way to specify physical quantities with
+        units follows roughly the CASA (Common Astronomy Software
+        Applications package) philosophy, i.e. they are strings like
+        'value unit', e.g. '1 Jy/pix'.
 
         Parameters
         ----------
@@ -329,8 +345,8 @@ class Image:
             'peak_pixel_brightness' (see below).
 
         pixelscale : str
-            Pixel scale of a single pixel. See docstring of
-            setPixelscale() function.
+            Pixel scale of a single pixel in the model image. See
+            docstring of setPixelscale() function.
 
         distance : str|None
             Physical distance to the source. Only required if
@@ -338,9 +354,69 @@ class Image:
             units. See docstring of setPixelscale() function.
 
         peak_pixel_brightness : str
-            Physical brightness value of the max pixel in `image`. The
-            entire image will be scaled this this peak value. See
-            docstring of setBrightness() function.
+            Physical brightness value of the highest-valued pixel in
+            `image`. The entire image will be scaled such that the
+            peak pixel has value peak_pixel_brightness. See docstring
+            of setBrightness() function.
+
+        pa : float
+            Position angle (in degrees) with respect to North (=0
+            deg). If not 0., the image will be rotated by pa (positive
+            values rotate North-to-East, i.e. anti-clockwise, negative
+            values rotate North-to-West, i.e. clockwise).
+
+        psf : None | 'model' | FITS filename
+
+            If None, the model image will not be convolved with any
+            PSF.
+
+            If 'model', then psf_dict must also be provided (see
+            there), and the PSF will be modeled with a Gaussian+Airy
+            pattern. Reference:
+
+              John W. Hardy "Adaptive Optics for Astronomical
+              Telescopes", Oxford Series in Optical and Imaging
+              Sciences 1998
+
+            If psf is a string ending it '.fits', it is the path to a
+            FITS file containing the image of a PSF (for instance
+            generated with the WebbPSF tool:
+
+              http://www.stsci.edu/~mperrin/software/webbpsf.html).
+
+            psf_dict must then also be provided, but with different
+            content (see there).
+
+        psf_dict : dictionary
+            Only used when psf is not None.
+
+            If psf='model', then psf_dict must contain the keys and
+            values for the wavelength in micron, telescope diameter in
+            meters, and Strehl ratio, e.g. like this:
+
+              psf_dict = {'wavelength':2.2, 'diameter': 30., 'strehl': 0.8}
+
+            If psf is the path to a FITS file that contains a PSF
+            image, then the content of psf_dict must be the keys and
+            values for the HDU extension (name or numeric) that
+            contains the PSF image (EXT name HDU number), and the name
+            of the keyword containing the PSF's image pixel scale
+            (in arcsec/pixel). E.g.:
+
+              psf='PSF_MIRI_F1000W.fits'  # from WebbPSF tool
+              psf_dict = {'hdukw':1, 'pixelscalekw':'pixelscl'}  # name of HDU and pixelscale keyword
+
+        pixelscale_detector : float | None
+            If not None, the (PSF-convolved, if psf not None) model
+            image will be resampled such that the pixelscale of the
+            final image corresponds to pixelscale_detector. This will
+            increase or decrease the number of pixels in the model
+            image, but the FOV is preserved. The total flux density
+            will also be preserved (you can check this by calling
+            self.getTotalFluxDensity()) Typical detector pixelscales
+            are e.g.:
+              TMT_IRIS = 4 mas/pix
+              TMT_MICHI = 11.9 mas/pix.
 
         Examples
         --------
@@ -375,41 +451,54 @@ class Image:
         self.data_raw = image  # keep original array
         self.data = image   # will rescale this array in setBrightness()
 
-        self.applyPSF(psf,psfdict)
+        self.setBrightness(peak_pixel_brightness)
+        print "AFTER setBrightness, type(self.data.value)", type(self.data.value)
+        
+        if pa != 0.:
+            self.rotate(pa)
+        
+        if psf is not None:
+            print "BEFORE applyPSF, type(self.data.value)", type(self.data.value)
+            self.applyPSF(psf,psfdict)
+            print "AFTER applyPSF, type(self.data.value)", type(self.data.value)
 
-#        self.setBrightness(peak_pixel_brightness)
-
+        if pixelscale_detector is not None:
+            print "BEFORE resample, type(self.data.value)", type(self.data.value)
+            pixelscale_detector = getQuantity(pixelscale_detector,CUNITS)
+            self.resample(self.pixelscale / pixelscale_detector)
+            
 
     def applyPSF(self,psf,psfdict):
     
-        if psf is not None:
-
-            if psf == 'model':
-                wavelength, diameter, strehl = psfdict['wavelength'], psfdict['diameter'], psfdict['strehl']
-                self.psf_image = PSF_modeling.PSF_model(self.data,wavelength=wavelength,diameter=diameter,pxscale=self.pixelscale.to('arcsec').value,strehl=strehl)
-                    
-            elif psf.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCL
-
-                try:
-                    hdukw = psfdict['hdukw']
-                except KeyError:
-                    hdukw = 0
-
-                try:
-                    pixelscalekw = psfdict['pixelscalekw']
-                except KeyError:
-                    pixelscalekw = 'pixelscl'  # WebbPSF names pixelscale 'pixelscl' in their fits files
+        if psf == 'model':
+            wavelength, diameter, strehl = psfdict['wavelength'], psfdict['diameter'], psfdict['strehl']
+            self.psf_image = PSF_modeling.PSF_model(self.data,wavelength=wavelength,diameter=diameter,pxscale=self.pixelscale.to('arcsec').value,strehl=strehl)
                 
-                header = pyfits.getheader(psf,hdukw)
-                self.psf_image = pyfits.getdata(psf,hdukw)
+        elif psf.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCL
 
-                pixelscale = header[pixelscalekw]
-                if pixelscale != self.pixelscale:
-                    self.psf_image_raw = self.psf_image[...]
-                    self.psf_image, newfactor_ = resampleImage(self.psf_image,pixelscale/self.pixelscale.to('arcsec').value)
-                    
-            self.data_psfed = PSF_modeling.PSF_conv(self.data,self.psf_image)
+            try:
+                hdukw = psfdict['hdukw']
+            except KeyError:
+                hdukw = 0
+
+            try:
+                pixelscalekw = psfdict['pixelscalekw']
+            except KeyError:
+                pixelscalekw = 'pixelscl'  # WebbPSF names pixelscale 'pixelscl' in their fits files
             
+            header = pyfits.getheader(psf,hdukw)
+            self.psf_image = pyfits.getdata(psf,hdukw)
+
+            pixelscale_psf = header[pixelscalekw]
+            if pixelscale_psf != self.pixelscale:
+                self.psf_image_raw = self.psf_image[...]
+                self.psf_image, newfactor_ = resampleImage(self.psf_image,pixelscale_psf/self.pixelscale.to('arcsec').value)
+
+        print "BEFORE PSF_conv, type(self.data.value)", type(self.data.value)
+        dunit = self.data.unit
+        self.data = PSF_modeling.PSF_conv(self.data.value,self.psf_image) * dunit
+        print "AFTER PSF_conv, type(self.data.value)", type(self.data.value)
+        
 
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
 
@@ -454,22 +543,17 @@ class Image:
 
         """
 
-#T        cdelt, cunit = getValueUnit(pixelscale,self.CUNITS)
-        cdelt, cunit = getValueUnit(pixelscale,CUNITS)
-        
-        self.pixelscale = cdelt * cunit
+        self.pixelscale = getQuantity(pixelscale,CUNITS)
 
-#T        if cunit.to_string() in self.UNITS_LINEAR:
-        if cunit.to_string() in UNITS_LINEAR:
+        if self.pixelscale.unit in UNITS_LINEAR:
             try:
-#T                dist, self.distunit = getValueUnit(distance,self.UNITS_LINEAR)
-                dist, self.distunit = getValueUnit(distance,UNITS_LINEAR)
+                self.distance = getQuantity(distance,UNITS_LINEAR)
             except AttributeError:
                 logging.error("Must provide a value for 'distance' argument. Current value is: "+str(distance))
                 raise
 
-            self.distance = dist*self.distunit
             self.pixelscale = N.arctan2(self.pixelscale,self.distance).to('arcsec')
+            
 
         self.__computePixelarea()
         self.__computeFOV()
@@ -507,19 +591,15 @@ class Image:
 
         """
 
-#T        peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,self.UNITS_BRIGHTNESS)
         peak_pixel_target, brightness_unit = getValueUnit(peak_pixel_brightness,UNITS_BRIGHTNESS)
-        
-#        self.peak_pixel_brightness = peak_pixel_brightness # store for later use, e.g. in embedInFOV() ?
-        
         numfactor = (peak_pixel_target / self.data.max())
-        
         self.data = self.data * numfactor * brightness_unit
 
         
-    def getBrightnessInUnits(self,units):
+    def getBrightnessInUnits(self,units='Jy/arcsec^2'):
 
-        """Compute the image brightness in the requested 'units' (brightness-per-solid-angle).
+        """Compute the image brightness in the requested 'units'
+        (brightness-per-solid-angle).
 
         Parameters
         ----------
@@ -543,6 +623,7 @@ class Image:
         """
         
         try:
+            print "type(self.data), type(self.pixelarea)", type(self.data), type(self.pixelarea)
             brightness =  (self.data / self.pixelarea).to(units)
         except ValueError:
             logging.error("Use valid brightness-per-solid-angle units, e.g. 'Jy/arcsec^2' or 'mJy/sr', etc.")
@@ -587,10 +668,8 @@ class Image:
 
         """
 
-#T        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
-        fov_value, fov_unit = getValueUnit(fov,UNITS_ANGULAR)
-
-        self.pixelscale = (fov_value * fov_unit) / N.float(self.npix)
+        FOV = getQuantity(fov,UNITS_ANGULAR)
+        self.pixelscale = FOV / N.float(self.npix)
         self.__computePixelarea()
         self.__computeFOV()
 
@@ -623,9 +702,8 @@ class Image:
 
         """
         
-#T        fov_value, fov_unit = getValueUnit(fov,self.UNITS_ANGULAR)
-        fov_value, fov_unit = getValueUnit(fov,UNITS_ANGULAR)
-        factor = ((fov_value*fov_unit)/self.FOV).decompose().value
+        FOV = getQuantity(fov,UNITS_ANGULAR)
+        factor = (FOV/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
         cpix = self.npix/2
 
@@ -649,13 +727,18 @@ class Image:
         consecutive application of :func:`resample` to the same image
         can yield inexact results due to accumulated interpolation
         errors.
+        
+        Because resampling is performed by spline interpolation, the
+        total flux in the image may change slightly. This function
+        thus renormalizes the resampled image to the previous total
+        flux.
 
         Parameters
         ----------
         resamplingfactor : float
             The factor by which the the image sampling (number of
             pixels) is increased (if >1) or decreased (if <1). Note
-            that `resamplingfactor` is adjusted because of the
+            that `resamplingfactor` may be adjusted because of the
             requirement that ``npix_new`` be integer and odd-valued.
 
         Examples
@@ -667,6 +750,7 @@ class Image:
 
             # `Image` instance
             I = hypercat.Image(img,pixelscale='1 AU',distance='1 pc',peak_pixel_brightness='1.0 mJy/pix')
+
             print ", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightnessInUnits('mJy/arcsec^2').max())])
               221, 1.0 arcsec, 1.0 arcsec2 / pix, 221.0 arcsec, 1.0 mJy / pix, 1.0 mJy / arcsec2
             print I.getTotalFluxDensity()
@@ -689,14 +773,10 @@ class Image:
               5.30354 Jy  # still preserved
 
         """
-        
-        newimage, newfactor = resampleImage(self.data.value,resamplingfactor)
- 
-        self.data = newimage * self.data.unit
-        self.npix = self.data.shape[0]
 
+        newimage, newfactor, self.npix = resampleImage(self.data.value,resamplingfactor,conserve=True)
+        self.data = newimage * self.data.unit
         self.setPixelscale(pixelscale=self.pixelscale/newfactor)
-        self.setBrightness((self.data.value.max()/newfactor**2.)*self.data.unit)
 
         
     def rotate(self,angle,direction='NE',returnimage=False):
@@ -755,43 +835,8 @@ class Image:
     
 # HIGH-LEVEL HELPER FUNCTIONS
 
-#def mirror_halfimage(halfimage):
-#
-#    """Take half-sized image (image cube) and return the full version.
-#
-#    Parameters
-#    ----------
-#    halfimage : array
-#        Expected shape of halfimage: (nx,ny,nz), or (nx,ny),
-#        and nx == ny/2 +1 must hold (or an exception will be raised).
-#
-#    Returns
-#    -------
-#    fullimage : array
-#        Array with first dimension mirrored, i.e. fullimage.shape =
-#        (ny,ny,nz).
-#
-#    """
-#        
-#    shape = list(halfimage.shape)
-#    nx, ny = shape[:2]
-#
-#    if nx != (ny/2 + 1):
-#        raise ValueError("Image/cube doesn't seem to contain a half-sized array (shape = (%s)). Not mirroring." % (','.join([str(s) for s in shape])))
-#    
-#    shape[0] = 2*nx-1
-#    
-#    logging.info("Mirroring half-cube / half-image.")
-#    
-#    fullimage = N.zeros(shape,dtype=N.float32)
-#    fullimage[:nx,...] = halfimage[::-1,...]
-#    fullimage[nx-1:,...] = halfimage[:,...]
-#    
-#    return fullimage
-
-
 def mirror_axis(cube,axis=-2):
-    
+
     """Mirror one axis of a cube.
 
     Parameters
@@ -807,20 +852,19 @@ def mirror_axis(cube,axis=-2):
     -------
     newcube : array
         Array with 'axis' dimension mirrored, i.e.  newcube.shape =
-        (...,nx*2-1,...).
+        (...,2*nx-1,...).
 
     """
         
-    shape = list(cube.shape)
-    nx = shape[axis]
-    newshape = shape[:]
-    newshape[axis] = 2*nx-1
-    newcube = N.zeros(newshape,dtype=N.float32)
-    newcube[...,:nx,:] = cube[...,::-1,:]
-    newcube[...,nx-1:,:] = cube[...,:,:]
+    ndim = cube.ndim
+    npix = cube.shape[axis]
+    allpads = [(0,0)]*ndim
+    allpads[axis] = (npix-1,0)
     
-    return newcube
+    newcube = N.pad(cube,tuple(allpads),'reflect')
 
+    return newcube
+    
 
 def rotateImage(image,angle,direction='NE'):
 
@@ -864,7 +908,7 @@ def rotateImage(image,angle,direction='NE'):
     return rotimage
 
 
-def resampleImage(image,resamplingfactor):
+def resampleImage(image,resamplingfactor,conserve=True):
 
     """Resample an image by `resamplingfactor`.
 
@@ -878,6 +922,11 @@ def resampleImage(image,resamplingfactor):
         is increased (if >1) or decreased (if <1). Note that
         `resamplingfactor` may be adjusted because of the requirement
         that ``npix_new`` be integer and odd-valued.
+
+    conserve : bool
+        If True (default), the resampled image will be renormalized
+        such that the total flux between the original and the
+        resampled images is preserved.
     
     Returns
     -------
@@ -889,43 +938,59 @@ def resampleImage(image,resamplingfactor):
         The actually used resampling factor. Adjusted, if necessary, by
         the requirement that ``npix_new`` be integer and odd-valued.
 
+    npix : int
+        Number of pixels along one axis of ``newimage``.
+
     """
     
     npix = checkImage(image,returnsize=True)
+    total = image.sum()
     newsize_int, newfactor = computeIntCorrections(npix,resamplingfactor)
     newimage = ndimage.zoom(image,newfactor)
-
     checkImage(newimage,returnsize=False)
 
-    return newimage, newfactor
+    if conserve is True:
+        newtotal = newimage.sum()
+        newimage *= (total / newtotal)
+    
+    return newimage, newfactor, npix
     
 
 # LOW-LEVEL HELPER FUNCTIONS
         
-def pprinter(self):
+def getQuantity(quantity,recognized_units):
 
-    """Very basic pretty-print of the parameter names and values."""
+    """Split a string 'Value Units' into numerical value and string-units,
+    and create an instance of astropy.units.Quantity.
+
+    Parameters
+    ----------
     
-    import pprint
+    quantity : str
+       E.g. quantity='1 Jy' would return <Quantity 1.0 Jy>
 
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(zip(self.paramnames,self.theta))
+    recognized_units : tuple
+        Tuple of valid units (as strings) for ``quantity``. E.g., for
+        a length quantity, recognized units could be
+        ('micron','m','pc','AU'), etc.
 
-        
-def getStrRepr(string_seq,sep=', '):
-
-    """Join sequence of strings ``string_seq`` using join string ``sep``.
-
-    Example
+    Returns
     -------
-    .. code:: python
+    quantity : instance
+        Instance of astropy.units.Quantity, i.e. a value with units.
 
-        strings = ('a','b','c')
-        getStrRepr(strings,' - ')
-          a - b - c
+    Examples
+    --------
+    getQuantity('1 m',('micron','m','pc','AU'))
+      <Quantity 1.0 m>
+
+    getQuantity('1 W',('micron','m','pc','AU'))
+      ValueError: Specified unit 'W' is not recognized. Recognized are: m,AU,pc
+
     """
     
-    return sep.join(string_seq)
+    cdelt, cunit = getValueUnit(quantity,recognized_units)
+    return cdelt * cunit
 
 
 def getValueUnit(quantity,recognized_units):
@@ -977,7 +1042,7 @@ def getValueUnit(quantity,recognized_units):
     unit = u.Unit(unit)
 
     return value, unit
-    
+
 
 def checkInt(x):
     
@@ -1099,15 +1164,98 @@ def computeIntCorrections(npix,factor):
 
     """
     
-    print "npix, factor", npix, factor
     checkOdd(npix)
-    print "npix, factor", npix, factor
     newnpix = npix*factor
     newnpix = N.int((2*N.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor
 
+
+
+def get_Rd(lum,tsub=1500.,outunit='pc'):
+
+    """Get dust sublimation radius Rd from luminosity of source and dust
+    sublimation temperature.
+
+    Uses Eq. (1) from Nenkova+2008b.
+
+    Parameters
+    ----------
+    lum : float
+        AGN bolometric luminosity in erg/s, e.g. 1e45.
+
+    tsub : float
+        Dust sublimation temperature. Default is 1500K, corresponding
+        e.g. to astrophysical silicates.
+
+    outunit : str
+        Desired output units of length. The result will be
+        automatically converted to these units. Defaults to 'pc'.
+
+    Returns
+    -------
+
+    Rd : float
+        Dust sublimation radius Rd in units `outunit`.
+    """
+
+    Rd = 0.4*N.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
+
+    return Rd.to(outunit)
+
+
+def get_pixelscale(linsize,distance,outunit='arcsec',npix=1):
+
+    """From linear size in the sky and distance to source, compute angular
+    size, and angular sizes per linear size and per pixel.
+
+    Parameters
+    ----------
+
+    linsize : str
+        Linear size of a source or feature in the sky, e.g. '1 pc'.
+
+    distance : str
+        Distance to the source from observer, e.g. '4 Mpc'.
+
+    outunit : str
+        Desired output units for the returned angular size. The result
+        will be automatically converted to these units. Default: 'arcsec'
+
+    npix : int
+        The number of pixels that the angular size will be imaged
+        with.
+    """
+    
+    linsize = getQuantity(linsize,UNITS_LINEAR)
+    distance = getQuantity(distance,UNITS_LINEAR)
+    
+    angular = N.arctan2(linsize,distance).to(outunit)
+    angular_per_linsize = angular / linsize  # e.g. arcsec/pc
+    angular_per_pixel = angular / (float(npix)*u.pix)  # e.g. arcsec/pixel
+    
+    return angular, angular_per_linsize, angular_per_pixel
+
+
+def seq2str(seq,jstr=','):
+    
+    """Join a sequence ``seq`` of string-ifiable elements with a string
+    ``jstr``.
+
+    Example
+    -------
+    .. code:: python
+
+        seq2str(('a','b','c'),' - ')
+          'a - b - c'
+
+        seq2str([1,2,3],':')
+          '1:2:3'
+
+    """
+    
+    return jstr.join([str(_) for _ in seq])
 
 
 # PROBABLY HISTORICAL FUNCS, MAYBE DROP THEM
@@ -1252,32 +1400,4 @@ def mirror_all_fitsfiles(d,suffix='.fits',hdus=('IMGDATA','CLDDATA')):
     
     logging.info("All files mirrored.")
 
-
-def get_Rd(lum,tsub=1500.,outunit='pc'):
-
-    """Get dust sublimation radius Rd from luminosity of source and dust
-    sublimation temperature.
-    """
-
-    pc = 0.4*N.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
-
-    return pc.to(outunit)
-
-
-def get_pixelscale(linsize,distance,outunit='arcsec',npix=None):
-
-    cdelt_linsize, cunit__linsize = getValueUnit(linsize,UNITS_LINEAR)
-    cdelt_distance, cunit__distance = getValueUnit(distance,UNITS_LINEAR)
-    
-    linsize = cdelt_linsize * cunit__linsize
-    distance = cdelt_distance * cunit__distance
-
-    angular = N.arctan2(linsize,distance).to(outunit)
-
-    angular_per_linsize = angular / linsize  # e.g. arcsec/pc
-
-    if npix is not None:
-        angular_per_pixel = angular / (float(npix)*u.pix)  # e.g. arcsec/pixel
-    
-    return angular, angular_per_linsize, angular_per_pixel
 

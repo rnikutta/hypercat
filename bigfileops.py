@@ -93,9 +93,9 @@ class CheckListSelector:
 #                         ('buttnf', 'light green,bold', 'light gray'),
 #                         ('selected', 'white', 'dark blue') ]
         self.palette = [ ('header', 'white,bold', 'dark blue'),
-                         ('body', 'white,bold', 'light gray'),
-                         ('buttn', 'black', 'light gray'),
-                         ('buttnf', 'yellow,bold', 'light gray'),
+                         ('body', 'white,bold', 'dark cyan'),
+                         ('buttn', 'black', 'dark cyan'),
+                         ('buttnf', 'white,bold', 'dark cyan'),
                          ('selected', 'white', 'dark blue') ]
 
         self.ui = urwid.curses_display.Screen()
