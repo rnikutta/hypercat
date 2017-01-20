@@ -452,18 +452,14 @@ class Image:
         self.data = image   # will rescale this array in setBrightness()
 
         self.setBrightness(peak_pixel_brightness)
-        print "AFTER setBrightness, type(self.data.value)", type(self.data.value)
         
         if pa != 0.:
             self.rotate(pa)
         
         if psf is not None:
-            print "BEFORE applyPSF, type(self.data.value)", type(self.data.value)
             self.applyPSF(psf,psfdict)
-            print "AFTER applyPSF, type(self.data.value)", type(self.data.value)
 
         if pixelscale_detector is not None:
-            print "BEFORE resample, type(self.data.value)", type(self.data.value)
             pixelscale_detector = getQuantity(pixelscale_detector,CUNITS)
             self.resample(self.pixelscale / pixelscale_detector)
             
@@ -494,10 +490,8 @@ class Image:
                 self.psf_image_raw = self.psf_image[...]
                 self.psf_image, newfactor_ = resampleImage(self.psf_image,pixelscale_psf/self.pixelscale.to('arcsec').value)
 
-        print "BEFORE PSF_conv, type(self.data.value)", type(self.data.value)
         dunit = self.data.unit
         self.data = PSF_modeling.PSF_conv(self.data.value,self.psf_image) * dunit
-        print "AFTER PSF_conv, type(self.data.value)", type(self.data.value)
         
 
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
@@ -623,7 +617,6 @@ class Image:
         """
         
         try:
-            print "type(self.data), type(self.pixelarea)", type(self.data), type(self.pixelarea)
             brightness =  (self.data / self.pixelarea).to(units)
         except ValueError:
             logging.error("Use valid brightness-per-solid-angle units, e.g. 'Jy/arcsec^2' or 'mJy/sr', etc.")
@@ -1117,7 +1110,7 @@ def checkImage(image,returnsize=True):
     try:
         checkOdd(nx)
     except (TypeError, ValueError):
-        print "'image' size in pixels (nx) must be odd and integer, but is nx = ", nx
+        logging.error("'image' size in pixels (nx) must be odd and integer, but is nx = ", nx)
         raise
 
     if returnsize:

@@ -1,4 +1,4 @@
-__version__ = '20170113'   #yyymmdd
+__version__ = '20170120'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling large hypercubes in hdf5 files.
