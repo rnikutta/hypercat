@@ -6,7 +6,7 @@ Hypercubes of (clumpy) AGN tori
 
 **Team:** Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa, Chris Packham, Nancy Levenson, (and others tbd)
 
-**Version:** 2016-06-02
+**Version:** 2017-02-10
 
 **License:** BSD 3-clause, please see [LICENSE](./LICENSE) file
 

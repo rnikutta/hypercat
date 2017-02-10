@@ -1,19 +1,50 @@
-__version__ = '20170120'   #yyymmdd
+__version__ = '20170123'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
-"""Utilities for handling large hypercubes in hdf5 files.
+"""Utilities for handling large hypercubes in hdf5 files (mem-mapping,
+hyper-sclicing, interactive hyper-slab selection).
 
 .. automodule:: bigfileops
+
 """
 
 import logging
 import json
-import urwid
-import urwid.curses_display
+import urwid, urwid.curses_display
 import numpy as N
 import h5py
 
 def memmap_hdf5_dataset(hdf5file,dsetpath):
+
+    """Mem-map a dataset in a hdf5 file.
+
+    The memory mapping provides pointers from RAM to the location of
+    bits on-disk. Before accessing the data, nothing is being copied
+    to RAM.
+
+    Parameters
+    ----------
+    hdffile : str
+        Path to the hdf5 file containing the dataset.
+
+    dsetpath : str
+        The hdf5 qualifying path to the desired dataset. It can
+        contain groups and subgroups. The end point of ``dsetpath`` is
+        the dataset.
+
+    Returns
+    -------
+    dsmemap : memmap
+        Memory-mapped object (as numpy.core.memmap.memmap),
+        representing a dataset on disk.
+
+    Examples
+    --------
+    memmap = memmap_hdf5_dataset('hypercat_20170109.hdf5','imgdata/hypercube')
+    memmap.shape
+      (5, 11, 4, 12, 5, 7, 19, 221, 441)  # sig,i,Y,N,q,tv,wave,x,y
+
+    """
     
     # assert dataset properties, determine dtype, shape, and offset
     with h5py.File(hdf5file,'r') as f:
@@ -43,14 +74,129 @@ def memmap_hdf5_dataset(hdf5file,dsetpath):
 
 def get_hyperslab_via_mesh(dset,idxlist):
 
+    """Select from n-dim array via open mesh of indices.
+
+    Parameters
+    ----------
+    dset : n-dim array
+        N-dimensional array or mem-mapped object, from which certain
+        indexed vertices will be selected via ``idxlist``.
+
+    idxlist : seq
+       List of lists, or list of tuples, or tuple of lists or tuples,
+       etc. For every axis in ``dset``, each sub-sequence lists the
+       index positions to be selected along the current axis from
+       ``dset``. An open mesh of n-dim index positions will then be
+       contstructed from ``idxlist``, and the selection from ``dset``
+       performed.
+
+    Returns
+    -------
+    sel : n-dim array
+        Sub-array selected from ``dst`` according to ``idxlist``.
+
+    Examples
+    --------
+    import numpy as N
+    A = N.arange(3*4*5).reshape((3,4,5))
+      array([[[ 0,  1,  2,  3,  4],
+              [ 5,  6,  7,  8,  9],
+              [10, 11, 12, 13, 14],
+              [15, 16, 17, 18, 19]],
+
+              [20, 21, 22, 23, 24],
+              [25, 26, 27, 28, 29],
+              [30, 31, 32, 33, 34],
+              [35, 36, 37, 38, 39]],
+
+              [40, 41, 42, 43, 44],
+              [45, 46, 47, 48, 49],
+              [50, 51, 52, 53, 54],
+              [55, 56, 57, 58, 59]]])
+    idxlist =[[1],[2,3],[0,3]]
+    selarr = get_hyperslab_via_mesh(A,idxlist)
+    B = bigfileops.get_hyperslab_via_mesh(A,idxlist)
+    B
+      array([[[30, 33],
+              [35, 38]]])
+
+    """
+    
     mesh = N.ix_(*idxlist)
     arr = dset[mesh]
 
     return arr
 
 
-def getIndexLists(theta,paramnames,initsize=None,wordsize=4.,omit=()):
+def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
 
+    """Interactively select values from a number of parameter value lists.
+
+    For each parameter in ``paramnames``, select interactively values
+    from the corresponding list of parameter values in ``theta``,
+    using class CheckListSelector (see also docstring there).
+
+    Parameters
+    ----------
+    theta : list
+        List of lists, each sub-list being a sequence of values to
+        select. Every element will be printed next to a check box that
+        can be selected or unselected.
+
+    paramnames : list
+        List of strings, each being the name given to the corresponding
+        sub-list in ``theta``.
+
+    initsize : float | None
+        If not Note, it is the size (e.g. in GB, or simply in counts)
+        of the pre-selection full cube. This size will be numerically
+        reduced for every element removed during the selection. If
+        None, the size will be computed as N.prod(shape) * wordsize,
+        where ``shape`` are all lengths of all sub-lists in
+        `'theta``. For ``wordsize`` see below.
+
+    wordsize : int
+        The size in bytes of a single number. Will be used to compute
+        the size of the full cube in case no ``initsize`` is
+        provided. Default: wordsize=4 (i.e. float32).
+
+    omit : tuple
+        Tuple of strings, each a parameter name in ``paramnames``,
+        which should be omitted from being presented to the user for
+        interactive selection. I.e., the parameter values for all
+        parameter is ``omit`` will be returned unchanged.
+
+    Returns
+    -------
+    t : list
+        List of 1-d arrays, each containing the seleced values made
+        interactively from every sub-sequence in ``theta``.
+
+    i : list
+        List of list of indices, each being the indices that select
+        t[j] for j a sub-sequence in ``theta``.
+
+    currentsize : float
+        The (possibly) reduced size, computed from ``initsize`` (in
+        whatever units) by mking the interactive selections.
+
+    Examples
+    --------
+    theta = [[0,1,2,3],[11.,12,13,14,15],[0.1,0.4,0.6]]
+    paramnames = ['a','b','c']
+    t,i,cs = getIndexLists(theta,paramnames)
+    # ...make interactive selections on the screen...
+    print theta
+      [[0, 1, 2, 3], [11.0, 12, 13, 14, 15], [0.1, 0.4, 0.6]]
+    print i
+      [[1, 2, 3], [0, 1, 4], [0, 1, 2]]
+    print t 
+      [array([1, 2, 3]), array([ 11.,  12.,  15.]), array([ 0.1,  0.4,  0.6])]
+    print cs
+      108.0  # currentsize; before selections it was 60 elements x 4 bytes 240 bytes
+
+    """
+    
     if initsize is not None:
         currentsize = initsize
     else:
@@ -81,12 +227,44 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4.,omit=()):
 
 class CheckListSelector:
 
+    """Interactively select values from a list."""
+
     def __init__(self,parname,theta,initsize=None):
 
+        """Parameters
+        ----------
+        parname : str
+            Name of the list in ``theta``. It we be displayed to the
+            user in the selection dialog.
+
+        theta : 1-d array
+            Sequence of values. If not an array, will be turned into
+            an array. The values in this sequence will be presented to
+            the user for interactive selection. Every value will have
+            a checkbox.
+
+        initsize : float | None
+            If not None, it is the size (e.g. in GB, or simply in
+            counts) associated with the full size of 'something',
+            pre-selection. This size will be numerically reduced for
+            every element removed during the selection. If None, no
+            size computation will be performed.
+
+        Returns
+        -------
+        Nothing. But after running the interactive selection, see
+        member self.idxes, it contains the selected indices.
+
+        """
+
         self.theta = theta
+        if not isinstance(self.theta,N.ndarray):
+            self.theta = N.array(self.theta)
+        
         self.parname = parname
         self.initsize = initsize
 
+        # set colors for bg, fg, and other elements
 #        self.palette = [ ('header', 'white,bold', 'dark red'),
 #                         ('body', 'white,bold', 'light gray'),
 #                         ('buttn', 'black', 'light gray'),
@@ -118,6 +296,7 @@ class CheckListSelector:
         self.ui.register_palette(self.palette)
         self.ui.run_wrapper(self.run)
 
+    # main event loop
     def run(self):
         while 1:
             self.draw_canvas()
@@ -158,7 +337,6 @@ class CheckListSelector:
             text += " Select at least one value."
             
         self.view.footer = urwid.AttrWrap( urwid.Text(text), 'header')
-#        self.draw_canvas()
         
 
 def storejson(jsonfile,d):
@@ -204,11 +382,28 @@ def loadjson(jsonfile):
     return d
 
 
-def get_bytesize(lol,wordsize=4.):
+def get_bytesize(lol,wordsize=4):
 
-    """lol : list of lists"""
+    """Compute total number of elements in a list of lists, times wordsize in bytes
+
+    Parameters
+    ----------
+    lol : list 
+        List of of lists. Total number of elements in lol will be
+        computed.
+
+    wordsize : int
+        The size in bytes of a single element. Will be used to compute
+        the total size of ``lol``. Default: wordsize=4 (i.e. float32).
+
+    Returns
+    -------
+    bytesize : int
+        Total number of bytes in ``lol``.
+
+    """
     
-    shape_ = N.array([len(_) for _ in lol])
+    shape_ = [len(_) for _ in lol]
     bytesize = N.prod(shape_) * wordsize
 
     return bytesize
@@ -216,7 +411,7 @@ def get_bytesize(lol,wordsize=4.):
 
 def get_bytes_human(nbytes):
 
-    """Converts int (assuming it's a bytes count) to human-readable format.
+    """Converts nbytes (assuming it is a bytes count) to human-readable format.
 
     Also works with negative nbytes, and handles larger-than-largest
     numbers gracefully.

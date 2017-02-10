@@ -1,5 +1,8 @@
+"""N-dimensional interpolation on data hypercubes.
+"""
+
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20160626'
+__version__ = '20170202'
 
 import numpy as N
 import warnings
@@ -14,9 +17,8 @@ class NdimInterpolation:
 
     """N-dimensional interpolation on data hypercubes.
 
-    Operates on image(index) coordinates. Multi-linear or cubic-spline
-    (default).
-
+    Operates on image(index) coordinates. Multi-linear (default) or
+    cubic-spline.
     """
 
     def __init__(self,data,theta,order=1,mode='log'):
@@ -26,17 +28,16 @@ class NdimInterpolation:
         Parameters
         ----------
         data : n-dim array or 1-d array
-            Model database to be interpolated. Sampled on a
-            rectilinear grid (it need not be regular!). 'data' is
-            either an n-dimensional array (hypercube), or a
-            1-dimensional array. If hypercube, each axis corresponds
-            to one of the model parameters, and the index location
-            along each axis grows with the parameter value. The last
-            axis is the 'wavelength' axis. If 'data' is a 1-d array of
-            values, it will be converted into the hypercube
-            format. This means that the order of entries in the 1-d
-            array must be as if constructed via looping over all axes,
-            i.e.
+            Datacube to be interpolated. Sampled on a rectilinear grid
+            (it need not be regular!). 'data' is either an
+            n-dimensional array (hypercube), or a 1-dimensional
+            array. If hypercube, each axis corresponds to one of the
+            model parameters, and the index location along each axis
+            grows with the parameter value (the parameter values are
+            given in `theta`). If 'data' is a 1-d array of values, it
+            will be converted into the hypercube format. This means
+            that the order of entries in the 1-d array must be as if
+            constructed via looping over all axes, i.e.
 
             .. code:: python
 
@@ -49,10 +50,9 @@ class NdimInterpolation:
                             counter += 1
 
         theta : list
-            List of 1-d arrays, each holding in ascending order the
-            unique values for one of the model parameters. The last
-            1-d array in theta is the wavelength array. Example: for
-            the CLUMPY models of AGN tori (Nenkova et al. 2008)
+            List of lists, each holding in ascending order the unique
+            values for one of the axes in `data` hypercube. Example:
+            for the CLUMPY models of AGN tori (Nenkova et al. 2008)
 
               theta = [{i}, {tv}, {q}, {N0}, {sig}, {Y}, {wave}]
 
@@ -62,7 +62,7 @@ class NdimInterpolation:
               {i} = array([0,10,20,30,40,50,60,70,80,90]) (degrees).
 
         order : int
-            Order of interpolation spline to be used. order=1
+            Order of interpolation spline to be used. ``order=1``
             (default) is multi-linear interpolation, ``order=3`` is
             cubic-spline (quite a bit slower, and not necessarily
             better, especially for complicated n-dim
@@ -195,21 +195,16 @@ class NdimInterpolation:
 
         """
 
-#        print "vec = ", vec
+        vectup = [e if isinstance(e,tuple) else (e,) for e in vec] # make tuple of vectors
+        shape_ = [len(e) for e in vectup]  # tuple shape
 
-        vectup = [e if isinstance(e,tuple) else (e,) for e in vec]
-#        print "vectup = ", vectup
-        shape_ = [len(e) for e in vectup]
+        # create a fleshed-out mesh of (multi-dim) locations to interpolate `data` at
+        coords_real = N.array([e for e in itertools.product(*vectup)])
+        
+        columns = coords_real.T.tolist()  # transpose
 
-        coords_real = N.array([e for e in itertools.product(*vectup)])  # use ip(.) here
-#        print "coords_pix, coords_pix.shape = ", coords_pix, coords_pix.shape
-        
-        columns = coords_real.T.tolist()
-#        print "columns, len(columns) = ", columns, len(columns)
-        
+        # convert physical coordinate values to (fractional) pixel-space
         coords_pix = N.array([ self.ips[j](columns[j]) for j in xrange(len(columns)) ])
-#        print "coords_pix.shape = ", coords_pix.shape
-#        print "self.data_hypercube.shape = ", self.data_hypercube.shape
         
         return coords_pix, shape_
 
