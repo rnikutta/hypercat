@@ -281,7 +281,7 @@ class ImageFrame:
         self.__computeFOV()
 
     # convenience functions
-    def getImageT(self):
+    def _getImageT(self):
         try:
             return self.data.value.T
         except AttributeError:
@@ -289,7 +289,7 @@ class ImageFrame:
         except:
             raise
 
-    I = property(getImageT)
+    I = property(_getImageT)
 
 
 class Image(ImageFrame):
