@@ -1,0 +1,240 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils module &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="units module" href="units.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="units module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-utils">
+<span id="utils-module"></span><h1>utils module<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="utils.arrayify">
+<code class="descclassname">utils.</code><code class="descname">arrayify</code><span class="sig-paren">(</span><em>arg</em>, <em>n=None</em>, <em>shape=None</em>, <em>direction=’x’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#arrayify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.arrayify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeat ‘arg’ ‘n’ times, put that sequence in array with shape ‘shape’.</p>
+<p>If arg is already a list-like sequence, ignore n.
+If ‘shape’ is a 2-tuple, reshape sequence to an array with shape ‘shape’.
+If len(sequence)&gt;array.size, only put the first array.size elements of sequence into the array,
+If len(sequence)&lt;=array.size, pad the remaining elements in array with None.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>arg</strong> (<em>singlet</em><em>, or </em><em>list-like sequence</em>) – If not list or tuple, arg is a single-element object (can be
+anything) and will be repeated either n times, or
+N.prod(shape) times.</li>
+<li><strong>n</strong> (<em>int|None</em>) – </li>
+<li><strong>shape</strong> (<em>2-tuple|None</em>) – </li>
+<li><strong>direction</strong> (<em>str</em>) – If ‘x’ (default), elements in resulting 2d array are counted
+along rows first, then columns. If ‘y’, the other way round.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># generate 1d sequence</span>
+<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]</span>
+
+<span class="c1"># and reshape to 2d</span>
+<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
+           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+<span class="c1"># embed sequence in larger 2d array (pad tail with None)</span>
+<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
+           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>   <span class="bp">None</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+<span class="c1"># place sequence in smaller 2d array (only use first elements)</span>
+<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
+           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+<span class="c1"># provide a list-like sequence (no effect)</span>
+<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">]</span>
+
+<span class="c1"># provide a list-like sequence, and n (no effect, n ignored)</span>
+<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">]</span>
+
+<span class="c1"># provide a list-like sequence, and embed in larger array</span>
+<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">],</span>
+           <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+<span class="c1"># provide a list-like sequence, and embed in smaller array</span>
+<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.mirror_axis">
+<code class="descclassname">utils.</code><code class="descname">mirror_axis</code><span class="sig-paren">(</span><em>cube</em>, <em>axis=-2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#mirror_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.mirror_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mirror one axis of a cube.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cube</strong> (<em>array</em>) – Expected shape of cube: (…,nx,…).</li>
+<li><strong>axis</strong> (<em>int</em>) – axis index to be mirrored. Default: -2. Mirroring assumes a
+central columns of elements. See ‘Returns’ section.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>newcube</strong> –</p>
+<dl class="docutils">
+<dt>Array with ‘axis’ dimension mirrored, such that</dt>
+<dd><p class="first last">newcube.shape = (…,2*nx-1,…)</p>
+</dd>
+</dl>
+<p>i.e. newcube.shape[axis] always odd.</p>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">c</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]])</span>
+
+<span class="n">mirror_axis</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]])</span>
+
+<span class="n">mirror_axis</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+           <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.seq2str">
+<code class="descclassname">utils.</code><code class="descname">seq2str</code><span class="sig-paren">(</span><em>seq</em>, <em>jstr=’</em>, <em>’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#seq2str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.seq2str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join a sequence <code class="docutils literal"><span class="pre">seq</span></code> of string-ifiable elements with a string
+<code class="docutils literal"><span class="pre">jstr</span></code>.</p>
+<p class="rubric">Example</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">seq2str</span><span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">),</span><span class="s1">&#39; - &#39;</span><span class="p">)</span>
+  <span class="s1">&#39;a - b - c&#39;</span>
+
+<span class="n">seq2str</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+  <span class="s1">&#39;1:2:3&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="units.html"
+                        title="previous chapter">units module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="units module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

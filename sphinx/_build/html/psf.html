@@ -1,0 +1,194 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>psf module &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="units module" href="units.html" />
+    <link rel="prev" title="plotting module" href="plotting.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="units module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="plotting module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-psf">
+<span id="psf-module"></span><h1>psf module<a class="headerlink" href="#module-psf" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="psf.PSF">
+<em class="property">class </em><code class="descclassname">psf.</code><code class="descname">PSF</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#PSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.PSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="imageops.html#imageops.ImageFrame" title="imageops.ImageFrame"><code class="xref py py-class docutils literal"><span class="pre">imageops.ImageFrame</span></code></a></p>
+<dl class="method">
+<dt id="psf.PSF.convolve">
+<code class="descname">convolve</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#PSF.convolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.PSF.convolve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolution of the model PSF with a CUMPY image</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>float array</em><em> (</em><em>2D</em><em>)</em>) – Array obtained from hypercat using get_image module</li>
+<li><strong>psf</strong> (<em>float array</em><em> (</em><em>2D</em><em>)</em>) – Array of the model PSF obtained with PSF_modeling()</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">convolved_image</span> <span class="o">=</span> <span class="n">PSF_conv</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">psf</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="psf.getPSF">
+<code class="descclassname">psf.</code><code class="descname">getPSF</code><span class="sig-paren">(</span><em>psfdict</em>, <em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#getPSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.getPSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model or load from file a PSF suitable for <cite>image</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>instance</em>) – <cite>Image</cite> instance.</li>
+<li><strong>psfdict</strong> (<em>dict</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="psf.loadPSFfromFITS">
+<code class="descclassname">psf.</code><code class="descname">loadPSFfromFITS</code><span class="sig-paren">(</span><em>fitsfile</em>, <em>psfdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#loadPSFfromFITS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.loadPSFfromFITS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="psf.modelPSF">
+<code class="descclassname">psf.</code><code class="descname">modelPSF</code><span class="sig-paren">(</span><em>npix</em>, <em>wavelength=1.25</em>, <em>diameter=30.0</em>, <em>strehl=0.8</em>, <em>pixelscale=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#modelPSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.modelPSF" title="Permalink to this definition">¶</a></dt>
+<dd><p>PSF modeling of CLUMPY images given a specific telescope and wavelength</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>float array</em><em> (</em><em>2D</em><em>)</em>) – Array obtained from hypercat using get_image module</li>
+<li><strong>wavelength</strong> (<em>array</em>) – List of wavelengths in microns to create PSF</li>
+<li><strong>diameter</strong> (<em>array</em>) – Diameter of the telescope in meters</li>
+<li><strong>strehl</strong> (<em>array</em>) – Strehl of the model PSF</li>
+<li><strong>pxscale</strong> (<em>array</em>) – Pixel-scale of the instrument in arcsec/px</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PSF</span> <span class="o">=</span> <span class="n">PSF_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plotting.html"
+                        title="previous chapter">plotting module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="units.html"
+                        title="next chapter">units module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/psf.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="units module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="plotting module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

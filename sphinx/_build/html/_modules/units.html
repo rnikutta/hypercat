@@ -1,0 +1,224 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>units &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for units</h1><div class="highlight"><pre>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170131&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for handling units and units strings.</span>
+
+<span class="sd">.. automodule:: units</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="c1"># Allowed units, per type; add more as required</span>
+<span class="n">UNITS_ANGULAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">,</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="s1">&#39;milliarcsecond&#39;</span><span class="p">,</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span><span class="s1">&#39;radian&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized angular units, e.g. for pixel scale.</span>
+<span class="n">UNITS_LINEAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;cm&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">,</span><span class="s1">&#39;lyr&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;kpc&#39;</span><span class="p">,</span><span class="s1">&#39;Mpc&#39;</span><span class="p">,</span><span class="s1">&#39;Gpc&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized linear units (either for pixel scale, or for source distance, etc.)</span>
+<span class="n">CUNITS</span> <span class="o">=</span> <span class="n">UNITS_ANGULAR</span> <span class="o">+</span> <span class="n">UNITS_LINEAR</span>  <span class="c1">#: Their union.</span>
+<span class="c1"># TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)</span>
+<span class="n">UNITS_WAVE</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Angstrom&#39;</span><span class="p">,</span><span class="s1">&#39;nm&#39;</span><span class="p">,</span><span class="s1">&#39;micron&#39;</span><span class="p">,</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+<span class="n">UNITS_LUMINOSITY</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">,</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="s1">&#39;Lsun&#39;</span><span class="p">,</span><span class="s1">&#39;solLum&#39;</span><span class="p">)</span>
+<span class="n">UNITS_BRIGHTNESS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy/pix&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/pix&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized units for brightness-per-pixel.</span>
+<span class="n">UNITS_FLUXDENSITY</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy&#39;</span><span class="p">,</span><span class="s1">&#39;mJy&#39;</span><span class="p">,</span><span class="s1">&#39;MJy&#39;</span><span class="p">,</span><span class="s1">&#39;erg/s/cm^2/Hz&#39;</span><span class="p">,</span><span class="s1">&#39;W/m^2/Hz&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized units for flux denisty</span>
+<span class="c1">#        self.UNITS_BRIGHTNESS_SOLIDANGLE = (&#39;Jy/arcsec^2&#39;,&#39;Jy/mas^2&#39;,&#39;Jy/milliarcsec^2&#39;,&#39;mJy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;mJy/milliarcsec^2&#39;)</span>
+
+<span class="c1"># compile regex pattern to identify numbers in a string</span>
+<span class="n">numeric_pattern</span> <span class="o">=</span> <span class="s2">r&quot;&quot;&quot;^\s*</span>
+<span class="s2">         [-+]? # optional sign</span>
+<span class="s2">         \s*</span>
+<span class="s2">         (?:</span>
+<span class="s2">             (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc</span>
+<span class="s2">             |</span>
+<span class="s2">             (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc</span>
+<span class="s2">         )</span>
+<span class="s2">         # followed by optional exponent part if desired</span>
+<span class="s2">         (?: [Ee] [+-]? \d+ ) ?</span>
+<span class="s2">         &quot;&quot;&quot;</span>
+<span class="n">rx</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">numeric_pattern</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="getQuantity"><a class="viewcode-back" href="../units.html#units.getQuantity">[docs]</a><span class="k">def</span> <span class="nf">getQuantity</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Split a string &#39;Value Units&#39; into numerical value and string-units,</span>
+<span class="sd">    and create an instance of astropy.units.Quantity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    quantity : str</span>
+<span class="sd">       E.g. quantity=&#39;1 Jy&#39; would return &lt;Quantity 1.0 Jy&gt;</span>
+
+<span class="sd">    recognized_units : tuple</span>
+<span class="sd">        Tuple of valid units (as strings) for ``quantity``. E.g., for</span>
+<span class="sd">        a length quantity, recognized units could be</span>
+<span class="sd">        (&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;), etc.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    quantity : instance</span>
+<span class="sd">        Instance of astropy.units.Quantity, i.e. a value with units.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    getQuantity(&#39;1 m&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
+<span class="sd">      &lt;Quantity 1.0 m&gt;</span>
+
+<span class="sd">    getQuantity(&#39;1 W&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
+<span class="sd">      ValueError: Specified unit &#39;W&#39; is not recognized. Recognized are: m,AU,pc</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">cdelt</span><span class="p">,</span> <span class="n">cunit</span> <span class="o">=</span> <span class="n">getValueUnit</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdelt</span> <span class="o">*</span> <span class="n">cunit</span></div>
+
+
+<div class="viewcode-block" id="getValueUnit"><a class="viewcode-back" href="../units.html#units.getValueUnit">[docs]</a><span class="k">def</span> <span class="nf">getValueUnit</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Split `string` into value and units string.</span>
+
+<span class="sd">    Evaluate both and return the numerical value, and the units object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    quantity : str or `Quantity` instance</span>
+<span class="sd">        If string, its format is `num units`, where `num` is the</span>
+<span class="sd">        string representation of a numerical value, and `units` is one</span>
+<span class="sd">        of the recognized units in the sequence of strings provided in</span>
+<span class="sd">        ``recognized_units``. `num` and `units` can but need not be</span>
+<span class="sd">        separated by whitespace.</span>
+
+<span class="sd">        If instance of `Quantity`, ``quantity.value`` and</span>
+<span class="sd">        ``quantity.unit`` are the equivalents of `num` and `unit`.</span>
+
+<span class="sd">    recognized_units :  seq of strings</span>
+<span class="sd">        Sequence of strings representing units that the `units` part</span>
+<span class="sd">        of `string` will be checked against.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code:: python</span>
+
+<span class="sd">        recognized_units = (&#39;Jy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;uJy/sr&#39;)</span>
+<span class="sd">        getValueUnit(&#39;5.2 Jy/arcsec^2&#39;,recognized_units)</span>
+<span class="sd">          (5.2, Unit(&quot;Jy / arcsec2&quot;))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">quantity</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">quantity</span><span class="o">.</span><span class="n">unit</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">rx</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">quantity</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">quantity</span><span class="p">[</span><span class="n">quantity</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">):]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;quantity&#39; is neither string nor instance of &#39;Quantity&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recognized_units</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specified unit &#39;</span><span class="si">%s</span><span class="s2">&#39; is not recognized. Recognized are: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recognized_units</span><span class="p">)))</span>
+
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

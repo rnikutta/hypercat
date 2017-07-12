@@ -1,0 +1,259 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>morphology module &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ndiminterpolation module" href="ndiminterpolation.html" />
+    <link rel="prev" title="loggers module" href="loggers.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ndiminterpolation.html" title="ndiminterpolation module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="loggers.html" title="loggers module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-morphology">
+<span id="morphology-module"></span><h1>morphology module<a class="headerlink" href="#module-morphology" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="morphology.angle1">
+<code class="descclassname">morphology.</code><code class="descname">angle1</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#angle1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.angle1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute angle between two vectors a and b.</p>
+<p>Uses formula:</p>
+<div class="math">
+\[\cos\theta = \frac{a \cdot b}{|a||b|}\]</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.angle2">
+<code class="descclassname">morphology.</code><code class="descname">angle2</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#angle2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.angle2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute angle between two vectors a and b.</p>
+<p>Uses formula:</p>
+<div class="math">
+\[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
+<p>Slower than <a class="reference internal" href="#morphology.angle1" title="morphology.angle1"><code class="xref py py-func docutils literal"><span class="pre">angle1()</span></code></a>, but possibly more accurate for very
+small angles.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.eq11">
+<code class="descclassname">morphology.</code><code class="descname">eq11</code><span class="sig-paren">(</span><em>I</em>, <em>sig</em>, <em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#eq11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.eq11" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.fluxdensity_i_wave">
+<code class="descclassname">morphology.</code><code class="descname">fluxdensity_i_wave</code><span class="sig-paren">(</span><em>cube</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#fluxdensity_i_wave"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.fluxdensity_i_wave" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.gaussian">
+<code class="descclassname">morphology.</code><code class="descname">gaussian</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sx=5.0</em>, <em>sy=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.gaussian2d_circular">
+<code class="descclassname">morphology.</code><code class="descname">gaussian2d_circular</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sigma=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian2d_circular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian2d_circular" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.getGaussian">
+<code class="descclassname">morphology.</code><code class="descname">getGaussian</code><span class="sig-paren">(</span><em>npix</em>, <em>sig</em>, <em>xoff=0.0</em>, <em>yoff=0.0</em>, <em>Imax=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getGaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getGaussian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.getUnitVector">
+<code class="descclassname">morphology.</code><code class="descname">getUnitVector</code><span class="sig-paren">(</span><em>axis=1</em>, <em>ndim=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getUnitVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getUnitVector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment">
+<code class="descclassname">morphology.</code><code class="descname">get_moment</code><span class="sig-paren">(</span><em>image</em>, <em>radius=1.0</em>, <em>angular=’a’</em>, <em>m=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute m-th moment of image.</p>
+<dl class="docutils">
+<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">array (or instance of Image?)</span></dt>
+<dd>2d array (or instance of Image?)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_power">
+<code class="descclassname">morphology.</code><code class="descname">get_power</code><span class="sig-paren">(</span><em>image</em>, <em>m</em>, <em>r=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_power"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_power" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet</code><span class="sig-paren">(</span><em>npix</em>, <em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet_elliptical_mexh">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet_elliptical_mexh</code><span class="sig-paren">(</span><em>npix</em>, <em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet_elliptical_mexh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet_elliptical_mexh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet_elliptical_mexh_gaillot">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet_elliptical_mexh_gaillot</code><span class="sig-paren">(</span><em>npix</em>, <em>sx=5.0</em>, <em>sigma=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet_elliptical_mexh_gaillot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet_elliptical_mexh_gaillot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet_elliptical_mexh_gaillot_full">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet_elliptical_mexh_gaillot_full</code><span class="sig-paren">(</span><em>npix</em>, <em>x0=0</em>, <em>y0=0</em>, <em>sx=5.0</em>, <em>sigma=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet_elliptical_mexh_gaillot_full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet_elliptical_mexh_gaillot_full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet_elliptical_mexh_vuong">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet_elliptical_mexh_vuong</code><span class="sig-paren">(</span><em>npix</em>, <em>sx=5.0</em>, <em>sy=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet_elliptical_mexh_vuong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet_elliptical_mexh_vuong" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_wavelet_elliptical_mexh_vuong_fast">
+<code class="descclassname">morphology.</code><code class="descname">get_wavelet_elliptical_mexh_vuong_fast</code><span class="sig-paren">(</span><em>npix</em>, <em>sx=5.0</em>, <em>sy=5.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_wavelet_elliptical_mexh_vuong_fast"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_wavelet_elliptical_mexh_vuong_fast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.imageToEigenvectors">
+<code class="descclassname">morphology.</code><code class="descname">imageToEigenvectors</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#imageToEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.imageToEigenvectors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.plot">
+<code class="descclassname">morphology.</code><code class="descname">plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.plot_symmetric1">
+<code class="descclassname">morphology.</code><code class="descname">plot_symmetric1</code><span class="sig-paren">(</span><em>loadfile=’symmetric1.npz’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#plot_symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.plot_symmetric1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.ratio_fluxdensity_upper_over_lower">
+<code class="descclassname">morphology.</code><code class="descname">ratio_fluxdensity_upper_over_lower</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#ratio_fluxdensity_upper_over_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.ratio_fluxdensity_upper_over_lower" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.rot90ccw">
+<code class="descclassname">morphology.</code><code class="descname">rot90ccw</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#rot90ccw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.rot90ccw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate 2-d vector v 90 degrees CCW.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.symmetric1">
+<code class="descclassname">morphology.</code><code class="descname">symmetric1</code><span class="sig-paren">(</span><em>npix=51</em>, <em>savefile=’symmertric1.npz’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.symmetric1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.test1">
+<code class="descclassname">morphology.</code><code class="descname">test1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#test1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.test1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.whichside">
+<code class="descclassname">morphology.</code><code class="descname">whichside</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#whichside"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.whichside" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.work">
+<code class="descclassname">morphology.</code><code class="descname">work</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#work"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.work" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="loggers.html"
+                        title="previous chapter">loggers module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ndiminterpolation.html"
+                        title="next chapter">ndiminterpolation module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/morphology.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ndiminterpolation.html" title="ndiminterpolation module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="loggers.html" title="loggers module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

@@ -1,8 +1,16 @@
-__version__ = '20170123'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20170711'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
-"""Utilities for handling large hypercubes in hdf5 files (mem-mapping,
-hyper-sclicing, interactive hyper-slab selection).
+"""Utilities for handling large hypercubes in hdf5 files.
+
+   Some functionality:
+     - mem-mapping
+     - hyper-slicing
+     - interactive hyper-slab selection
+     - saving selections as index lists of lists to json files
+     - saving sub-cubes to hdf5 files
 
 .. automodule:: bigfileops
 
@@ -13,10 +21,95 @@ import json
 import urwid, urwid.curses_display
 import numpy as N
 import h5py
+import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
+
+
+def storeCubeToHdf5(cube,hdffile,groupname=None):
+
+    """Store ::class::`hypercat.ModelCube` instance to separate hdf5 file.
+
+    Maps these hdf5 file elemens to the properties of a
+    ::class::`hypercat.ModelCube` instance: (where
+    ``h = h5py.File(hdffile)`` and ``g = h[groupname]``)
+
+    .. code-block:: text
+
+       / level (root)
+          h['Nhypercubes'] --> 1 if hdffile is new; +1 for each newly added group
+          h['hypercubenames'] --> dataset/list of added groups, extended each time via .resize()
+
+       /group level
+          g['hypercube'] --> cube.data
+          g['hypercubeshape'] --> cube.data.shape
+          g['paramnames'] --> cube.paramnames
+          g['theta'] --> cube.theta (but PadArray'd)
+
+    Opens ``hdffile`` in append mode if it already exists. Creates it
+    otherwise.
+
+    Fails if groupname already exists in hdffile. Creates group otherwise.
+
+    Parameters
+    ----------
+    cube : instance
+        Instance of ::class::`hypercat.ModelCube` class.
+    
+    hdffile : str
+        Path to hdf5 file where the cube and all relevant properties
+        will be stored. If hdffile does not yet exists on disk, it
+        will be created
+
+    groupname : str | None
+        Name of group in hdffile under which this cube will be
+        stored. If a group of this name already exists in ``hdffile``,
+        will raise an Exception. If ``None``, will use
+        ``cube.groupname``.
+
+    """
+
+    # open or create hdf5 file
+    h = h5py.File(hdffile,'a')  # open in read/write mode if file exists, create otherwise
+
+    # add group, or fail if already exists
+    if groupname is None:
+        groupname = cube.groupname
+
+    g = h.create_group(groupname)
+    
+    # add members to group, or fail if one already exists
+    mapping = {'hypercube':cube.data,
+               'hypercubeshape':cube.data.shape,
+               'paramnames':cube.paramnames,
+               'theta': padarray.PadArray(cube.theta).pad}
+
+    for name,data in mapping.items():
+        ds = g.create_dataset(name,data=data)
+
+    # if all went well, increment h['Nhypercubes'] by one...
+    try:
+        ds = h['Nhypercubes']
+    except KeyError:
+        ds = h.create_dataset('Nhypercubes',data=1)
+    else:
+        ds[()] += 1
+
+
+    # ... and append the group name to the ``hypercubes`` dataset (a 1-d array of strings)
+    try:
+        ds = h['hypercubenames']
+    except KeyError:
+        ds = h.create_dataset('hypercubenames',data=[groupname],maxshape=(None,))
+    else:
+        n = ds.shape[0]
+        ds.resize((n+1,))
+        ds[n] = groupname
+
+    h.close()
+    
 
 def memmap_hdf5_dataset(hdf5file,dsetpath):
 
-    """Mem-map a dataset in a hdf5 file.
+    """Memory-map a dataset in a hdf5 file.
 
     The memory mapping provides pointers from RAM to the location of
     bits on-disk. Before accessing the data, nothing is being copied
@@ -35,14 +128,17 @@ def memmap_hdf5_dataset(hdf5file,dsetpath):
     Returns
     -------
     dsmemap : memmap
-        Memory-mapped object (as numpy.core.memmap.memmap),
+        Memory-mapped object (as ``numpy.core.memmap.memmap``),
         representing a dataset on disk.
 
     Examples
     --------
-    memmap = memmap_hdf5_dataset('hypercat_20170109.hdf5','imgdata/hypercube')
-    memmap.shape
-      (5, 11, 4, 12, 5, 7, 19, 221, 441)  # sig,i,Y,N,q,tv,wave,x,y
+
+    .. code-block:: python
+
+       memmap = memmap_hdf5_dataset('hypercat_20170109.hdf5','imgdata/hypercube')
+       memmap.shape
+         (5, 11, 4, 12, 5, 7, 19, 221, 441)  # sig,i,Y,N,q,tv,wave,x,y
 
     """
     
@@ -97,28 +193,32 @@ def get_hyperslab_via_mesh(dset,idxlist):
 
     Examples
     --------
-    import numpy as N
-    A = N.arange(3*4*5).reshape((3,4,5))
-      array([[[ 0,  1,  2,  3,  4],
-              [ 5,  6,  7,  8,  9],
-              [10, 11, 12, 13, 14],
-              [15, 16, 17, 18, 19]],
 
-              [20, 21, 22, 23, 24],
-              [25, 26, 27, 28, 29],
-              [30, 31, 32, 33, 34],
-              [35, 36, 37, 38, 39]],
+    .. code-block:: python
 
-              [40, 41, 42, 43, 44],
-              [45, 46, 47, 48, 49],
-              [50, 51, 52, 53, 54],
-              [55, 56, 57, 58, 59]]])
-    idxlist =[[1],[2,3],[0,3]]
-    selarr = get_hyperslab_via_mesh(A,idxlist)
-    B = bigfileops.get_hyperslab_via_mesh(A,idxlist)
-    B
-      array([[[30, 33],
-              [35, 38]]])
+       import numpy as N
+       A = N.arange(3*4*5).reshape((3,4,5))
+         array([[[ 0,  1,  2,  3,  4],
+                 [ 5,  6,  7,  8,  9],
+                 [10, 11, 12, 13, 14],
+                 [15, 16, 17, 18, 19]],
+
+                 [20, 21, 22, 23, 24],
+                 [25, 26, 27, 28, 29],
+                 [30, 31, 32, 33, 34],
+                 [35, 36, 37, 38, 39]],
+
+                 [40, 41, 42, 43, 44],
+                 [45, 46, 47, 48, 49],
+                 [50, 51, 52, 53, 54],
+                 [55, 56, 57, 58, 59]]])
+
+       idxlist = [[1],[2,3],[0,3]]
+       selarr = get_hyperslab_via_mesh(A,idxlist)
+       B = bigfileops.get_hyperslab_via_mesh(A,idxlist)
+       B
+         array([[[30, 33],
+                 [35, 38]]])
 
     """
     
@@ -178,22 +278,25 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
 
     currentsize : float
         The (possibly) reduced size, computed from ``initsize`` (in
-        whatever units) by mking the interactive selections.
+        whatever units) by making the interactive selections.
 
     Examples
     --------
-    theta = [[0,1,2,3],[11.,12,13,14,15],[0.1,0.4,0.6]]
-    paramnames = ['a','b','c']
-    t,i,cs = getIndexLists(theta,paramnames)
-    # ...make interactive selections on the screen...
-    print theta
-      [[0, 1, 2, 3], [11.0, 12, 13, 14, 15], [0.1, 0.4, 0.6]]
-    print i
-      [[1, 2, 3], [0, 1, 4], [0, 1, 2]]
-    print t 
-      [array([1, 2, 3]), array([ 11.,  12.,  15.]), array([ 0.1,  0.4,  0.6])]
-    print cs
-      108.0  # currentsize; before selections it was 60 elements x 4 bytes 240 bytes
+
+    .. code-block:: python
+
+       theta = [[0,1,2,3],[11.,12,13,14,15],[0.1,0.4,0.6]]
+       paramnames = ['a','b','c']
+       t,i,cs = getIndexLists(theta,paramnames)
+       # ...make interactive selections on the screen...
+       print theta
+         [[0, 1, 2, 3], [11.0, 12, 13, 14, 15], [0.1, 0.4, 0.6]]
+       print i
+         [[1, 2, 3], [0, 1, 4], [0, 1, 2]]
+       print t 
+         [array([1, 2, 3]), array([ 11.,  12.,  15.]), array([ 0.1,  0.4,  0.6])]
+       print cs
+         108.0  # currentsize; before selections it was 60 elements x 4 bytes 240 bytes
 
     """
     
@@ -389,12 +492,12 @@ def get_bytesize(lol,wordsize=4):
     Parameters
     ----------
     lol : list 
-        List of of lists. Total number of elements in lol will be
+        List of of lists. Total number of elements in ``lol`` will be
         computed.
 
     wordsize : int
         The size in bytes of a single element. Will be used to compute
-        the total size of ``lol``. Default: wordsize=4 (i.e. float32).
+        the total size of ``lol``. Default: ``wordsize=4`` (i.e. float32).
 
     Returns
     -------
@@ -463,3 +566,4 @@ def get_bytes_human(nbytes):
     suffix = suffixes[order]
     
     return sig*prefix, suffix
+

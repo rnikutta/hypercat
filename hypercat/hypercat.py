@@ -100,13 +100,14 @@ class ModelCube:
         logging.info("Opening HDF5 file: %s " % hdffile)
         self.h = h5py.File(hdffile,'r')
         self.group = self.h[hypercube]
+        self.groupname = hypercube
         
         logging.info("Loading sampling parameters.")
         self.paramnames = self.group['paramnames'].value.tolist()
         self.theta = padarray.PadArray(self.group['theta'].value).unpad
 
         iY = self.paramnames.index('Y')
-        self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in untis of Rd
+        self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
         iy = self.paramnames.index('y')
         npix = self.theta[iy].size
         self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
@@ -125,7 +126,7 @@ class ModelCube:
 
 #        self.paramnames = (self.group['paramnames'].value)[select]
 
-        # SELECT A SUB-HYPERCUBE
+# SELECT A SUB-HYPERCUBE
         if subcube_selection is not None:
 
             if subcube_selection == 'interactive':
@@ -162,18 +163,32 @@ class ModelCube:
             self.y = self.theta[-2]
             self.wave = self.theta[-1]
 
+#squeezed        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
+#squeezed        logging.info("Squeezing all dim-1 axes...")
+#squeezed        sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
+#squeezed        self.theta = itemgetter(*sel)(self.theta)
+#squeezed        self.paramnames = itemgetter(*sel)(self.paramnames)
+#squeezed        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
+#squeezed        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
+#squeezed        
+#squeezed        # instantiate an n-dim interpolator object
+#squeezed        if ndinterpolator is True:
+#squeezed            logging.info("Instantiating n-dim interpolation object ...")
+#squeezed            self.ip = ndiminterpolation.NdimInterpolation(self.data,self.theta,mode='lin')
+
+            
         # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
         logging.info("Squeezing all dim-1 axes...")
         sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
-        self.theta = itemgetter(*sel)(self.theta)
-        self.paramnames = itemgetter(*sel)(self.paramnames)
-        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
-        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
+        theta_sel = itemgetter(*sel)(self.theta)
+#        self.paramnames = itemgetter(*sel)(self.paramnames)
+#        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
+#        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
         
         # instantiate an n-dim interpolator object
         if ndinterpolator is True:
             logging.info("Instantiating n-dim interpolation object ...")
-            self.ip = ndiminterpolation.NdimInterpolation(self.data,self.theta,mode='lin')
+            self.ip = ndiminterpolation.NdimInterpolation(self.data.squeeze(),theta_sel,mode='lin')
 
         logging.info("Done.")
         
@@ -226,7 +241,7 @@ class ModelCube:
             # bring everything together
             parstr = maxstr % p
             asterisk = " "
-            if p not in self.omit:
+            if (p not in self.omit) and (len(vals) != 1):
                 parstr = "\033[1m" + parstr
                 asterisk = "*"
                 svals = svals  + "\033[0m"
@@ -234,9 +249,11 @@ class ModelCube:
             print parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals
             
         print rule
-        print "Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolatable."
+        print "Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable."
 
 
+    parameter_values = property(print_sampling)
+    
     def get_image(self,vector,full=True):
 
         """Extract hyperslice from the hypercube via N-dim interpolation.
@@ -307,7 +324,7 @@ class ModelCube:
 
 class Source:
     
-    def __init__(self,cube,luminosity='1e45 erg/s',distance='1 Mpc',tsub=1500.,pa=0.,name=''):
+    def __init__(self,cube,luminosity='1e45 erg/s',distance='1 Mpc',tsub=1500.,pa='0. deg',name=''):
 
         """
         pa : str | 'Quantity' instance
@@ -334,8 +351,10 @@ class Source:
 
         self.theta = theta
 
-        if self.cube.data.ndim != len(theta) + len(self.cube.omit):
-            raise Exception, "The provided model hypercube and vector of parameters are not compatible!"
+#        if self.cube.data.ndim != len(theta) + len(self.cube.omit):
+#            raise Exception, "The provided model hypercube and vector of parameters are not compatible!"
+#        if self.cube.ip.data_hypercube.ndim != len(theta) + len(self.cube.omit):
+#            raise Exception, "The provided model hypercube and vector of parameters are not compatible!"
         
         if wave is None:
             self.wave = self.theta[-1] * u.micron

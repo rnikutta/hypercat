@@ -1,7 +1,0 @@
-ndiminterpolation_vectorized module
-===================================
-
-.. automodule:: ndiminterpolation_vectorized
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for utils</h1><div class="highlight"><pre>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170209&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
+
+<span class="sd">&quot;&quot;&quot;General helper func for hypercat.</span>
+
+<span class="sd">.. automodule:: utils</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+
+
+<div class="viewcode-block" id="arrayify"><a class="viewcode-back" href="../utils.html#utils.arrayify">[docs]</a><span class="k">def</span> <span class="nf">arrayify</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Repeat &#39;arg&#39; &#39;n&#39; times, put that sequence in array with shape &#39;shape&#39;.</span>
+
+<span class="sd">    If arg is already a list-like sequence, ignore n.</span>
+<span class="sd">    If &#39;shape&#39; is a 2-tuple, reshape sequence to an array with shape &#39;shape&#39;.</span>
+<span class="sd">    If len(sequence)&gt;array.size, only put the first array.size elements of sequence into the array,</span>
+<span class="sd">    If len(sequence)&lt;=array.size, pad the remaining elements in array with None.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arg : singlet, or list-like sequence</span>
+<span class="sd">        If not list or tuple, arg is a single-element object (can be</span>
+<span class="sd">        anything) and will be repeated either n times, or</span>
+<span class="sd">        N.prod(shape) times.</span>
+
+<span class="sd">    n : int|None</span>
+
+<span class="sd">    shape : 2-tuple|None</span>
+
+<span class="sd">    direction : str</span>
+<span class="sd">        If &#39;x&#39; (default), elements in resulting 2d array are counted</span>
+<span class="sd">        along rows first, then columns. If &#39;y&#39;, the other way round.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        # generate 1d sequence</span>
+<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=None)</span>
+<span class="sd">        --&gt; [&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;]</span>
+
+<span class="sd">        # and reshape to 2d</span>
+<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=(2,3))</span>
+<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;],</span>
+<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;]], dtype=object)</span>
+<span class="sd">        </span>
+<span class="sd">        # embed sequence in larger 2d array (pad tail with None)</span>
+<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=(2,4))</span>
+<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;],</span>
+<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;, None,   None]], dtype=object)</span>
+
+<span class="sd">        # place sequence in smaller 2d array (only use first elements)</span>
+<span class="sd">        arrayify(&#39;foo&#39;,n=6,shape=(2,2))</span>
+<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;],</span>
+<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;]], dtype=object)</span>
+
+<span class="sd">        # provide a list-like sequence (no effect)</span>
+<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=None,shape=None)</span>
+<span class="sd">        --&gt; [&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;]</span>
+
+<span class="sd">        # provide a list-like sequence, and n (no effect, n ignored)</span>
+<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=None)</span>
+<span class="sd">        --&gt; [&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;]</span>
+
+<span class="sd">        # provide a list-like sequence, and embed in larger array</span>
+<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=(2,4))</span>
+<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;, None],</span>
+<span class="sd">                   [None, None, None, None]], dtype=object)        </span>
+
+<span class="sd">        # provide a list-like sequence, and embed in smaller array</span>
+<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=(1,2))</span>
+<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;bar&#39;]], dtype=object)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lili</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span><span class="nb">tuple</span><span class="p">)</span>  <span class="c1"># list-like</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">lili</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
+        <span class="k">elif</span> <span class="n">shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="p">]</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+            <span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">arg</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">lili</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">seq2d</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">seq2d</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">seq2d</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[:</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">seq2d</span>
+
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">seq</span></div>
+
+
+<div class="viewcode-block" id="mirror_axis"><a class="viewcode-back" href="../utils.html#utils.mirror_axis">[docs]</a><span class="k">def</span> <span class="nf">mirror_axis</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Mirror one axis of a cube.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cube : array</span>
+<span class="sd">        Expected shape of cube: (...,nx,...).</span>
+
+<span class="sd">    axis : int</span>
+<span class="sd">        axis index to be mirrored. Default: -2. Mirroring assumes a</span>
+<span class="sd">        central columns of elements. See &#39;Returns&#39; section.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    newcube : array</span>
+<span class="sd">        Array with &#39;axis&#39; dimension mirrored, such that</span>
+<span class="sd">          newcube.shape = (...,2*nx-1,...)</span>
+<span class="sd">        i.e. newcube.shape[axis] always odd.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        c = N.arange(9).reshape((3,3))</span>
+<span class="sd">        c</span>
+<span class="sd">        --&gt; array([[0, 1, 2],</span>
+<span class="sd">                   [3, 4, 5],</span>
+<span class="sd">                   [6, 7, 8]])</span>
+
+<span class="sd">        mirror_axis(c,axis=0)</span>
+<span class="sd">        --&gt; array([[6, 7, 8],</span>
+<span class="sd">                   [3, 4, 5],</span>
+<span class="sd">                   [0, 1, 2],</span>
+<span class="sd">                   [3, 4, 5],</span>
+<span class="sd">                   [6, 7, 8]])</span>
+
+<span class="sd">        mirror_axis(c,axis=1)</span>
+<span class="sd">        --&gt; array([[2, 1, 0, 1, 2],</span>
+<span class="sd">                   [5, 4, 3, 4, 5],</span>
+<span class="sd">                   [8, 7, 6, 7, 8]])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+        
+    <span class="n">ndim</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="n">npix</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
+    <span class="n">allpads</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)]</span><span class="o">*</span><span class="n">ndim</span>
+    <span class="n">allpads</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="n">newcube</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span><span class="nb">tuple</span><span class="p">(</span><span class="n">allpads</span><span class="p">),</span><span class="s1">&#39;reflect&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">newcube</span></div>
+    
+
+<div class="viewcode-block" id="seq2str"><a class="viewcode-back" href="../utils.html#utils.seq2str">[docs]</a><span class="k">def</span> <span class="nf">seq2str</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">jstr</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    
+    <span class="sd">&quot;&quot;&quot;Join a sequence ``seq`` of string-ifiable elements with a string</span>
+<span class="sd">    ``jstr``.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code:: python</span>
+
+<span class="sd">        seq2str((&#39;a&#39;,&#39;b&#39;,&#39;c&#39;),&#39; - &#39;)</span>
+<span class="sd">          &#39;a - b - c&#39;</span>
+
+<span class="sd">        seq2str([1,2,3],&#39;:&#39;)</span>
+<span class="sd">          &#39;1:2:3&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">jstr</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

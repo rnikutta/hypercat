@@ -1,0 +1,215 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>units module &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils module" href="utils.html" />
+    <link rel="prev" title="psf module" href="psf.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="utils module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="psf.html" title="psf module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-units">
+<span id="units-module"></span><h1>units module<a class="headerlink" href="#module-units" title="Permalink to this headline">¶</a></h1>
+<dl class="data">
+<dt id="units.CUNITS">
+<code class="descclassname">units.</code><code class="descname">CUNITS</code><em class="property"> = (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’, ‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)</em><a class="headerlink" href="#units.CUNITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Their union.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="units.UNITS_ANGULAR">
+<code class="descclassname">units.</code><code class="descname">UNITS_ANGULAR</code><em class="property"> = (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’)</em><a class="headerlink" href="#units.UNITS_ANGULAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized angular units, e.g. for pixel scale.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="units.UNITS_BRIGHTNESS">
+<code class="descclassname">units.</code><code class="descname">UNITS_BRIGHTNESS</code><em class="property"> = (‘Jy/pix’, ‘mJy/pix’)</em><a class="headerlink" href="#units.UNITS_BRIGHTNESS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized units for brightness-per-pixel.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="units.UNITS_FLUXDENSITY">
+<code class="descclassname">units.</code><code class="descname">UNITS_FLUXDENSITY</code><em class="property"> = (‘Jy’, ‘mJy’, ‘MJy’, ‘erg/s/cm^2/Hz’, ‘W/m^2/Hz’)</em><a class="headerlink" href="#units.UNITS_FLUXDENSITY" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized units for flux denisty</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="units.UNITS_LINEAR">
+<code class="descclassname">units.</code><code class="descname">UNITS_LINEAR</code><em class="property"> = (‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)</em><a class="headerlink" href="#units.UNITS_LINEAR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recognized linear units (either for pixel scale, or for source distance, etc.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="units.getQuantity">
+<code class="descclassname">units.</code><code class="descname">getQuantity</code><span class="sig-paren">(</span><em>quantity</em>, <em>recognized_units</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/units.html#getQuantity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#units.getQuantity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a string ‘Value Units’ into numerical value and string-units,
+and create an instance of astropy.units.Quantity.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>quantity</strong> (<em>str</em>) – E.g. quantity=‘1 Jy’ would return &lt;Quantity 1.0 Jy&gt;</li>
+<li><strong>recognized_units</strong> (<em>tuple</em>) – Tuple of valid units (as strings) for <code class="docutils literal"><span class="pre">quantity</span></code>. E.g., for
+a length quantity, recognized units could be
+(‘micron’,’m’,’pc’,’AU’), etc.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>quantity</strong> – Instance of astropy.units.Quantity, i.e. a value with units.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">instance</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<dl class="docutils">
+<dt>getQuantity(‘1 m’,(‘micron’,’m’,’pc’,’AU’))</dt>
+<dd>&lt;Quantity 1.0 m&gt;</dd>
+<dt>getQuantity(‘1 W’,(‘micron’,’m’,’pc’,’AU’))</dt>
+<dd>ValueError: Specified unit ‘W’ is not recognized. Recognized are: m,AU,pc</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="units.getValueUnit">
+<code class="descclassname">units.</code><code class="descname">getValueUnit</code><span class="sig-paren">(</span><em>quantity</em>, <em>recognized_units</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/units.html#getValueUnit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#units.getValueUnit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split <cite>string</cite> into value and units string.</p>
+<p>Evaluate both and return the numerical value, and the units object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>quantity</strong> (str or <cite>Quantity</cite> instance) – <p>If string, its format is <cite>num units</cite>, where <cite>num</cite> is the
+string representation of a numerical value, and <cite>units</cite> is one
+of the recognized units in the sequence of strings provided in
+<code class="docutils literal"><span class="pre">recognized_units</span></code>. <cite>num</cite> and <cite>units</cite> can but need not be
+separated by whitespace.</p>
+<p>If instance of <cite>Quantity</cite>, <code class="docutils literal"><span class="pre">quantity.value</span></code> and
+<code class="docutils literal"><span class="pre">quantity.unit</span></code> are the equivalents of <cite>num</cite> and <cite>unit</cite>.</p>
+</li>
+<li><strong>recognized_units</strong> (<em>seq of strings</em>) – Sequence of strings representing units that the <cite>units</cite> part
+of <cite>string</cite> will be checked against.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">recognized_units</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/mas^2&#39;</span><span class="p">,</span><span class="s1">&#39;uJy/sr&#39;</span><span class="p">)</span>
+<span class="n">getValueUnit</span><span class="p">(</span><span class="s1">&#39;5.2 Jy/arcsec^2&#39;</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">)</span>
+  <span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="n">Unit</span><span class="p">(</span><span class="s2">&quot;Jy / arcsec2&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="psf.html"
+                        title="previous chapter">psf module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utils.html"
+                        title="next chapter">utils module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/units.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="utils module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="psf.html" title="psf module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

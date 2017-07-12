@@ -1,0 +1,274 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>psf &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for psf</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pyfits</span>
+<span class="kn">from</span> <span class="nn">astropy.modeling</span> <span class="k">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">fitting</span>
+<span class="kn">from</span> <span class="nn">astropy.convolution</span> <span class="k">import</span> <span class="n">convolve</span><span class="p">,</span> <span class="n">convolve_fft</span>
+<span class="kn">from</span> <span class="nn">imageops</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Enrique Lopez-Rodriguez &lt;enloro@gmail.com&gt;, Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&quot;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170207&#39;</span>  <span class="c1">#yyyymmdd</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for the PSF analysis of the images created by hyperCAT</span>
+<span class="sd">    </span>
+<span class="sd">    .. automodule:: PSF_modeling</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PSF"><a class="viewcode-back" href="../psf.html#psf.PSF">[docs]</a><span class="k">class</span> <span class="nc">PSF</span><span class="p">(</span><span class="n">ImageFrame</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image : array</span>
+<span class="sd">            The PSF image (raw 2d array)</span>
+
+<span class="sd">        pixelscale : str | &#39;Quantity&#39; instance</span>
+<span class="sd">            The pixelscale of `image`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ImageFrame</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="n">pixelscale</span><span class="p">)</span>
+
+        
+<div class="viewcode-block" id="PSF.convolve"><a class="viewcode-back" href="../psf.html#psf.PSF.convolve">[docs]</a>    <span class="k">def</span> <span class="nf">convolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convolution of the model PSF with a CUMPY image</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        image : float array (2D)</span>
+<span class="sd">            Array obtained from hypercat using get_image module</span>
+<span class="sd">        </span>
+<span class="sd">        psf : float array (2D)</span>
+<span class="sd">            Array of the model PSF obtained with PSF_modeling()</span>
+<span class="sd">        </span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">            convolved_image = PSF_conv(image,psf)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#        if hasattr(image,&#39;pa&#39;) and image.pa.value != 0.:</span>
+<span class="c1">#            psfdata = rotateImage(psf.data,imaga.pa.to(&#39;deg&#39;).value)</span>
+<span class="c1">#        else:</span>
+<span class="c1">#            psfdata = self.data</span>
+            
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">convolve_fft</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="n">normalize_kernel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">allow_huge</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#        result = convolve_fft(image,psfdata,normalize_kernel=True,allow_huge=True)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div></div>
+
+
+<div class="viewcode-block" id="getPSF"><a class="viewcode-back" href="../psf.html#psf.getPSF">[docs]</a><span class="k">def</span> <span class="nf">getPSF</span><span class="p">(</span><span class="n">psfdict</span><span class="p">,</span><span class="n">image</span><span class="p">):</span>
+
+
+    <span class="sd">&quot;&quot;&quot;Model or load from file a PSF suitable for `image`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : instance</span>
+<span class="sd">        `Image` instance.</span>
+
+<span class="sd">    psfdict : dict</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pixelscale</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">pixelscale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="n">psfobj</span> <span class="o">=</span> <span class="n">psfdict</span><span class="p">[</span><span class="s1">&#39;psf&#39;</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">psfobj</span> <span class="o">==</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span>
+        <span class="n">npix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;micron&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">pixelscale</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">pixelscale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">diameter</span> <span class="o">=</span> <span class="n">psfdict</span><span class="p">[</span><span class="s1">&#39;diameter&#39;</span><span class="p">]</span>
+        <span class="n">strehl</span> <span class="o">=</span> <span class="n">psfdict</span><span class="p">[</span><span class="s1">&#39;strehl&#39;</span><span class="p">]</span>
+        
+        <span class="n">image_psf</span> <span class="o">=</span> <span class="n">modelPSF</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">wavelength</span><span class="o">=</span><span class="n">wavelength</span><span class="p">,</span>\
+                             <span class="n">diameter</span><span class="o">=</span><span class="n">diameter</span><span class="p">,</span><span class="n">strehl</span><span class="o">=</span><span class="n">strehl</span><span class="p">,</span>\
+                             <span class="n">pixelscale</span><span class="o">=</span><span class="n">pixelscale</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">psfobj</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.fits&#39;</span><span class="p">):</span> <span class="c1"># PSF model from fits file; must have keyword PIXELSCL</span>
+        
+        <span class="n">image_psf</span><span class="p">,</span> <span class="n">pixelscale_psf</span> <span class="o">=</span> <span class="n">loadPSFfromFITS</span><span class="p">(</span><span class="n">psfobj</span><span class="p">,</span><span class="n">psfdict</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">pixelscale_psf</span> <span class="o">!=</span> <span class="n">pixelscale</span><span class="p">:</span>
+            <span class="n">image_psf</span><span class="p">,</span> <span class="n">_newfactor</span><span class="p">,</span> <span class="n">aux</span> <span class="o">=</span> <span class="n">resampleImage</span><span class="p">(</span><span class="n">image_psf</span><span class="p">,</span><span class="n">pixelscale_psf</span><span class="o">/</span><span class="n">pixelscale</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PSF</span><span class="p">(</span><span class="n">image_psf</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="loadPSFfromFITS"><a class="viewcode-back" href="../psf.html#psf.loadPSFfromFITS">[docs]</a><span class="k">def</span> <span class="nf">loadPSFfromFITS</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">psfdict</span><span class="p">):</span>
+
+    <span class="n">hdukw</span> <span class="o">=</span> <span class="n">psfdict</span><span class="p">[</span><span class="s1">&#39;hdukw&#39;</span><span class="p">]</span>
+    <span class="n">pixelscalekw</span> <span class="o">=</span> <span class="n">psfdict</span><span class="p">[</span><span class="s1">&#39;pixelscalekw&#39;</span><span class="p">]</span>
+    
+    <span class="n">header</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">hdukw</span><span class="p">)</span>
+    <span class="n">pixelscale_psf</span> <span class="o">=</span> <span class="n">header</span><span class="p">[</span><span class="n">pixelscalekw</span><span class="p">]</span>  <span class="c1"># currently assuming that pixelscale in the FITS file is in arcsec</span>
+        
+    <span class="n">image_psf</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">hdukw</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image_psf</span><span class="p">,</span> <span class="n">pixelscale_psf</span></div>
+    
+
+        
+<div class="viewcode-block" id="modelPSF"><a class="viewcode-back" href="../psf.html#psf.modelPSF">[docs]</a><span class="k">def</span> <span class="nf">modelPSF</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">wavelength</span><span class="o">=</span><span class="mf">1.25</span><span class="p">,</span><span class="n">diameter</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span><span class="n">strehl</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; PSF modeling of CLUMPY images given a specific telescope and wavelength</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    image : float array (2D)</span>
+<span class="sd">        Array obtained from hypercat using get_image module</span>
+
+<span class="sd">    wavelength: array</span>
+<span class="sd">        List of wavelengths in microns to create PSF</span>
+
+<span class="sd">    diameter: array</span>
+<span class="sd">        Diameter of the telescope in meters</span>
+
+<span class="sd">    strehl: array</span>
+<span class="sd">        Strehl of the model PSF</span>
+<span class="sd">        </span>
+<span class="sd">    pxscale: array</span>
+<span class="sd">        Pixel-scale of the instrument in arcsec/px</span>
+<span class="sd">        </span>
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        PSF = PSF_model()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">###   Position of Gaussian at the center of the array. Coordinates, x_mean, y_mean,</span>
+    <span class="c1">#must be loaded from Hypercat to be equal to the dimensions of the clumpy models</span>
+    <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="n">npix</span><span class="p">,</span> <span class="p">:</span><span class="n">npix</span><span class="p">]</span> <span class="c1">#this should be the dimension of the hypercat array</span>
+
+    <span class="n">wavelength</span> <span class="o">=</span> <span class="n">wavelength</span> <span class="o">*</span> <span class="mi">1</span><span class="n">E</span><span class="o">-</span><span class="mi">6</span>
+    <span class="c1">### 2D AiryDisk: Halo of PSF</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="mf">1.22</span> <span class="o">*</span> <span class="n">wavelength</span><span class="o">/</span><span class="n">diameter</span> <span class="o">*</span> <span class="mi">206265</span>  <span class="c1">#Radius is the radius of the first zero 1.22 l/D in arcsec</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">/</span> <span class="n">pixelscale</span>                     <span class="c1">#Core diameter in px</span>
+    
+    <span class="n">sigma_p_dl</span> <span class="o">=</span> <span class="mf">0.0745</span>                           <span class="c1">#Typical diffraction-limited aberration level or Strehl = 0.8</span>
+    <span class="n">S_dl</span>       <span class="o">=</span> <span class="mf">0.8</span>                              <span class="c1">#Diffraction-limited Strengthl of 0.8 to normalize</span>
+    <span class="n">sigma_p</span> <span class="o">=</span> <span class="n">strehl</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma_p_dl</span> <span class="o">/</span> <span class="n">S_dl</span><span class="p">)</span>        <span class="c1">#normalization of the aberration level</span>
+    
+    <span class="n">aI</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sigma_p</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>                      <span class="c1">#Intensity of the 2D Airy Disk</span>
+
+    <span class="n">a2D</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AiryDisk2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">aI</span><span class="p">,</span><span class="n">x_0</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">y_0</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+    <span class="n">a2D</span> <span class="o">=</span> <span class="n">a2D</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>                                <span class="c1"># This is the 2D Airy disk</span>
+
+    <span class="c1">### 2D Gaussian: Core of PSF</span>
+    <span class="n">r_o</span> <span class="o">=</span> <span class="mf">5461692.609</span> <span class="o">*</span> <span class="p">(</span><span class="n">wavelength</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">6.</span><span class="o">/</span><span class="mf">5.</span><span class="p">)</span>           <span class="c1">#Normalized assuming r_o = 0.15m at 0.5um, r_o in m</span>
+    <span class="n">rho_o</span> <span class="o">=</span> <span class="n">r_o</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="mf">0.37</span><span class="o">*</span><span class="p">(</span><span class="n">r_o</span><span class="o">/</span><span class="n">diameter</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">))</span>   <span class="c1">#rho_o for short exposures</span>
+    <span class="c1">#rho_o = r_o                                         #rho_o for long exposures</span>
+    <span class="n">rad_H</span> <span class="o">=</span> <span class="mf">1.22</span><span class="o">*</span><span class="p">(</span><span class="n">wavelength</span><span class="o">/</span><span class="n">diameter</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="p">(</span><span class="n">diameter</span><span class="o">/</span><span class="n">rho_o</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="mi">206265</span>     <span class="c1">#arcsec</span>
+    <span class="n">rad_H</span> <span class="o">=</span> <span class="n">rad_H</span> <span class="o">/</span> <span class="n">pixelscale</span>                             <span class="c1">#Halo diameter in px</span>
+    
+    <span class="n">gI</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">aI</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="p">(</span><span class="n">diameter</span><span class="o">/</span><span class="n">rho_o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>            <span class="c1">#Intensity of the 2D Gaussian</span>
+
+    <span class="n">g2D</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Gaussian2D</span><span class="p">(</span><span class="n">amplitude</span> <span class="o">=</span><span class="n">gI</span><span class="p">,</span> <span class="n">x_mean</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">y_mean</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">x_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">y_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="n">g2D</span> <span class="o">=</span> <span class="n">g2D</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>                                <span class="c1"># This is the 2D Gaussian</span>
+
+    <span class="c1">### Final PSF</span>
+    <span class="n">psf</span> <span class="o">=</span> <span class="n">a2D</span> <span class="o">+</span> <span class="n">g2D</span>
+
+<span class="c1">#    print &#39;Telescope Diameter [m]=&#39;, diameter</span>
+<span class="c1">#    print &#39;Angular Resolution [&quot;] =&#39;,radius*pixelscale</span>
+<span class="c1">#    print &#39;Angular resolution [px] =&#39;,radius</span>
+
+    <span class="k">return</span> <span class="n">psf</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

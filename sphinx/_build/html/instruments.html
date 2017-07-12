@@ -1,0 +1,165 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>instruments module &#8212; HyperCAT API 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="loggers module" href="loggers.html" />
+    <link rel="prev" title="imageops module" href="imageops.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="loggers.html" title="loggers module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="imageops.html" title="imageops module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-instruments">
+<span id="instruments-module"></span><h1>instruments module<a class="headerlink" href="#module-instruments" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="instruments.Instrument">
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>name=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for instruments of all kind (e.g. Telescope, Interferometer, etc.</p>
+<dl class="method">
+<dt id="instruments.Instrument.observe">
+<code class="descname">observe</code><span class="sig-paren">(</span><em>sky</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.observe" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>‘Observe’ the sky with an instrument, i.e. return an image of the</dt>
+<dd>sky processed by the instrument (e.g. PSF applied etc.).</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sky</strong> (<em>instance</em>) – Instance of <code class="docutils literal"><span class="pre">Image</span></code> class, which is the model image of
+the sky, with proper units etc., but not yet processed by
+an instrument (e.g. before PSF convolution etc.)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>observation</strong> – A copy of the <code class="docutils literal"><span class="pre">sky</span></code> instance, but processed by the given
+instrument (e.g. PSF-convolved, resampled to detector
+pixelscale, etc.)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="instruments.Interferometer">
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Interferometer</code><a class="reference internal" href="_modules/instruments.html#Interferometer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Interferometer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
+<p>Instrument to simulate an optical/IR interferometer.</p>
+<p>Given brightness distribution <code class="docutils literal"><span class="pre">sky</span></code>, perform FFT, and enable
+extraction of correlated fluxes, and of visibilities, given an
+input baseline (BL length and PA).</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="instruments.Telescope">
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>name=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="imageops.html"
+                        title="previous chapter">imageops module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="loggers.html"
+                        title="next chapter">loggers module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/instruments.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="loggers.html" title="loggers module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="imageops.html" title="imageops module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, R. Nikutta.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+    </div>
+  </body>
+</html>

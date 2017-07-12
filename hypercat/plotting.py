@@ -100,7 +100,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               units='',\
               titles='',\
               contours=None,
-              interpolation='none',cmap=p.cm.viridis,\
+              interpolation='none',cmap=p.cm.viridis,figtitle='',\
               **kwargs):
 
     # IMAGES ARRAY
@@ -154,6 +154,9 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     if sharey is True:
         for ax in axes[:,1:].flatten():
             ax.set_ylabel('')
+
+    # figure super title
+    fig.suptitle(figtitle)
 
     # fig.subplots_adjust() arguments; can be modified via kwargs
     adjustkwargs = {'left':0.15,'right':0.88,'top':0.97,'bottom':0.06,'hspace':0.15,'wspace':0.35}
