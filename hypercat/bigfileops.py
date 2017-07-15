@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170711'   #yyymmdd
+__version__ = '20170714'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling large hypercubes in hdf5 files.
@@ -21,7 +21,6 @@ import json
 import urwid, urwid.curses_display
 import numpy as N
 import h5py
-import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
 
 
 def storeCubeToHdf5(cube,hdffile,groupname=None):
@@ -80,10 +79,19 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
     mapping = {'hypercube':cube.data,
                'hypercubeshape':cube.data.shape,
                'paramnames':cube.paramnames,
-               'theta': padarray.PadArray(cube.theta).pad}
+               'theta': cube.theta}
 
     for name,data in mapping.items():
-        ds = g.create_dataset(name,data=data)
+
+        if isinstance(data[0],N.ndarray) and isragged(data):
+            dflt = h5py.special_dtype(vlen=N.dtype('float64'))
+            ds = g.create_dataset(name, (len(data),), dtype=dflt)
+            for j,v in enumerate(data):
+                print("j, v, type(v) = ", j, v, type(v))
+                ds[j] = v
+
+        else:
+            ds = g.create_dataset(name,data=data)
 
     # if all went well, increment h['Nhypercubes'] by one...
     try:
@@ -105,7 +113,28 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
         ds[n] = groupname
 
     h.close()
+
+
+def isragged(arr):
+
+    """Test if an array is ragged (i.e. unequal-length records).
+
+    Parameters
+    ----------
+    arr : array
+
+    Returns
+    -------
+    ragged : bool
+        Returns True of not all entries in arr are of same length
+        (i.e. arr is indeed ragged). False otherwise.
+
+    """
     
+    ragged = not (N.unique([len(r) for r in arr]).size == 1)
+    
+    return ragged
+
 
 def memmap_hdf5_dataset(hdf5file,dsetpath):
 

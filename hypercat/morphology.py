@@ -63,6 +63,18 @@ def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):
         
     return Z
 
+def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):
+    x = N.arange(npix) - npix/2
+    X, Y = N.meshgrid(x,x,indexing='ij')
+
+    norm = 1. / (2.*N.pi*sx*sy)
+    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
+    
+    if theta != 0.:
+        Z = ndimage.rotate(Z,theta,reshape=False)
+        
+    return Z
+
 
 def imageToEigenvectors(image):
 
@@ -82,11 +94,15 @@ def imageToEigenvectors(image):
     evec1 = evecs[idmax]
     print "evec1 = ", evec1
 
-    sig = whichside(evec1,N.array([0.,1.]))
-    print "sig = ", sig
+#    sig = whichside(evec1,N.array([0.,1.]))
+    sig = whichside(N.array([0.,1.]),evec1)
+    sig2 = whichside(evec1,N.array([0.,1.]))
+#    sig = whichside(evec1,N.array([1.,0.]))
+    print "sig = ", sig, sig2
     
-    if sig == -1.:
-        evec1[0] = -evec1[0]
+#    if sig == -1.:
+##        evec1[0] = -evec1[0]
+#        evec1 = -evec1
     
     return evec1, xind, yind
     

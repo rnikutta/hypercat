@@ -1,4 +1,4 @@
-__version__ = '20170209'   #yyymmdd
+__version__ = '20170714'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -23,7 +23,6 @@ import h5py
 
 # own
 from loggers import *
-import padarray  # todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray
 import ndiminterpolation
 import bigfileops as bfo
 import psf
@@ -104,7 +103,7 @@ class ModelCube:
         
         logging.info("Loading sampling parameters.")
         self.paramnames = self.group['paramnames'].value.tolist()
-        self.theta = padarray.PadArray(self.group['theta'].value).unpad
+        self.theta = self.group['theta'].value
 
         iY = self.paramnames.index('Y')
         self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
