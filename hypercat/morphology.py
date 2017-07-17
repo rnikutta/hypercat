@@ -16,16 +16,17 @@ def rot90ccw(v):
 
     return r
     
-def whichside(a,b):
+def whichside(a,b,verbose=False):
 
     sig = N.sign(N.dot(a,rot90ccw(b)))
 
-    if sig > 0:
-        print "b to the right of a"
-    elif sig < 0:
-        print "b to the left of a"
-    else:
-        print "b parallel/antiparallel to a"
+    if verbose is True:
+        if sig > 0:
+            print "b to the right of a"
+        elif sig < 0:
+            print "b to the left of a"
+        else:
+            print "b parallel/antiparallel to a"
 
     return sig
 
@@ -110,7 +111,10 @@ def imageToEigenvectors(image):
 #    evec1, evec2 = evecs[:,sort_indices]
 #
 #    return evec1, evec2
-    
+
+
+
+
 
 def getUnitVector(axis=1,ndim=2):
 
@@ -202,6 +206,28 @@ def angle2(a,b):
 #t    if angle > 45.:
 #t        angle = 90 - abs(N.array(angle)-90)
     
+    return angle
+
+
+def getangle(a,b):
+
+    """Compute angle between two vectors a and b.
+
+    Uses formula:
+
+    .. math::
+
+       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}
+
+    Slower than :func:`angle1`, but possibly more accurate for very
+    small angles.
+
+    """
+    
+    aux1 = N.linalg.norm(N.cross(a,b))
+    aux2 = N.dot(a,b)
+    angle = N.degrees(N.arctan2(aux1,aux2))
+
     return angle 
     
 
@@ -542,3 +568,33 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
     return fig
     
     
+
+
+
+
+
+def foo():
+
+    import numpy as N
+    from hc import  morphology as mo
+
+    ey = mo.getUnitVector(axis=1,ndim=2)  # unit vector along y-axis, in two dimensions
+
+    pt1 = N.array([u1,v1])  # x and y components of point1 = (u1,v1)
+    pt2 = N.array([u2,v2])  # x and y components of point2 = (u2,v2)
+    vec = pt1 - pt2  # your vector between two uv points (or vice versa, try it out)
+
+    sign = mo.whichside(vec,ey)
+    angle = mo.getangle(vec,ey) * sign
+
+    if angle < 0:
+        angle += 180.
+
+    print(angle)
+
+
+
+
+
+
+
