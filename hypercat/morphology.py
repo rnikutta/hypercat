@@ -104,7 +104,7 @@ def imageToEigenvectors(image):
 ##        evec1[0] = -evec1[0]
 #        evec1 = -evec1
     
-    return evec1, xind, yind
+    return evec1, xind, yind, sig2
     
 #    sort_indices = N.argsort(evals)[::-1]
 #    evec1, evec2 = evecs[:,sort_indices]
@@ -179,6 +179,32 @@ def angle1(a,b):
     return angle
 
 
+def angle2(a,b):
+
+    """Compute angle between two vectors a and b.
+
+    Uses formula:
+
+    .. math::
+
+       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}
+
+    Slower than :func:`angle1`, but possibly more accurate for very
+    small angles.
+
+    """
+    
+    aux1 = N.linalg.norm(N.cross(a,b))
+    aux2 = N.dot(a,b)
+
+    angle = N.degrees(N.arctan2(aux1,aux2))
+
+#t    if angle > 45.:
+#t        angle = 90 - abs(N.array(angle)-90)
+    
+    return angle 
+    
+
 #def angle2(v1,v2):
 #
 #    """Compute angle between vectors v1 and v2.
@@ -204,32 +230,6 @@ def angle1(a,b):
 #    
 #    return angle 
 
-
-def angle2(a,b):
-
-    """Compute angle between two vectors a and b.
-
-    Uses formula:
-
-    .. math::
-
-       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}
-
-    Slower than :func:`angle1`, but possibly more accurate for very
-    small angles.
-
-    """
-    
-    aux1 = N.linalg.norm(N.cross(a,b))
-    aux2 = N.dot(a,b)
-
-    angle = N.degrees(N.arctan2(aux1,aux2))
-
-    if angle > 45.:
-        angle = 90 - abs(N.array(angle)-90)
-    
-    return angle 
-    
 
 def get_moment(image,radius=1.,angular='a',m=1):
 

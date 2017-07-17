@@ -51,7 +51,7 @@
   <h1>Source code for bigfileops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170711&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170714&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling large hypercubes in hdf5 files.</span>
@@ -72,7 +72,6 @@
 <span class="kn">import</span> <span class="nn">urwid</span><span class="o">,</span> <span class="nn">urwid.curses_display</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
-<span class="kn">import</span> <span class="nn">padarray</span>  <span class="c1"># todo: test and check if current versions of numpy fix numpy bu 2190; if so, remove the dependency on padarray</span>
 
 
 <div class="viewcode-block" id="storeCubeToHdf5"><a class="viewcode-back" href="../bigfileops.html#bigfileops.storeCubeToHdf5">[docs]</a><span class="k">def</span> <span class="nf">storeCubeToHdf5</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span><span class="n">hdffile</span><span class="p">,</span><span class="n">groupname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -131,10 +130,19 @@
     <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;hypercube&#39;</span><span class="p">:</span><span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
                <span class="s1">&#39;hypercubeshape&#39;</span><span class="p">:</span><span class="n">cube</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
                <span class="s1">&#39;paramnames&#39;</span><span class="p">:</span><span class="n">cube</span><span class="o">.</span><span class="n">paramnames</span><span class="p">,</span>
-               <span class="s1">&#39;theta&#39;</span><span class="p">:</span> <span class="n">padarray</span><span class="o">.</span><span class="n">PadArray</span><span class="p">(</span><span class="n">cube</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">pad</span><span class="p">}</span>
+               <span class="s1">&#39;theta&#39;</span><span class="p">:</span> <span class="n">cube</span><span class="o">.</span><span class="n">theta</span><span class="p">}</span>
 
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">N</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isragged</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">dflt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="n">N</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">))</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dflt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;j, v, type(v) = &quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
 
     <span class="c1"># if all went well, increment h[&#39;Nhypercubes&#39;] by one...</span>
     <span class="k">try</span><span class="p">:</span>
@@ -156,7 +164,28 @@
         <span class="n">ds</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">groupname</span>
 
     <span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="isragged"><a class="viewcode-back" href="../bigfileops.html#bigfileops.isragged">[docs]</a><span class="k">def</span> <span class="nf">isragged</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Test if an array is ragged (i.e. unequal-length records).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ragged : bool</span>
+<span class="sd">        Returns True of not all entries in arr are of same length</span>
+<span class="sd">        (i.e. arr is indeed ragged). False otherwise.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     
+    <span class="n">ragged</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">ragged</span></div>
+
 
 <div class="viewcode-block" id="memmap_hdf5_dataset"><a class="viewcode-back" href="../bigfileops.html#bigfileops.memmap_hdf5_dataset">[docs]</a><span class="k">def</span> <span class="nf">memmap_hdf5_dataset</span><span class="p">(</span><span class="n">hdf5file</span><span class="p">,</span><span class="n">dsetpath</span><span class="p">):</span>
 

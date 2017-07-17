@@ -14,6 +14,7 @@ Welcome to HyperCAT API's documentation!
    hypercat
    imageops
    instruments
+   ioops
    loggers
    morphology
    ndiminterpolation
