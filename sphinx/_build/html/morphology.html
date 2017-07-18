@@ -88,6 +88,11 @@ small angles.</p>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="morphology.foo">
+<code class="descclassname">morphology.</code><code class="descname">foo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#foo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.foo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="morphology.gaussian">
 <code class="descclassname">morphology.</code><code class="descname">gaussian</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sx=5.0</em>, <em>sy=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -153,6 +158,17 @@ small angles.</p>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="morphology.getangle">
+<code class="descclassname">morphology.</code><code class="descname">getangle</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getangle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute angle between two vectors a and b.</p>
+<p>Uses formula:</p>
+<div class="math">
+\[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
+<p>Slower than <a class="reference internal" href="#morphology.angle1" title="morphology.angle1"><code class="xref py py-func docutils literal"><span class="pre">angle1()</span></code></a>, but possibly more accurate for very
+small angles.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="morphology.imageToEigenvectors">
 <code class="descclassname">morphology.</code><code class="descname">imageToEigenvectors</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#imageToEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.imageToEigenvectors" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -190,7 +206,7 @@ small angles.</p>
 
 <dl class="function">
 <dt id="morphology.whichside">
-<code class="descclassname">morphology.</code><code class="descname">whichside</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#whichside"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.whichside" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">morphology.</code><code class="descname">whichside</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#whichside"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.whichside" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

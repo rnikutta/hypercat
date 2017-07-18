@@ -67,16 +67,17 @@
 
     <span class="k">return</span> <span class="n">r</span></div>
     
-<div class="viewcode-block" id="whichside"><a class="viewcode-back" href="../morphology.html#morphology.whichside">[docs]</a><span class="k">def</span> <span class="nf">whichside</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+<div class="viewcode-block" id="whichside"><a class="viewcode-back" href="../morphology.html#morphology.whichside">[docs]</a><span class="k">def</span> <span class="nf">whichside</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
     <span class="n">sig</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">rot90ccw</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
 
-    <span class="k">if</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot;b to the right of a&quot;</span>
-    <span class="k">elif</span> <span class="n">sig</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot;b to the left of a&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot;b parallel/antiparallel to a&quot;</span>
+    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;b to the right of a&quot;</span>
+        <span class="k">elif</span> <span class="n">sig</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;b to the left of a&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;b parallel/antiparallel to a&quot;</span>
 
     <span class="k">return</span> <span class="n">sig</span></div>
 
@@ -161,7 +162,10 @@
 <span class="c1">#    evec1, evec2 = evecs[:,sort_indices]</span>
 <span class="c1">#</span>
 <span class="c1">#    return evec1, evec2</span>
-    
+
+
+
+
 
 <div class="viewcode-block" id="getUnitVector"><a class="viewcode-back" href="../morphology.html#morphology.getUnitVector">[docs]</a><span class="k">def</span> <span class="nf">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 
@@ -253,6 +257,28 @@
 <span class="c1">#t    if angle &gt; 45.:</span>
 <span class="c1">#t        angle = 90 - abs(N.array(angle)-90)</span>
     
+    <span class="k">return</span> <span class="n">angle</span></div>
+
+
+<div class="viewcode-block" id="getangle"><a class="viewcode-back" href="../morphology.html#morphology.getangle">[docs]</a><span class="k">def</span> <span class="nf">getangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Compute angle between two vectors a and b.</span>
+
+<span class="sd">    Uses formula:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}</span>
+
+<span class="sd">    Slower than :func:`angle1`, but possibly more accurate for very</span>
+<span class="sd">    small angles.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">aux1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">))</span>
+    <span class="n">aux2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">aux1</span><span class="p">,</span><span class="n">aux2</span><span class="p">))</span>
+
     <span class="k">return</span> <span class="n">angle</span> </div>
     
 
@@ -593,6 +619,36 @@
     <span class="k">return</span> <span class="n">fig</span></div>
     
     
+
+
+
+
+
+<div class="viewcode-block" id="foo"><a class="viewcode-back" href="../morphology.html#morphology.foo">[docs]</a><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+    <span class="kn">from</span> <span class="nn">hc</span> <span class="k">import</span>  <span class="n">morphology</span> <span class="k">as</span> <span class="n">mo</span>
+
+    <span class="n">ey</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># unit vector along y-axis, in two dimensions</span>
+
+    <span class="n">pt1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u1</span><span class="p">,</span><span class="n">v1</span><span class="p">])</span>  <span class="c1"># x and y components of point1 = (u1,v1)</span>
+    <span class="n">pt2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u2</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span>  <span class="c1"># x and y components of point2 = (u2,v2)</span>
+    <span class="n">vec</span> <span class="o">=</span> <span class="n">pt1</span> <span class="o">-</span> <span class="n">pt2</span>  <span class="c1"># your vector between two uv points (or vice versa, try it out)</span>
+
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">whichside</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">getangle</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
+
+    <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">angle</span> <span class="o">+=</span> <span class="mf">180.</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span></div>
+
+
+
+
+
+
+
 </pre></div>
 
           </div>

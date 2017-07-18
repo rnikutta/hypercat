@@ -18,7 +18,6 @@ Welcome to HyperCAT API's documentation!
    loggers
    morphology
    ndiminterpolation
-   padarray
    plotting
    psf
    units

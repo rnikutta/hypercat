@@ -1,7 +1,7 @@
-padarray module
-===============
+ioops module
+============
 
-.. automodule:: padarray
+.. automodule:: ioops
     :members:
     :undoc-members:
     :show-inheritance:
