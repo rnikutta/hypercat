@@ -1,4 +1,4 @@
-__version__ = '20170718'   #yyymmdd
+__version__ = '20170719'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.
@@ -10,6 +10,7 @@ __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 # 3rd party
 import numpy as np
 from astropy.modeling import models
+import matplotlib.pyplot as plt
 
 
 #HyperCAT
@@ -293,3 +294,72 @@ def correlatedflux1D(corrflux2D):
         corrflux1D[jj] = np.nansum(corrflux2D[n])
         corrflux1D_err[jj] = np.nanstd(corrflux2D[n])
     return corrflux1D,corrflux1D_err
+
+
+################ Plotting functions ###########
+
+def fig_uvplane(u,v):
+    
+    
+    """This function plots the uv plane
+        
+        Parameters
+        ----------
+        u,v : arrays
+            uv planes
+        
+        Returns:
+        --------
+        plot of uv plane
+        
+        
+        Example
+        -------
+        .. code-block:: python
+        
+        fig_uvplane(u,v)
+        
+        """
+    
+    ### NOTE: we will need to add an option to plot the uv plane in BL [m], pixels or mas.
+    
+    plt.plot(u,v,'o')
+    plt.xlabel('u')
+    plt.xlim([np.max(u),np.min(u)])
+    plt.ylabel('v')
+
+
+def fig_corrflux1D(corrflux2D, BL2D, Phi2D):
+    
+    
+    """This function plots the correlated flux in 1D as a funcion of baseline
+        
+        Parameters
+        ----------
+        u,v : arrays
+        uv planes
+        
+        Returns:
+        --------
+        plot of uv plane
+        
+        
+        Example
+        -------
+        .. code-block:: python
+        
+        fig_uvplane(u,v)
+        
+        """
+    
+    ### NOTE: Correlated flux needs to be in Jy or add units to change it.
+    
+    n_good = np.where(corrflux2D > 0)
+    
+    plot = plt.scatter(BL2D[n_good],corrflux2D[n_good], c = Phi2D[n_good], cmap = 'inferno')
+    plt.colorbar(plot,label='PA ($^{\\circ}$)')
+    plt.ylabel('Flux [Jy]')
+    plt.xlabel('Baseline [m]')
+    plt.ylim([0,np.max(corrflux2D[n_good])*1.2])
+
+
