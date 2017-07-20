@@ -6,6 +6,56 @@ import scipy.signal as signal
 import ndiminterpolation as ndi
 import pylab as p
 
+import math
+
+from astropy.modeling.functional_models import Gaussian2D
+
+
+def rotateVector(vec,deg=90.):
+
+    """Rotate 2-d vector by deg degrees.
+
+    Parameters
+    ----------
+    vec : array
+        2d-d vector.
+
+    deg : float
+        Rotation angle in degrees. If positive, rotates
+        counter-clockwise, otherwise counter-clockwise.
+
+    Returns
+    -------
+    rvec : arrau\y
+        Rotated vector.
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+       vec = N.array([0.,1.])  # unit vector along postive y-axis
+       rotateVector(vec,deg=90.)
+         array([ -1., 0.])
+
+       rotateVector(vec,deg=-90.)
+         array([ 1., 0.])
+
+       rotateVector(vec,deg=45.)
+         array([-0.70710678,  0.70710678])
+
+    """
+
+    angle = N.radians(deg)
+    s = math.sin(angle)
+    c = math.cos(angle)
+    matrix = N.array([[ c, s],
+                      [-s, c]])
+    rvec = N.dot(matrix.T,vec)  # transposing matrix to make positive angles rotate counter-clockwise, i.e. as is convention in mathematics
+
+    return rvec
+    
+    
 def rot90ccw(v):
 
     """Rotate 2-d vector v 90 degrees CCW."""
@@ -15,10 +65,39 @@ def rot90ccw(v):
     r[1] =  v[0]
 
     return r
-    
+
+
 def whichside(a,b,verbose=False):
 
-    sig = N.sign(N.dot(a,rot90ccw(b)))
+    """Compute relation sense of vectors a relative to vector b.
+
+    When computing and angle between two vectors, it's not always
+    clear in which direction of vector lies of another (left or right,
+    i.e. counter- or clock-wise). This function answers the question.
+
+    Parameters
+    ----------
+
+    a, b : array
+
+        Two 2-d vectors.
+
+    Returns
+    -------
+    sig : float
+        Number -1., 0., or +1.
+        If 0., vectors a and b are parallel or antiparallel to each other. 
+        If -1., b lies to the left of a (b counter-clockwise from a).
+        If +1., b lies to the right of a (b clockwise from a).
+
+    Examples
+    --------
+
+    """
+
+#    sig = N.sign(N.dot(a,rot90ccw(b)))
+    sig = N.sign(N.dot(rot90ccw(a),b))
+#    sig = N.sign(N.dot(a,rotateVector(b,90.)))
 
     if verbose is True:
         if sig > 0:
@@ -31,48 +110,34 @@ def whichside(a,b,verbose=False):
     return sig
 
 
-def gaussian2d_circular(npix=101,sigma=5.,x0=0,y0=0,theta=0.):
-    x = N.arange(npix) - npix/2
-    print x
-    X, Y = N.meshgrid(x,x,indexing='ij')
+#def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):
+#    
+#    x = N.arange(npix) - npix/2
+#    X, Y = N.meshgrid(x,x,indexing='ij')
+#
+#    norm = 1. / (2.*N.pi*sx*sy)
+#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
+#    
+#    if theta != 0.:
+#        Z = ndimage.rotate(Z,theta,reshape=False)
+#        
+#    return Z
 
-    norm = 1. / (2.*N.pi*sigma**2.)
-#    norm = 1.
+def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.,norm=None):
     
-    Z = norm * N.exp( -((X-x0)**2.+(Y-y0)**2.)/(2.*sigma**2.) )
-#    Z = norm * N.exp(-((X-x0)**2./(2*float(sx)**2.) + (Y-y0)**2./(2*float(sy)**2.)))
-    
-    if theta != 0.:
-        Z = ndimage.rotate(Z,float(theta),reshape=False)
-        
-    return Z
-
-
-def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):
-    x = N.arange(npix) - npix/2
-    print x
-    X, Y = N.meshgrid(x,x,indexing='ij')
-
-    norm = 1. / (2.*N.pi*sx*sy)
-#    norm = 1.
-    
-    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
-#    Z = norm * N.exp(-((X-x0)**2./(2*float(sx)**2.) + (Y-y0)**2./(2*float(sy)**2.)))
-    
-    if theta != 0.:
-        Z = ndimage.rotate(Z,float(theta),reshape=False)
-        
-    return Z
-
-def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):
     x = N.arange(npix) - npix/2
     X, Y = N.meshgrid(x,x,indexing='ij')
 
-    norm = 1. / (2.*N.pi*sx*sy)
-    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
-    
-    if theta != 0.:
-        Z = ndimage.rotate(Z,theta,reshape=False)
+    if norm is None:
+        norm = 1. / (2.*N.pi*sx*sy)
+
+    g = Gaussian2D(norm,x0,y0,sx,sy,N.radians(theta))
+    Z = g(X,Y)
+
+#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
+#    
+#    if theta != 0.:
+#        Z = ndimage.rotate(Z,theta,reshape=False)
         
     return Z
 
@@ -118,72 +183,45 @@ def imageToEigenvectors(image):
 
 def getUnitVector(axis=1,ndim=2):
 
-    uvec = N.eye(ndim)[:,axis]
+    """Get n-dimensional unit vector.
+
+    Parameters
+    ----------
+    axis : int
+        Direction of the vector, counting axes from 0 (the pythonic way) up to ``ndim``-1.
+
+    ndim : int
+        Dimensionality of the unit vector. Default 2.
+
+    Returns
+    -------
+    uvec : array
+        1-dim array of length ``ndim``, representing a unit vector
+        along the given ``axis``, in ``ndim`` dimensions.
+
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+       getUnitVector(axis=0,ndim=2)
+         array([ 1.,  0.])  # 2-d unit vector along x-axis
+
+       getUnitVector(1,2)
+         array([ 0.,  1.])  # 2-d unit vector along y-axis
+
+       getUnitVector(1,5)
+         array([ 0.,  1.,  0.,  0.,  0.])  # 5-d unit vector along 2nd axis
+
+    """
+    
+    uvec = N.eye(ndim)[axis]
 
     return uvec
 
 
-#def angle1(v1,v2):
-def angle1(a,b):
-
-    """Compute angle between two vectors a and b.
-
-    Uses formula:
-
-    .. math::
-
-       \\cos\\theta = \\frac{a \\cdot b}{|a||b|}
-
-    """
-
-#    a = N.dot(v1,v2)
-#    b = N.linalg.norm(v1)*N.linalg.norm(v2)
-#
-#    angle = N.degrees(N.arccos(a/b))
-#    
-#    print angle
-#
-##    if angle > 45.:
-##        angle = 90 - abs(N.array(angle)-90)
-###        angle = abs(N.array(angle)-90)
-#
-##    if angle > 135.:
-##        angle = angle + 90
-###        angle = 90 - abs(N.array(angle)-90)
-#
-#
-##    delta = u1*v2 - u2*11
-#    delta = v1[0]*v2[1] - v1[1]*v2[0]
-#    print "delta = ", delta
-#    
-#        
-#    return angle
-
-
-    aux1 = N.dot(a,b)
-    aux2 = N.linalg.norm(a)*N.linalg.norm(b)
-
-    angle = N.degrees(N.arccos(aux1/aux2))
-    
-    print angle
-
-#    if angle > 45.:
-#        angle = 90 - abs(N.array(angle)-90)
-##        angle = abs(N.array(angle)-90)
-
-#    if angle > 135.:
-#        angle = angle + 90
-##        angle = 90 - abs(N.array(angle)-90)
-
-
-#    delta = u1*v2 - u2*11
-    delta = a[0]*b[1] - a[1]*b[0]
-    print "delta = ", delta
-        
-    return angle
-
-
-def angle2(a,b):
+def getAngle(a,b,pa=True):
 
     """Compute angle between two vectors a and b.
 
@@ -193,68 +231,43 @@ def angle2(a,b):
 
        \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}
 
-    Slower than :func:`angle1`, but possibly more accurate for very
-    small angles.
+    Parameters
+    ----------
+    a, b : array
+        Vectors to measure angle between.
+
+    pa : bool
+        Position angle flag. If True, the measured angle will be
+        measured as angle between vector ``a`` counter-clockwise from
+        vector ``b``, and angle always non-negative. If False, the
+        measured angle can be positive (i.e. ``a'' is ``angle``
+        degrees counter-clockwise from ``b``), or negative
+        (i.e. ``a`` is ``angle`` degrees clockwise from ``b``).
+
+    Returns
+    -------
+    angle : float
+        Angle in degrees between vectors ``a`` and ``b``. See
+        description of ``pa`` for more details.
 
     """
-    
-    aux1 = N.linalg.norm(N.cross(a,b))
-    aux2 = N.dot(a,b)
 
-    angle = N.degrees(N.arctan2(aux1,aux2))
-
-#t    if angle > 45.:
-#t        angle = 90 - abs(N.array(angle)-90)
-    
-    return angle
-
-
-def getangle(a,b):
-
-    """Compute angle between two vectors a and b.
-
-    Uses formula:
-
-    .. math::
-
-       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}
-
-    Slower than :func:`angle1`, but possibly more accurate for very
-    small angles.
-
-    """
-    
+    # compute angle using cross product formula
     aux1 = N.linalg.norm(N.cross(a,b))
     aux2 = N.dot(a,b)
     angle = N.degrees(N.arctan2(aux1,aux2))
+    
+    sign = whichside(a,b)
+    angle = angle * sign
+
+    if pa is True and angle < 0:
+        angle += 180.
 
     return angle 
-    
 
-#def angle2(v1,v2):
-#
-#    """Compute angle between vectors v1 and v2.
-#
-#    Uses formula:
-#
-#    .. math::
-#
-#       \\tan \\theta = \\frac{|v1 \\times b2|}{a \\cdot b}
-#
-#    Slower than :func:`angle1`, but possibly more accurate for very
-#    small angles.
-#
-#    """
-#    
-#    a = N.linalg.norm(N.cross(v1,v2))
-#    b = N.dot(v1,v2)
-#
-#    angle = N.degrees(N.arctan2(a,b))
-#
-#    if angle > 45.:
-#        angle = 90 - abs(N.array(angle)-90)
-#    
-#    return angle 
+
+
+
 
 
 def get_moment(image,radius=1.,angular='a',m=1):
@@ -445,12 +458,6 @@ def fluxdensity_i_wave(cube):
     return waves, angles, res
 
 
-def getGaussian(npix,sig,xoff=0.,yoff=0.,Imax=1.):
-    x = N.arange(npix)-npix/2
-    Y,X = N.meshgrid(x,x)
-    G = Imax * N.exp(-((X-xoff)**2. + (Y-yoff)**2.)/(2.*sig**2)) / (2.*N.pi*sig**2.)
-    return G
-
 def get_wavelet(npix,a):
     x = N.arange(-npix/2,1+npix/2,1)
     X,Y = N.meshgrid(x,x)
@@ -568,31 +575,6 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
     return fig
     
     
-
-
-
-
-
-def foo():
-
-    import numpy as N
-    from hc import  morphology as mo
-
-    ey = mo.getUnitVector(axis=1,ndim=2)  # unit vector along y-axis, in two dimensions
-
-    pt1 = N.array([u1,v1])  # x and y components of point1 = (u1,v1)
-    pt2 = N.array([u2,v2])  # x and y components of point2 = (u2,v2)
-    vec = pt1 - pt2  # your vector between two uv points (or vice versa, try it out)
-
-    sign = mo.whichside(vec,ey)
-    angle = mo.getangle(vec,ey) * sign
-
-    if angle < 0:
-        angle += 180.
-
-    print(angle)
-
-
 
 
 

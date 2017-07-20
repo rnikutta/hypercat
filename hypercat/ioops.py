@@ -15,7 +15,7 @@ class FitsFile:
 
     """Convenience class to read (OI)FITS files."""
     
-    def __init__(self,f):
+    def __init__(self,f,mode='r'):
 
         """Init.
 
@@ -148,7 +148,7 @@ class FitsFile:
 
         .. code-block:: python
 
-           ff = FitsFile('oiftisfile.fits')
+           ff = FitsFile('..examples/Circinus_Burtscher_2013.oifits')
 
            ff.getdata(hdu=4)  # return all hdu.data
 
