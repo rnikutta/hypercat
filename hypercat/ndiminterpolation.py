@@ -2,12 +2,15 @@
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20170202'
+__version__ = '20170410'  #yyyymmdd
+
+#TODO: update doc strings
 
 import numpy as N
 import warnings
 from scipy import interpolate, ndimage
 import itertools
+from copy import copy
 
 # Convert RuntimeWarnings, e.g. division by zero in some array elements, to Exceptions
 warnings.simplefilter('error', RuntimeWarning)
@@ -18,7 +21,7 @@ class NdimInterpolation:
     """N-dimensional interpolation on data hypercubes.
 
     Operates on image(index) coordinates. Multi-linear (default) or
-    cubic-spline.
+    cubic-spline (currently deactivated; needs more testing).
     """
 
     def __init__(self,data,theta,order=1,mode='log'):
@@ -88,30 +91,43 @@ class NdimInterpolation:
             # to be written
 
         """
-        
-        self.theta = theta   # list of lists of parameter values, unique, in correct order
 
-        shape_ = [len(t) for t in self.theta]
+        self.theta = copy(theta)   # list of lists of parameter values, unique, in correct order
+
+        if not isinstance(self.theta,(list,tuple)):
+            self.theta = [self.theta]
+        
+        shape_ = tuple([len(t) for t in self.theta])
 
         # determine if data is hypercube or list of 1d arrays
         if shape_ == data.shape:
-            self.input = 'hypercube'
             self.data_hypercube = data
         else:
-            self.input = 'linear'
-            self.data_hypercube = data.reshape(shape_,order='F')
+            raise Exception, "'theta' not compatible with the shape of 'data'."
 
         # interpolation orders
-        assert (order in (1,3)), "Interpolation spline order not supported! Must be 1 (linear) or 3 (cubic)."
-        self.order = order
+        if order in (1,3):
+            self.order = order
+        else:
+            raise Exception, "Interpolation spline order not supported! Must be 1 (linear) or 3 (cubic)."
 
         # interpolate in log10 space?
         self.mode = mode
-        if self.mode == 'log':
+
+        # take log10 of 'data' ('y' values)
+        if self.mode in ('log','loglog'):
             try:
                 self.data_hypercube = N.log10(self.data_hypercube)
             except RuntimeWarning:
                 raise Exception, "For mode='log' all entries in 'data' must be > 0."
+
+        # take log10 of 'theta' ('x' values)
+        if self.mode == 'loglog':
+            for jt,t in enumerate(self.theta):
+                try:
+                    self.theta[jt] = N.log10(t)
+                except:
+                    raise # Exception
 
         # set up n 1-d linear interpolators for all n parameters in theta
         self.ips = []   # list of 1-d interpolator objects
@@ -196,6 +212,7 @@ class NdimInterpolation:
         """
 
         vectup = [e if isinstance(e,tuple) else (e,) for e in vec] # make tuple of vectors
+
         shape_ = [len(e) for e in vectup]  # tuple shape
 
         # create a fleshed-out mesh of (multi-dim) locations to interpolate `data` at
@@ -209,18 +226,46 @@ class NdimInterpolation:
         return coords_pix, shape_
 
 
+    def serialize_vector(self,vector):
+
+        vec = list(vector)
+
+        # sub-vectors can be arrays or lists; convert to tuples
+        for j,v in enumerate(vec):
+            if isinstance(v,(list,tuple)):
+                vec[j] = tuple(v)
+            elif isinstance(v,N.ndarray):
+                vec[j] = tuple(v.squeeze())  # to allow for 1-d arrays embedded in higher-dims
+            else:
+                vec[j] = v
+                
+        vec = tuple(vec)
+        
+        return vec
+
+    
     def __call__(self,vector):
         """Interpolate in N dimensions, using mapping to image coordinates."""
 
+        if not isinstance(vector,(list,tuple)):
+            vector = [vector]
+            
+        if self.mode == 'loglog':
+            vector = [N.log10(e) for e in vector]
+            
+        vec = self.serialize_vector(vector)
+        
         if self.order == 1:
-            coords, shape_ = self.get_coords(vector)
+            coords, shape_ = self.get_coords(vec)
             aux = ndimage.map_coordinates(self.data_hypercube,coords,order=1)
             aux = aux.reshape(shape_)
 # temporarily disabled order==3, b/c not yet tested
 #        elif self.order == 3:
 #            aux = ndimage.map_coordinates(self.coeffs,self.get_coords(vector,pivots=pivots),order=3,prefilter=False)
 
-        if self.mode == 'log':
+        aux = aux.squeeze()  # remove superflous length-one dimensions from result array
+
+        if self.mode in  ('log','loglog'):
             aux = 10.**aux
 
         return aux
