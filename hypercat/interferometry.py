@@ -15,11 +15,11 @@ import matplotlib.pyplot as plt
 
 #HyperCAT
 import ioops as io
+import ndiminterpolation
 
 
 # HELPER FUNCTIONS
 def uvload(filename):
-    
     
     """This function read the uv points from a iofits file.
         
@@ -27,7 +27,6 @@ def uvload(filename):
         ----------
         filename : str
             Name and direction of file to be load containgin the uv points
-        
         
         Returns:
         --------
@@ -148,6 +147,7 @@ def ima2fft(ima,abs='True'):
         """
     
     #The 2D FFT is shifted to reconstruct the image at the central position of the array.
+    ima = ima.data
     
     if abs == 'True':
         ima_fft = np.abs(np.fft.fftshift(np.fft.fft2(ima)))
@@ -178,15 +178,13 @@ def fft_pxscale(ima):
         fftscale = fft_pxscale(ima)
         
         """
-    
-    gridsize = ima.shape[0]
+    gridsize = ima.data.shape[0]
     #pixel scale of the image. This should be taken from the header of the clumpy torus image
-    pxscale_mod = 0.00654641214133*1000      ## in mas
-    #pxscale_mod = ima.pxscale.value
+    pxscale_mod = ima.pixelscale.value    #in mas
     #1D FFT of the gridsize.
     fft_freq=np.fft.fftfreq(gridsize,pxscale_mod)
     #wavelength of the clumpy torus image. This should be taken from the header of the clumpy torus image
-    lam = 8.0*1E-6                            ## in um
+    lam = ima.wave.value*1E-6                 #in m
     #lam = ima.wavelength
     #re-orginizing the 1D FFT to match with the grid.
     roll=np.floor(gridsize/2).astype("int")
@@ -201,7 +199,7 @@ def fft_pxscale(ima):
     return fftscale
 
 
-def correlatedflux2D(ima_fft,u_px,v_px,BL,Phi,abs='True'):
+def correlatedflux(ima_fft,u,v,abs='True'):
     
     """This function creates the 2D correlated flux, Baseline and position angle maps
         
@@ -210,90 +208,43 @@ def correlatedflux2D(ima_fft,u_px,v_px,BL,Phi,abs='True'):
         ima_fft : array
             2D FFT of the clumpy torus model from ima2fft
             
-        u_px, v_px : array
-            u and v planes in pixels
+        u, v : array
+            u and v planes in meters
             
-        BL : array
-            Baseline estimated from uvplanes
-        
-        Phi : array
-            Position angles estimated from uvplanes
-        
         Returns:
         --------
-        corrflux2D : array
+        corrflux : array
             Correlated flux in 2D uv plane
         
-        BL2D : array
-            Baseline in 2D uv plane
+        BL : array
+        Baseline estimated from uvplanes
         
-        Phi2D : array
-            Position angles in 2D uv plane
-        
+        Phi : array
+        Position angles estimated from uvplanes
+
+
         Example
         -------
         .. code-block:: python
         
-        corrflux2D = correlatedflux2D(ori_fft,u_px,v_px,BL,Phi)
+           corrflux2D = correlatedflux2D(ori_fft,u_px,v_px,BL,Phi)
         
         """
     
-    a      = np.zeros([ima_fft.shape[0],ima_fft.shape[0]])
-    BL2D   = np.zeros([ima_fft.shape[0],ima_fft.shape[0]])
-    Phi2D  = np.zeros([ima_fft.shape[0],ima_fft.shape[0]])
-    for ii in range(len(u_px)):
-        vv = u_px[ii] + ima_fft.shape[0]/2
-        uu = v_px[ii] + ima_fft.shape[0]/2
-        a[uu,vv] = 1.
-        BL2D[uu,vv] = BL[ii]
-        Phi2D[uu,vv] = Phi[ii]
-
-    if abs == 'True':
-        corrflux2D = a*ima_fft
     if abs == 'False':
-        corrflux2D = a*np.abs(ima_fft)
-
-    return corrflux2D, BL2D, Phi2D
-
-
-def correlatedflux1D(corrflux2D):
+        ima_fft = np.abs(ima_fft)
     
-    """This function creates the 1D correlated flux map
-        
-        Parameters
-        ----------
-        corrflux2D : array
-        Correlated fluxes in the 2D uv plane from correlatedflux2D
-        
-        Returns:
-        --------
-        corrflux1D : array
-        Correlated flux in 1D uv plane
-        
-        corrflux1D_err : array
-        Uncertainties of the correlated fluxes in 1D uv plane at a given baseline
-        
-        
-        Example
-        -------
-        .. code-block:: python
-        
-        corrflux1D = correlatedflux1D(corrflux2D)
-        
-        """
-    
-    x, y = np.indices((corrflux2D.shape))
-    r = np.sqrt((x - corrflux2D.shape[0]/2)**2 + (y - corrflux2D.shape[0]/2)**2)
-    r = r.astype(np.int)
-    
-    radi = corrflux2D.shape[0]/2
-    corrflux1D = np.empty(corrflux2D.shape[0]/2)
-    corrflux1D_err = np.empty(corrflux2D.shape[0]/2)
-    for jj in range(radi):
-        n = np.where(r==jj)
-        corrflux1D[jj] = np.nansum(corrflux2D[n])
-        corrflux1D_err[jj] = np.nanstd(corrflux2D[n])
-    return corrflux1D,corrflux1D_err
+    x  = np.arange(ima_fft.shape[0])
+    ip = ndiminterpolation.NdimInterpolation(ima_fft,[x,x])
+    vv = u + ima_fft.shape[0]/2
+    uu = v + ima_fft.shape[0]/2
+    corrflux = ip(np.dstack((uu,vv)))
+
+    BL = np.sqrt(u**2+v**2)
+    Phi = np.rad2deg(np.arctan(u/v))
+
+    return corrflux, BL, Phi
+
 
 
 ################ Plotting functions ###########
