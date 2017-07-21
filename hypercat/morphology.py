@@ -578,5 +578,38 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
 
 
 
+def findOrientation(I):
 
+    ey = getUnitVector(axis=1,ndim=2)
+    angles = N.arange(0,181,10)
 
+    for angle in angles:
+        print angle
+        p.clf()
+        image = ndimage.rotate(I,angle,reshape=False)
+        #x0,y0 = N.unravel_index(N.argmax(image),image.shape)
+        x0,y0 = ndimage.center_of_mass(image)
+        npix = image.shape[0]
+        cpix = npix/2
+        p.imshow(image.T,origin='lower',interpolation='none')
+        #p.scatter(x0,y0,marker='x',s=25,c='b')
+        evec1,x_,y_,sig2 = imageToEigenvectors(image)
+        #p.plot(x_[:1],y_[:1],c='w',marker='o')
+        measured = getAngle(evec1,ey)
+        p.axvline(cpix,c='w',lw=1)
+        scale = 20
+        m = N.tan(N.radians(measured-90.))
+        b = y0-m*x0
+        xl = 0.
+        yl = m*xl+b
+        xr = npix
+        yr = m*xr+b
+        p.plot((xl,xr),(yl,yr),ls='-',lw=1,c='b')
+        p.xlim(0,npix-1)
+        p.ylim(0,npix-1)
+        p.title('measured PA = %.2f, with x-axis = %.2f' % (measured,measured-90.))
+        p.gca().get_xaxis().set_visible(False)
+        p.gca().get_yaxis().set_visible(False)
+        p.waitforbuttonpress()
+        p.draw()
+        print

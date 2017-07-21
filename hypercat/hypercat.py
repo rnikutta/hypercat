@@ -105,6 +105,10 @@ class ModelCube:
         self.paramnames = self.group['paramnames'].value.tolist()
         self.theta = self.group['theta'].value
 
+        # for each parameter save its sampling as a member (attach '_' to the name)
+        for j,pn in enumerate(self.paramnames):
+            setattr(self,pn+'_',self.theta[j])
+        
         iY = self.paramnames.index('Y')
         self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
         iy = self.paramnames.index('y')
@@ -224,6 +228,7 @@ class ModelCube:
         header = "Parameter  Range                Nvalues  Sampled values"
         _len = len(header)
         rule = "-"*_len
+        print rule
         print header
         print rule
         
@@ -250,6 +255,8 @@ class ModelCube:
         print rule
         print "Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable."
 
+        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+        print "Hypercube size: %g (%s)" % (prefix, suffix)
 
     parameter_values = property(print_sampling)
     
