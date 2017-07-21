@@ -289,7 +289,7 @@ class ImageFrame:
         except:
             raise
 
-    I = property(_getImageT)
+    I = property(_getImageT) #: Property alias for :func:`_getImageT`
 
 
 class Image(ImageFrame):
@@ -470,7 +470,7 @@ class Image(ImageFrame):
         
         return (self.getBrightness('Jy/mas^2').sum() * self.pixelarea).to(unit)
     
-    F = property(getTotalFluxDensity)
+    F = property(getTotalFluxDensity) #: Property alias for :func:`getTotalFluxDensity`
 
 
 # HIGH-LEVEL HELPERS

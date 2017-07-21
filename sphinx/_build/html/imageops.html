@@ -64,29 +64,7 @@
 <dl class="attribute">
 <dt id="imageops.Image.F">
 <code class="descname">F</code><a class="headerlink" href="#imageops.Image.F" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the total flux density within the FOV.</p>
-<p>The total flux density is the brightness integral over the solid
-angle of the FOV.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>units</strong> (<em>str</em>) – The brightness units in which the total flux density
-should be output. Default: ‘Jy’</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>totalFluxDensity</strong> – Total flux density in Jy.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Example</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">total</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
-<span class="nb">print</span> <span class="n">total</span><span class="p">;</span> <span class="nb">print</span> <span class="n">total</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mJy&#39;</span><span class="p">)</span>  <span class="c1"># can be easily converted to other units</span>
-  <span class="mf">0.0050459482673</span> <span class="n">Jy</span>
-  <span class="mf">5.0459482673</span> <span class="n">mJy</span>
-</pre></div>
-</div>
+<dd><p>Property alias for <a class="reference internal" href="#imageops.Image.getTotalFluxDensity" title="imageops.Image.getTotalFluxDensity"><code class="xref py py-func docutils literal"><span class="pre">getTotalFluxDensity()</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -184,7 +162,8 @@ the requirements.</p>
 <dd><dl class="attribute">
 <dt id="imageops.ImageFrame.I">
 <code class="descname">I</code><a class="headerlink" href="#imageops.ImageFrame.I" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Property alias for <code class="xref py py-func docutils literal"><span class="pre">_getImageT()</span></code></p>
+</dd></dl>
 
 <dl class="method">
 <dt id="imageops.ImageFrame.changeFOV">
