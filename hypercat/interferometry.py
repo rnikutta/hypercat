@@ -236,8 +236,8 @@ def correlatedflux(ima_fft,u,v,abs='True'):
     
     x  = np.arange(ima_fft.shape[0])
     ip = ndiminterpolation.NdimInterpolation(ima_fft,[x,x])
-    vv = u + ima_fft.shape[0]/2
-    uu = v + ima_fft.shape[0]/2
+    uu = u + ima_fft.shape[0]/2
+    vv = v + ima_fft.shape[0]/2
     corrflux = ip(np.dstack((uu,vv)))
 
     BL = np.sqrt(u**2+v**2)
@@ -245,6 +245,14 @@ def correlatedflux(ima_fft,u,v,abs='True'):
 
     return corrflux, BL, Phi
 
+def ima_ifft(corrflux):
+    
+    if abs == 'True':
+        ima_ifft = np.abs(np.fft.fftshift(np.fft.ifft2(corrflux2D)))
+    if abs == 'False':
+        ima_ifft = np.fft.fftshift(np.fft.ifft2(corrflux2D))
+
+    return ima_ifft
 
 
 ################ Plotting functions ###########
