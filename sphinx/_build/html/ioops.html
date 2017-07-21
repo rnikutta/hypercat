@@ -28,7 +28,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="loggers module" href="loggers.html" />
-    <link rel="prev" title="instruments module" href="instruments.html" /> 
+    <link rel="prev" title="interferometry module" href="interferometry.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -44,7 +44,7 @@
           <a href="loggers.html" title="loggers module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="instruments.html" title="instruments module"
+          <a href="interferometry.html" title="interferometry module"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
       </ul>
@@ -59,7 +59,7 @@
 <span id="ioops-module"></span><h1>ioops module<a class="headerlink" href="#module-ioops" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ioops.FitsFile">
-<em class="property">class </em><code class="descclassname">ioops.</code><code class="descname">FitsFile</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ioops.</code><code class="descname">FitsFile</code><span class="sig-paren">(</span><em>f</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience class to read (OI)FITS files.</p>
 <dl class="method">
 <dt id="ioops.FitsFile.get">
@@ -123,7 +123,7 @@ matches <code class="docutils literal"><span class="pre">keyword</span></code>.<
 assume that hdu.data is a record array, and fetch the
 record named by <code class="docutils literal"><span class="pre">field</span></code>.</div></blockquote>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">FitsFile</span><span class="p">(</span><span class="s1">&#39;oiftisfile.fits&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">FitsFile</span><span class="p">(</span><span class="s1">&#39;..examples/Circinus_Burtscher_2013.oifits&#39;</span><span class="p">)</span>
 
 <span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">hdu</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># return all hdu.data</span>
 
@@ -184,8 +184,8 @@ return it.</li>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="instruments.html"
-                        title="previous chapter">instruments module</a></p>
+  <p class="topless"><a href="interferometry.html"
+                        title="previous chapter">interferometry module</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="loggers.html"
                         title="next chapter">loggers module</a></p>
@@ -223,7 +223,7 @@ return it.</li>
           <a href="loggers.html" title="loggers module"
              >next</a> |</li>
         <li class="right" >
-          <a href="instruments.html" title="instruments module"
+          <a href="interferometry.html" title="interferometry module"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">HyperCAT API 1.0.0 documentation</a> &#187;</li> 
       </ul>

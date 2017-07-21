@@ -57,6 +57,56 @@
 <span class="kn">import</span> <span class="nn">ndiminterpolation</span> <span class="k">as</span> <span class="nn">ndi</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">p</span>
 
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">astropy.modeling.functional_models</span> <span class="k">import</span> <span class="n">Gaussian2D</span>
+
+
+<div class="viewcode-block" id="rotateVector"><a class="viewcode-back" href="../morphology.html#morphology.rotateVector">[docs]</a><span class="k">def</span> <span class="nf">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">90.</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Rotate 2-d vector by deg degrees.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vec : array</span>
+<span class="sd">        2d-d vector.</span>
+
+<span class="sd">    deg : float</span>
+<span class="sd">        Rotation angle in degrees. If positive, rotates</span>
+<span class="sd">        counter-clockwise, otherwise counter-clockwise.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rvec : arrau\y</span>
+<span class="sd">        Rotated vector.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       vec = N.array([0.,1.])  # unit vector along postive y-axis</span>
+<span class="sd">       rotateVector(vec,deg=90.)</span>
+<span class="sd">         array([ -1., 0.])</span>
+
+<span class="sd">       rotateVector(vec,deg=-90.)</span>
+<span class="sd">         array([ 1., 0.])</span>
+
+<span class="sd">       rotateVector(vec,deg=45.)</span>
+<span class="sd">         array([-0.70710678,  0.70710678])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">deg</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">],</span>
+                      <span class="p">[</span><span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">]])</span>
+    <span class="n">rvec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">vec</span><span class="p">)</span>  <span class="c1"># transposing matrix to make positive angles rotate counter-clockwise, i.e. as is convention in mathematics</span>
+
+    <span class="k">return</span> <span class="n">rvec</span></div>
+    
+    
 <div class="viewcode-block" id="rot90ccw"><a class="viewcode-back" href="../morphology.html#morphology.rot90ccw">[docs]</a><span class="k">def</span> <span class="nf">rot90ccw</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;Rotate 2-d vector v 90 degrees CCW.&quot;&quot;&quot;</span>
@@ -66,10 +116,39 @@
     <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">r</span></div>
-    
+
+
 <div class="viewcode-block" id="whichside"><a class="viewcode-back" href="../morphology.html#morphology.whichside">[docs]</a><span class="k">def</span> <span class="nf">whichside</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 
-    <span class="n">sig</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">rot90ccw</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+    <span class="sd">&quot;&quot;&quot;Compute relation sense of vectors a relative to vector b.</span>
+
+<span class="sd">    When computing and angle between two vectors, it&#39;s not always</span>
+<span class="sd">    clear in which direction of vector lies of another (left or right,</span>
+<span class="sd">    i.e. counter- or clock-wise). This function answers the question.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    a, b : array</span>
+
+<span class="sd">        Two 2-d vectors.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sig : float</span>
+<span class="sd">        Number -1., 0., or +1.</span>
+<span class="sd">        If 0., vectors a and b are parallel or antiparallel to each other. </span>
+<span class="sd">        If -1., b lies to the left of a (b counter-clockwise from a).</span>
+<span class="sd">        If +1., b lies to the right of a (b clockwise from a).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="c1">#    sig = N.sign(N.dot(a,rot90ccw(b)))</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rot90ccw</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="n">b</span><span class="p">))</span>
+<span class="c1">#    sig = N.sign(N.dot(a,rotateVector(b,90.)))</span>
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -82,48 +161,34 @@
     <span class="k">return</span> <span class="n">sig</span></div>
 
 
-<div class="viewcode-block" id="gaussian2d_circular"><a class="viewcode-back" href="../morphology.html#morphology.gaussian2d_circular">[docs]</a><span class="k">def</span> <span class="nf">gaussian2d_circular</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span> <span class="o">-</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
-    <span class="nb">print</span> <span class="n">x</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+<span class="c1">#def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.):</span>
+<span class="c1">#    </span>
+<span class="c1">#    x = N.arange(npix) - npix/2</span>
+<span class="c1">#    X, Y = N.meshgrid(x,x,indexing=&#39;ij&#39;)</span>
+<span class="c1">#</span>
+<span class="c1">#    norm = 1. / (2.*N.pi*sx*sy)</span>
+<span class="c1">#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))</span>
+<span class="c1">#    </span>
+<span class="c1">#    if theta != 0.:</span>
+<span class="c1">#        Z = ndimage.rotate(Z,theta,reshape=False)</span>
+<span class="c1">#        </span>
+<span class="c1">#    return Z</span>
 
-    <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
-<span class="c1">#    norm = 1.</span>
+<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../morphology.html#morphology.gaussian">[docs]</a><span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="o">+</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="p">)</span>
-<span class="c1">#    Z = norm * N.exp(-((X-x0)**2./(2*float(sx)**2.) + (Y-y0)**2./(2*float(sy)**2.)))</span>
-    
-    <span class="k">if</span> <span class="n">theta</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        
-    <span class="k">return</span> <span class="n">Z</span></div>
-
-
-<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span> <span class="o">-</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
-    <span class="nb">print</span> <span class="n">x</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
-
-    <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sx</span><span class="o">*</span><span class="n">sy</span><span class="p">)</span>
-<span class="c1">#    norm = 1.</span>
-    
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="p">(</span> <span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">sx</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)))</span>
-<span class="c1">#    Z = norm * N.exp(-((X-x0)**2./(2*float(sx)**2.) + (Y-y0)**2./(2*float(sy)**2.)))</span>
-    
-    <span class="k">if</span> <span class="n">theta</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        
-    <span class="k">return</span> <span class="n">Z</span>
-
-<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../morphology.html#morphology.gaussian">[docs]</a><span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span> <span class="o">-</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
 
-    <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sx</span><span class="o">*</span><span class="n">sy</span><span class="p">)</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="p">(</span> <span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">sx</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)))</span>
-    
-    <span class="k">if</span> <span class="n">theta</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sx</span><span class="o">*</span><span class="n">sy</span><span class="p">)</span>
+
+    <span class="n">g</span> <span class="o">=</span> <span class="n">Gaussian2D</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="n">sx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
+
+<span class="c1">#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))</span>
+<span class="c1">#    </span>
+<span class="c1">#    if theta != 0.:</span>
+<span class="c1">#        Z = ndimage.rotate(Z,theta,reshape=False)</span>
         
     <span class="k">return</span> <span class="n">Z</span></div>
 
@@ -169,72 +234,45 @@
 
 <div class="viewcode-block" id="getUnitVector"><a class="viewcode-back" href="../morphology.html#morphology.getUnitVector">[docs]</a><span class="k">def</span> <span class="nf">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
 
-    <span class="n">uvec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ndim</span><span class="p">)[:,</span><span class="n">axis</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;Get n-dimensional unit vector.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    axis : int</span>
+<span class="sd">        Direction of the vector, counting axes from 0 (the pythonic way) up to ``ndim``-1.</span>
+
+<span class="sd">    ndim : int</span>
+<span class="sd">        Dimensionality of the unit vector. Default 2.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    uvec : array</span>
+<span class="sd">        1-dim array of length ``ndim``, representing a unit vector</span>
+<span class="sd">        along the given ``axis``, in ``ndim`` dimensions.</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       getUnitVector(axis=0,ndim=2)</span>
+<span class="sd">         array([ 1.,  0.])  # 2-d unit vector along x-axis</span>
+
+<span class="sd">       getUnitVector(1,2)</span>
+<span class="sd">         array([ 0.,  1.])  # 2-d unit vector along y-axis</span>
+
+<span class="sd">       getUnitVector(1,5)</span>
+<span class="sd">         array([ 0.,  1.,  0.,  0.,  0.])  # 5-d unit vector along 2nd axis</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">uvec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">ndim</span><span class="p">)[</span><span class="n">axis</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">uvec</span></div>
 
 
-<span class="c1">#def angle1(v1,v2):</span>
-<div class="viewcode-block" id="angle1"><a class="viewcode-back" href="../morphology.html#morphology.angle1">[docs]</a><span class="k">def</span> <span class="nf">angle1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
-
-    <span class="sd">&quot;&quot;&quot;Compute angle between two vectors a and b.</span>
-
-<span class="sd">    Uses formula:</span>
-
-<span class="sd">    .. math::</span>
-
-<span class="sd">       \\cos\\theta = \\frac{a \\cdot b}{|a||b|}</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<span class="c1">#    a = N.dot(v1,v2)</span>
-<span class="c1">#    b = N.linalg.norm(v1)*N.linalg.norm(v2)</span>
-<span class="c1">#</span>
-<span class="c1">#    angle = N.degrees(N.arccos(a/b))</span>
-<span class="c1">#    </span>
-<span class="c1">#    print angle</span>
-<span class="c1">#</span>
-<span class="c1">##    if angle &gt; 45.:</span>
-<span class="c1">##        angle = 90 - abs(N.array(angle)-90)</span>
-<span class="c1">###        angle = abs(N.array(angle)-90)</span>
-<span class="c1">#</span>
-<span class="c1">##    if angle &gt; 135.:</span>
-<span class="c1">##        angle = angle + 90</span>
-<span class="c1">###        angle = 90 - abs(N.array(angle)-90)</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1">##    delta = u1*v2 - u2*11</span>
-<span class="c1">#    delta = v1[0]*v2[1] - v1[1]*v2[0]</span>
-<span class="c1">#    print &quot;delta = &quot;, delta</span>
-<span class="c1">#    </span>
-<span class="c1">#        </span>
-<span class="c1">#    return angle</span>
-
-
-    <span class="n">aux1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">aux2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-
-    <span class="n">angle</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">aux1</span><span class="o">/</span><span class="n">aux2</span><span class="p">))</span>
-    
-    <span class="nb">print</span> <span class="n">angle</span>
-
-<span class="c1">#    if angle &gt; 45.:</span>
-<span class="c1">#        angle = 90 - abs(N.array(angle)-90)</span>
-<span class="c1">##        angle = abs(N.array(angle)-90)</span>
-
-<span class="c1">#    if angle &gt; 135.:</span>
-<span class="c1">#        angle = angle + 90</span>
-<span class="c1">##        angle = 90 - abs(N.array(angle)-90)</span>
-
-
-<span class="c1">#    delta = u1*v2 - u2*11</span>
-    <span class="n">delta</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="s2">&quot;delta = &quot;</span><span class="p">,</span> <span class="n">delta</span>
-        
-    <span class="k">return</span> <span class="n">angle</span></div>
-
-
-<div class="viewcode-block" id="angle2"><a class="viewcode-back" href="../morphology.html#morphology.angle2">[docs]</a><span class="k">def</span> <span class="nf">angle2</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+<div class="viewcode-block" id="getAngle"><a class="viewcode-back" href="../morphology.html#morphology.getAngle">[docs]</a><span class="k">def</span> <span class="nf">getAngle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;Compute angle between two vectors a and b.</span>
 
@@ -244,68 +282,43 @@
 
 <span class="sd">       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}</span>
 
-<span class="sd">    Slower than :func:`angle1`, but possibly more accurate for very</span>
-<span class="sd">    small angles.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a, b : array</span>
+<span class="sd">        Vectors to measure angle between.</span>
+
+<span class="sd">    pa : bool</span>
+<span class="sd">        Position angle flag. If True, the measured angle will be</span>
+<span class="sd">        measured as angle between vector ``a`` counter-clockwise from</span>
+<span class="sd">        vector ``b``, and angle always non-negative. If False, the</span>
+<span class="sd">        measured angle can be positive (i.e. ``a&#39;&#39; is ``angle``</span>
+<span class="sd">        degrees counter-clockwise from ``b``), or negative</span>
+<span class="sd">        (i.e. ``a`` is ``angle`` degrees clockwise from ``b``).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    angle : float</span>
+<span class="sd">        Angle in degrees between vectors ``a`` and ``b``. See</span>
+<span class="sd">        description of ``pa`` for more details.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="n">aux1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">))</span>
-    <span class="n">aux2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
 
-    <span class="n">angle</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">aux1</span><span class="p">,</span><span class="n">aux2</span><span class="p">))</span>
-
-<span class="c1">#t    if angle &gt; 45.:</span>
-<span class="c1">#t        angle = 90 - abs(N.array(angle)-90)</span>
-    
-    <span class="k">return</span> <span class="n">angle</span></div>
-
-
-<div class="viewcode-block" id="getangle"><a class="viewcode-back" href="../morphology.html#morphology.getangle">[docs]</a><span class="k">def</span> <span class="nf">getangle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
-
-    <span class="sd">&quot;&quot;&quot;Compute angle between two vectors a and b.</span>
-
-<span class="sd">    Uses formula:</span>
-
-<span class="sd">    .. math::</span>
-
-<span class="sd">       \\tan \\theta = \\frac{|a \\times b|}{a \\cdot b}</span>
-
-<span class="sd">    Slower than :func:`angle1`, but possibly more accurate for very</span>
-<span class="sd">    small angles.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    
+    <span class="c1"># compute angle using cross product formula</span>
     <span class="n">aux1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">))</span>
     <span class="n">aux2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
     <span class="n">angle</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">aux1</span><span class="p">,</span><span class="n">aux2</span><span class="p">))</span>
+    
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">whichside</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">*</span> <span class="n">sign</span>
+
+    <span class="k">if</span> <span class="n">pa</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">angle</span> <span class="o">+=</span> <span class="mf">180.</span>
 
     <span class="k">return</span> <span class="n">angle</span> </div>
-    
 
-<span class="c1">#def angle2(v1,v2):</span>
-<span class="c1">#</span>
-<span class="c1">#    &quot;&quot;&quot;Compute angle between vectors v1 and v2.</span>
-<span class="c1">#</span>
-<span class="c1">#    Uses formula:</span>
-<span class="c1">#</span>
-<span class="c1">#    .. math::</span>
-<span class="c1">#</span>
-<span class="c1">#       \\tan \\theta = \\frac{|v1 \\times b2|}{a \\cdot b}</span>
-<span class="c1">#</span>
-<span class="c1">#    Slower than :func:`angle1`, but possibly more accurate for very</span>
-<span class="c1">#    small angles.</span>
-<span class="c1">#</span>
-<span class="c1">#    &quot;&quot;&quot;</span>
-<span class="c1">#    </span>
-<span class="c1">#    a = N.linalg.norm(N.cross(v1,v2))</span>
-<span class="c1">#    b = N.dot(v1,v2)</span>
-<span class="c1">#</span>
-<span class="c1">#    angle = N.degrees(N.arctan2(a,b))</span>
-<span class="c1">#</span>
-<span class="c1">#    if angle &gt; 45.:</span>
-<span class="c1">#        angle = 90 - abs(N.array(angle)-90)</span>
-<span class="c1">#    </span>
-<span class="c1">#    return angle </span>
+
+
+
 
 
 <div class="viewcode-block" id="get_moment"><a class="viewcode-back" href="../morphology.html#morphology.get_moment">[docs]</a><span class="k">def</span> <span class="nf">get_moment</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">angular</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -496,12 +509,6 @@
     <span class="k">return</span> <span class="n">waves</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">res</span></div>
 
 
-<div class="viewcode-block" id="getGaussian"><a class="viewcode-back" href="../morphology.html#morphology.getGaussian">[docs]</a><span class="k">def</span> <span class="nf">getGaussian</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">sig</span><span class="p">,</span><span class="n">xoff</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">yoff</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">Imax</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
-    <span class="n">Y</span><span class="p">,</span><span class="n">X</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">G</span> <span class="o">=</span> <span class="n">Imax</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">xoff</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">yoff</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sig</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sig</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">G</span></div>
-
 <div class="viewcode-block" id="get_wavelet"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
@@ -622,33 +629,41 @@
 
 
 
+<div class="viewcode-block" id="findOrientation"><a class="viewcode-back" href="../morphology.html#morphology.findOrientation">[docs]</a><span class="k">def</span> <span class="nf">findOrientation</span><span class="p">(</span><span class="n">I</span><span class="p">):</span>
 
+    <span class="n">ey</span> <span class="o">=</span> <span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">angles</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">181</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 
-<div class="viewcode-block" id="foo"><a class="viewcode-back" href="../morphology.html#morphology.foo">[docs]</a><span class="k">def</span> <span class="nf">foo</span><span class="p">():</span>
-
-    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
-    <span class="kn">from</span> <span class="nn">hc</span> <span class="k">import</span>  <span class="n">morphology</span> <span class="k">as</span> <span class="n">mo</span>
-
-    <span class="n">ey</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># unit vector along y-axis, in two dimensions</span>
-
-    <span class="n">pt1</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u1</span><span class="p">,</span><span class="n">v1</span><span class="p">])</span>  <span class="c1"># x and y components of point1 = (u1,v1)</span>
-    <span class="n">pt2</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u2</span><span class="p">,</span><span class="n">v2</span><span class="p">])</span>  <span class="c1"># x and y components of point2 = (u2,v2)</span>
-    <span class="n">vec</span> <span class="o">=</span> <span class="n">pt1</span> <span class="o">-</span> <span class="n">pt2</span>  <span class="c1"># your vector between two uv points (or vice versa, try it out)</span>
-
-    <span class="n">sign</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">whichside</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span>
-    <span class="n">angle</span> <span class="o">=</span> <span class="n">mo</span><span class="o">.</span><span class="n">getangle</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
-
-    <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">angle</span> <span class="o">+=</span> <span class="mf">180.</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span></div>
-
-
-
-
-
-
-
+    <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="n">angle</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">angle</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1">#x0,y0 = N.unravel_index(N.argmax(image),image.shape)</span>
+        <span class="n">x0</span><span class="p">,</span><span class="n">y0</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">npix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+        <span class="c1">#p.scatter(x0,y0,marker=&#39;x&#39;,s=25,c=&#39;b&#39;)</span>
+        <span class="n">evec1</span><span class="p">,</span><span class="n">x_</span><span class="p">,</span><span class="n">y_</span><span class="p">,</span><span class="n">sig2</span> <span class="o">=</span> <span class="n">imageToEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="c1">#p.plot(x_[:1],y_[:1],c=&#39;w&#39;,marker=&#39;o&#39;)</span>
+        <span class="n">measured</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">evec1</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">cpix</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">measured</span><span class="o">-</span><span class="mf">90.</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">y0</span><span class="o">-</span><span class="n">m</span><span class="o">*</span><span class="n">x0</span>
+        <span class="n">xl</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">yl</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="n">xl</span><span class="o">+</span><span class="n">b</span>
+        <span class="n">xr</span> <span class="o">=</span> <span class="n">npix</span>
+        <span class="n">yr</span> <span class="o">=</span> <span class="n">m</span><span class="o">*</span><span class="n">xr</span><span class="o">+</span><span class="n">b</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">xl</span><span class="p">,</span><span class="n">xr</span><span class="p">),(</span><span class="n">yl</span><span class="p">,</span><span class="n">yr</span><span class="p">),</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;measured PA = </span><span class="si">%.2f</span><span class="s1">, with x-axis = </span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">measured</span><span class="p">,</span><span class="n">measured</span><span class="o">-</span><span class="mf">90.</span><span class="p">))</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">waitforbuttonpress</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="nb">print</span></div>
 </pre></div>
 
           </div>

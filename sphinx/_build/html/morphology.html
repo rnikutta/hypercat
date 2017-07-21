@@ -58,28 +58,13 @@
   <div class="section" id="module-morphology">
 <span id="morphology-module"></span><h1>morphology module<a class="headerlink" href="#module-morphology" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="morphology.angle1">
-<code class="descclassname">morphology.</code><code class="descname">angle1</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#angle1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.angle1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute angle between two vectors a and b.</p>
-<p>Uses formula:</p>
-<div class="math">
-\[\cos\theta = \frac{a \cdot b}{|a||b|}\]</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="morphology.angle2">
-<code class="descclassname">morphology.</code><code class="descname">angle2</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#angle2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.angle2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute angle between two vectors a and b.</p>
-<p>Uses formula:</p>
-<div class="math">
-\[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
-<p>Slower than <a class="reference internal" href="#morphology.angle1" title="morphology.angle1"><code class="xref py py-func docutils literal"><span class="pre">angle1()</span></code></a>, but possibly more accurate for very
-small angles.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="morphology.eq11">
 <code class="descclassname">morphology.</code><code class="descname">eq11</code><span class="sig-paren">(</span><em>I</em>, <em>sig</em>, <em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#eq11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.eq11" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.findOrientation">
+<code class="descclassname">morphology.</code><code class="descname">findOrientation</code><span class="sig-paren">(</span><em>I</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findOrientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findOrientation" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -88,29 +73,78 @@ small angles.</p>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="morphology.foo">
-<code class="descclassname">morphology.</code><code class="descname">foo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#foo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.foo" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="morphology.gaussian">
-<code class="descclassname">morphology.</code><code class="descname">gaussian</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sx=5.0</em>, <em>sy=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">morphology.</code><code class="descname">gaussian</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sx=5.0</em>, <em>sy=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em>, <em>norm=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="morphology.gaussian2d_circular">
-<code class="descclassname">morphology.</code><code class="descname">gaussian2d_circular</code><span class="sig-paren">(</span><em>npix=101</em>, <em>sigma=5.0</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gaussian2d_circular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gaussian2d_circular" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="morphology.getGaussian">
-<code class="descclassname">morphology.</code><code class="descname">getGaussian</code><span class="sig-paren">(</span><em>npix</em>, <em>sig</em>, <em>xoff=0.0</em>, <em>yoff=0.0</em>, <em>Imax=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getGaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getGaussian" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="morphology.getAngle">
+<code class="descclassname">morphology.</code><code class="descname">getAngle</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>pa=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getAngle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getAngle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute angle between two vectors a and b.</p>
+<p>Uses formula:</p>
+<div class="math">
+\[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>b</strong> (<em>a</em><em>,</em>) – Vectors to measure angle between.</li>
+<li><strong>pa</strong> (<em>bool</em>) – Position angle flag. If True, the measured angle will be
+measured as angle between vector <code class="docutils literal"><span class="pre">a</span></code> counter-clockwise from
+vector <code class="docutils literal"><span class="pre">b</span></code>, and angle always non-negative. If False, the
+measured angle can be positive (i.e. <code class="docutils literal"><span class="pre">a''</span> <span class="pre">is</span> <span class="pre">``angle</span></code>
+degrees counter-clockwise from <code class="docutils literal"><span class="pre">b</span></code>), or negative
+(i.e. <code class="docutils literal"><span class="pre">a</span></code> is <code class="docutils literal"><span class="pre">angle</span></code> degrees clockwise from <code class="docutils literal"><span class="pre">b</span></code>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>angle</strong> – Angle in degrees between vectors <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">b</span></code>. See
+description of <code class="docutils literal"><span class="pre">pa</span></code> for more details.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="morphology.getUnitVector">
 <code class="descclassname">morphology.</code><code class="descname">getUnitVector</code><span class="sig-paren">(</span><em>axis=1</em>, <em>ndim=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getUnitVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getUnitVector" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get n-dimensional unit vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>axis</strong> (<em>int</em>) – Direction of the vector, counting axes from 0 (the pythonic way) up to <code class="docutils literal"><span class="pre">ndim</span></code>-1.</li>
+<li><strong>ndim</strong> (<em>int</em>) – Dimensionality of the unit vector. Default 2.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>uvec</strong> – 1-dim array of length <code class="docutils literal"><span class="pre">ndim</span></code>, representing a unit vector
+along the given <code class="docutils literal"><span class="pre">axis</span></code>, in <code class="docutils literal"><span class="pre">ndim</span></code> dimensions.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span>  <span class="c1"># 2-d unit vector along x-axis</span>
+
+<span class="n">getUnitVector</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">])</span>  <span class="c1"># 2-d unit vector along y-axis</span>
+
+<span class="n">getUnitVector</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span>  <span class="c1"># 5-d unit vector along 2nd axis</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="function">
 <dt id="morphology.get_moment">
@@ -158,17 +192,6 @@ small angles.</p>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="morphology.getangle">
-<code class="descclassname">morphology.</code><code class="descname">getangle</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getangle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute angle between two vectors a and b.</p>
-<p>Uses formula:</p>
-<div class="math">
-\[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
-<p>Slower than <a class="reference internal" href="#morphology.angle1" title="morphology.angle1"><code class="xref py py-func docutils literal"><span class="pre">angle1()</span></code></a>, but possibly more accurate for very
-small angles.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="morphology.imageToEigenvectors">
 <code class="descclassname">morphology.</code><code class="descname">imageToEigenvectors</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#imageToEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.imageToEigenvectors" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -195,6 +218,43 @@ small angles.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="morphology.rotateVector">
+<code class="descclassname">morphology.</code><code class="descname">rotateVector</code><span class="sig-paren">(</span><em>vec</em>, <em>deg=90.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#rotateVector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.rotateVector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate 2-d vector by deg degrees.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vec</strong> (<em>array</em>) – 2d-d vector.</li>
+<li><strong>deg</strong> (<em>float</em>) – Rotation angle in degrees. If positive, rotates
+counter-clockwise, otherwise counter-clockwise.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rvec</strong> – Rotated vector.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">arrauy</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">vec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span>  <span class="c1"># unit vector along postive y-axis</span>
+<span class="n">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">90.</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+
+<span class="n">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=-</span><span class="mf">90.</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+
+<span class="n">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">45.</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">0.70710678</span><span class="p">,</span>  <span class="mf">0.70710678</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="morphology.symmetric1">
 <code class="descclassname">morphology.</code><code class="descname">symmetric1</code><span class="sig-paren">(</span><em>npix=51</em>, <em>savefile=’symmertric1.npz’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.symmetric1" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -207,7 +267,27 @@ small angles.</p>
 <dl class="function">
 <dt id="morphology.whichside">
 <code class="descclassname">morphology.</code><code class="descname">whichside</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#whichside"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.whichside" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Compute relation sense of vectors a relative to vector b.</p>
+<p>When computing and angle between two vectors, it’s not always
+clear in which direction of vector lies of another (left or right,
+i.e. counter- or clock-wise). This function answers the question.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>b</strong> (<em>a</em><em>,</em>) – Two 2-d vectors.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>sig</strong> – Number -1., 0., or +1.
+If 0., vectors a and b are parallel or antiparallel to each other.
+If -1., b lies to the left of a (b counter-clockwise from a).
+If +1., b lies to the right of a (b clockwise from a).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="morphology.work">
