@@ -25,10 +25,10 @@ import h5py
 
 def storeCubeToHdf5(cube,hdffile,groupname=None):
 
-    """Store ::class::`hypercat.ModelCube` instance to separate hdf5 file.
+    """Store :class:`hypercat.ModelCube` instance to separate hdf5 file.
 
     Maps these hdf5 file elemens to the properties of a
-    ::class::`hypercat.ModelCube` instance: (where
+    :class:`hypercat.ModelCube` instance: (where
     ``h = h5py.File(hdffile)`` and ``g = h[groupname]``)
 
     .. code-block:: text
@@ -51,7 +51,7 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
     Parameters
     ----------
     cube : instance
-        Instance of ::class::`hypercat.ModelCube` class.
+        Instance of :class:`hypercat.ModelCube` class.
     
     hdffile : str
         Path to hdf5 file where the cube and all relevant properties

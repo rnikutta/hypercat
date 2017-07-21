@@ -332,9 +332,9 @@ representing a dataset on disk.</p>
 <dl class="function">
 <dt id="bigfileops.storeCubeToHdf5">
 <code class="descclassname">bigfileops.</code><code class="descname">storeCubeToHdf5</code><span class="sig-paren">(</span><em>cube</em>, <em>hdffile</em>, <em>groupname=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#storeCubeToHdf5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.storeCubeToHdf5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store ::class::<cite>hypercat.ModelCube</cite> instance to separate hdf5 file.</p>
+<dd><p>Store <a class="reference internal" href="hypercat.html#hypercat.ModelCube" title="hypercat.ModelCube"><code class="xref py py-class docutils literal"><span class="pre">hypercat.ModelCube</span></code></a> instance to separate hdf5 file.</p>
 <p>Maps these hdf5 file elemens to the properties of a
-::class::<cite>hypercat.ModelCube</cite> instance: (where
+<a class="reference internal" href="hypercat.html#hypercat.ModelCube" title="hypercat.ModelCube"><code class="xref py py-class docutils literal"><span class="pre">hypercat.ModelCube</span></code></a> instance: (where
 <code class="docutils literal"><span class="pre">h</span> <span class="pre">=</span> <span class="pre">h5py.File(hdffile)</span></code> and <code class="docutils literal"><span class="pre">g</span> <span class="pre">=</span> <span class="pre">h[groupname]</span></code>)</p>
 <div class="highlight-text"><div class="highlight"><pre><span></span>/ level (root)
    h[&#39;Nhypercubes&#39;] --&gt; 1 if hdffile is new; +1 for each newly added group
@@ -355,7 +355,7 @@ otherwise.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cube</strong> (<em>instance</em>) – Instance of ::class::<cite>hypercat.ModelCube</cite> class.</li>
+<li><strong>cube</strong> (<em>instance</em>) – Instance of <a class="reference internal" href="hypercat.html#hypercat.ModelCube" title="hypercat.ModelCube"><code class="xref py py-class docutils literal"><span class="pre">hypercat.ModelCube</span></code></a> class.</li>
 <li><strong>hdffile</strong> (<em>str</em>) – Path to hdf5 file where the cube and all relevant properties
 will be stored. If hdffile does not yet exists on disk, it
 will be created</li>

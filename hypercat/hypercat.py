@@ -258,7 +258,7 @@ class ModelCube:
         prefix, suffix = bfo.get_bytes_human(self.subcubesize)
         print "Hypercube size: %g (%s)" % (prefix, suffix)
 
-    parameter_values = property(print_sampling)
+    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
     
     def get_image(self,vector,full=True):
 

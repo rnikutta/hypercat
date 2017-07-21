@@ -309,7 +309,7 @@
         <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytes_human</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span><span class="p">)</span>
         <span class="nb">print</span> <span class="s2">&quot;Hypercube size: </span><span class="si">%g</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span></div>
 
-    <span class="n">parameter_values</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">print_sampling</span><span class="p">)</span>
+    <span class="n">parameter_values</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">print_sampling</span><span class="p">)</span> <span class="c1">#: Property alias for :func:`print_sampling`</span>
     
 <div class="viewcode-block" id="ModelCube.get_image"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vector</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 

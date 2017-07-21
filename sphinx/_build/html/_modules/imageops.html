@@ -340,7 +340,7 @@
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span>
 
-    <span class="n">I</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_getImageT</span><span class="p">)</span></div>
+    <span class="n">I</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_getImageT</span><span class="p">)</span> <span class="c1">#: Property alias for :func:`_getImageT`</span></div>
 
 
 <div class="viewcode-block" id="Image"><a class="viewcode-back" href="../imageops.html#imageops.Image">[docs]</a><span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="n">ImageFrame</span><span class="p">):</span>
@@ -521,7 +521,7 @@
         
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;Jy/mas^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span></div>
     
-    <span class="n">F</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">getTotalFluxDensity</span><span class="p">)</span></div>
+    <span class="n">F</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">getTotalFluxDensity</span><span class="p">)</span> <span class="c1">#: Property alias for :func:`getTotalFluxDensity`</span></div>
 
 
 <span class="c1"># HIGH-LEVEL HELPERS</span>
