@@ -59,8 +59,26 @@
 <span id="instruments-module"></span><h1>instruments module<a class="headerlink" href="#module-instruments" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="instruments.Instrument">
-<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>name=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for instruments of all kind (e.g. Telescope, Interferometer, etc.</p>
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for optical observing apparatus of all kinds (e.g. Telescope, Interferometer, etc.)</p>
+<dl class="method">
+<dt id="instruments.Instrument.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate observing instrument.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>telescope</strong> (<em>str</em>) – Name of telescope, optional. E.g. ‘TMT’. Default ”.</li>
+<li><strong>instrument</strong> (<em>str</em>) – Name of instrument mounted to telescope, optional. E.g. ‘VISIR’. Default ”.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="instruments.Instrument.observe">
 <code class="descname">observe</code><span class="sig-paren">(</span><em>sky</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.observe" title="Permalink to this definition">¶</a></dt>
@@ -96,12 +114,96 @@ pixelscale, etc.)</td>
 <p>Given brightness distribution <code class="docutils literal"><span class="pre">sky</span></code>, perform FFT, and enable
 extraction of correlated fluxes, and of visibilities, given an
 input baseline (BL length and PA).</p>
+<dl class="method">
+<dt id="instruments.Interferometer.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Interferometer.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Interferometer.__call__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="instruments.Interferometer.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Interferometer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Interferometer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="instruments.Telescope">
-<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>name=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
+<dl class="method">
+<dt id="instruments.Telescope.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>sky</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__call__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="instruments.Telescope.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate the effects of a single-dish telescope with a pixel camera
+attached to it.</p>
+<p>Model a Gaussian+Airy PSF, or load PSF from a FITS file. Apply
+PSF to sky image.</p>
+<p>Resample resulting image to <code class="docutils literal"><span class="pre">pixelscale_detector</span></code>, if not <code class="docutils literal"><span class="pre">None</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>psfdict</strong> (<em>dict</em>) – <p>A dictionary with several keys. Key <code class="docutils literal"><span class="pre">psf</span></code> is common to
+all configurations, and must be either: <code class="docutils literal"><span class="pre">None</span></code>, or
+<code class="docutils literal"><span class="pre">'model'</span></code>, or the path to a FITS file that contains an
+image of the PSF to be used.</p>
+<ul>
+<li>If <code class="docutils literal"><span class="pre">psf=None</span></code>, the model image will not be convolved
+with any PSF.</li>
+<li>If <code class="docutils literal"><span class="pre">psf='model'</span></code>, the PSF will be modeled with a
+Gaussian+Airy pattern.<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Reference: John W. Hardy “Adaptive Optics for
+Astronomical Telescopes” Oxford Series in Optical and
+Imaging Sciences, 1998</p>
+</div>
+<p>In this case, <code class="docutils literal"><span class="pre">psfdict</span></code> must also contain the keys
+<code class="docutils literal"><span class="pre">diameter</span></code> and <code class="docutils literal"><span class="pre">strehl</span></code>, and their values.  They are
+the diameter of the telescope aperture and the strehl
+ratio. E.g.</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>psfdict = {&#39;psf&#39;:&#39;model&#39;,&#39;diameter&#39;:&#39;30 m&#39;,&#39;strehl&#39;:0.8}
+</pre></div>
+</div>
+</li>
+<li>If <code class="docutils literal"><span class="pre">psf</span></code> is a string ending with <code class="docutils literal"><span class="pre">'.fits'</span></code>, it is
+the path to a FITS file that contains the image of a PSF
+(for instance generated with the WebbPSF tool:
+<a class="reference external" href="http://www.stsci.edu/~mperrin/software/webbpsf.html">http://www.stsci.edu/~mperrin/software/webbpsf.html</a>).<p>In this case, <code class="docutils literal"><span class="pre">psfdict</span></code> must also have the keys and
+values for the HDU extension (name or numeric) that
+contains the PSF image (EXT name or HDU number), and the
+name of the keyword containing the PSF’s image pixel
+scale. E.g.:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span># FITS file containing PSF image made with WebbPSF tool, name/number of HDU, pixelscale keyword
+psfdict = {&#39;psf&#39;:&#39;PSF_MIRI_F1000W.fits&#39;,&#39;hdukw&#39;:1,&#39;pixelscalekw&#39;:&#39;pixelscl&#39;}
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><strong>pixelscale_detector</strong> (<em>str | None</em>) – <p>If not <code class="docutils literal"><span class="pre">None</span></code>, then the model image will be resampled
+such that the pixelscale of the final image corresponds to
+pixelscale_detector. This will increase or decrease the
+number of pixels in the model image, but the FOV is
+preserved. If <code class="docutils literal"><span class="pre">psf</span></code> is not <code class="docutils literal"><span class="pre">None</span></code>, the resampling will
+be performed on the PSF-convolved image.</p>
+<p>The total flux density will also be preserved. You can
+check this by calling <code class="xref py py-func docutils literal"><span class="pre">self.getTotalFluxDensity()</span></code>.</p>
+<p>Typical detector pixelscales are e.g.:</p>
+<p>TMT_IRIS:  <code class="docutils literal"><span class="pre">pixelscale_detector='4</span> <span class="pre">mas/pix'</span></code></p>
+<p>TMT_MICHI: <code class="docutils literal"><span class="pre">pixelscale_detector='11.9</span> <span class="pre">mas/pix'</span></code></p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>

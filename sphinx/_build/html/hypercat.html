@@ -61,6 +61,64 @@
 <dt id="hypercat.ModelCube">
 <em class="property">class </em><code class="descclassname">hypercat.</code><code class="descname">ModelCube</code><span class="sig-paren">(</span><em>hdffile=’hypercat_20170109.hdf5’</em>, <em>hypercube=’imgdata’</em>, <em>subcube_selection=’interactive’</em>, <em>subcube_selection_save=None</em>, <em>omit=(‘x’</em>, <em>’y’)</em>, <em>ndinterpolator=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
+<dt id="hypercat.ModelCube.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>hdffile=’hypercat_20170109.hdf5’</em>, <em>hypercube=’imgdata’</em>, <em>subcube_selection=’interactive’</em>, <em>subcube_selection_save=None</em>, <em>omit=(‘x’</em>, <em>’y’)</em>, <em>ndinterpolator=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model hypercube of CLUMPY images.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>hdffile</strong> (<em>str</em>) – Path to the model hdf5 file. Default: <code class="docutils literal"><span class="pre">'hypercat_20170714.hdf5'</span></code></li>
+<li><strong>hypercube</strong> (<em>str</em>) – Name of the hypercube within <code class="docutils literal"><span class="pre">hdffile</span></code> to use (currently
+either <code class="docutils literal"><span class="pre">'imgdata'</span></code> or <code class="docutils literal"><span class="pre">'clddata'</span></code>). Default: <code class="docutils literal"><span class="pre">'imgdata'</span></code>.</li>
+<li><strong>subcube_selection</strong> (<em>str | None</em>) – <p><code class="docutils literal"><span class="pre">'interactive'</span></code> or path to a json file containing the
+indices to select for every axis in the <code class="docutils literal"><span class="pre">hypercube</span></code> in the
+<code class="docutils literal"><span class="pre">hdffile</span></code>.</p>
+<p>If <code class="docutils literal"><span class="pre">'interactive'</span></code>, a simple selection dialog will be
+launched in the terminal/session, allowing to
+select/unselect entries from every axis (one at a
+time). Once done, the corresponding list of index lists is
+created, and the hyper-slab (sub-cube) loaded from disk to
+RAM. The nested list of selected indices can be
+conveniently stored into a json file for later re-use (see
+arg <code class="docutils literal"><span class="pre">subcube_selection_save</span></code>).</p>
+<p>If <code class="docutils literal"><span class="pre">subcube_selection</span></code> is the path to a json file, it is
+a file that can be created with
+<code class="docutils literal"><span class="pre">subcube_selection='interactive'</span></code>. Then also provide as
+<code class="docutils literal"><span class="pre">subcube_selection_save</span></code> a file path to the to-be-stored
+json file.</p>
+</li>
+<li><strong>subcube_selection_save</strong> (<em>str | None</em>) – If not <code class="docutils literal"><span class="pre">None</span></code>, it a the path to a json file with the list of
+index lists that select a subcube from the full
+<code class="docutils literal"><span class="pre">hypercube</span></code>. I.e. a json file with selection indices can
+be created once, and then the same selection can be
+repeated any time by simply loading the json file.</li>
+<li><strong>omit</strong> (<em>tuple</em>) – <p>Tuple of parameter names (as strings) to omit from subcube
+selection. These axes will be automatically handled.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This functionality is not fully implemented yet, and is
+currently meant for the ‘x’ and ‘y’ axes only. Best not
+to touch for now.</p>
+</div>
+</li>
+<li><strong>ndinterpolator</strong> (<em>bool</em>) – If <code class="docutils literal"><span class="pre">True</span></code> (default), an interpolation object for
+N-dimensional interpolation of the hypercube will be
+instantiated, and accessible via <a class="reference internal" href="#hypercat.ModelCube.get_image" title="hypercat.ModelCube.get_image"><code class="xref py py-func docutils literal"><span class="pre">get_image()</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># instantiate</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">ModelCube</span><span class="p">()</span>  <span class="c1"># all defaults</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="hypercat.ModelCube.get_image">
 <code class="descname">get_image</code><span class="sig-paren">(</span><em>vector</em>, <em>full=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#ModelCube.get_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.ModelCube.get_image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract hyperslice from the hypercube via N-dim interpolation.</p>
@@ -86,19 +144,19 @@ symmetry) is left-right mirrored, and a full-sized
 <p class="rubric">Examples</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># vector of parameter values; pixel axes are implicit (i.e. don&#39;t specify them)</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mf">9.7</span><span class="p">)</span> <span class="c1"># here: (sig,i,N0,q,tauv,lambda)</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 <span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
   <span class="p">(</span><span class="mi">441</span><span class="p">,</span><span class="mi">441</span><span class="p">)</span>   <span class="c1"># (x,y)</span>
 
 <span class="c1"># multi-wavelength cube</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,(</span><span class="mf">2.2</span><span class="p">,</span><span class="mf">9.7</span><span class="p">,</span><span class="mf">12.</span><span class="p">))</span> <span class="c1"># 3 lambda values</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 <span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
   <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">441</span><span class="p">,</span><span class="mi">441</span><span class="p">)</span>   <span class="c1"># (x,y,lambda)</span>
 
 <span class="c1"># multi-wavelength and multi-viewing angle</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mi">30</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">60</span><span class="p">,</span><span class="mi">90</span><span class="p">),</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,(</span><span class="mf">2.2</span><span class="p">,</span><span class="mf">9.7</span><span class="p">,</span><span class="mf">12.</span><span class="p">))</span> <span class="c1"># 4 viewing angles, 3 lambdas</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">M</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 <span class="nb">print</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span>
   <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">441</span><span class="p">,</span><span class="mi">441</span><span class="p">)</span>
 </pre></div>
@@ -131,7 +189,25 @@ be printed. Default: 11.</li>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">M</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cube</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Prints for instance:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>-------------------------------------------------------
+Parameter  Range                Nvalues  Sampled values
+-------------------------------------------------------
+  sig      [ 15.000 -  15.000]  (  1)    15.000
+    i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
+    Y      [ 20.000 -  20.000]  (  1)    20.000
+    N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
+    q      [  0.000 -   0.000]  (  1)     0.000
+   tv      [ 40.000 -  40.000]  (  1)    40.000
+ wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
+    x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+    y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+-------------------------------------------------------
+Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
+Hypercube size: 14.8714 (MB)
 </pre></div>
 </div>
 </dd></dl>
@@ -140,23 +216,61 @@ be printed. Default: 11.</li>
 
 <dl class="class">
 <dt id="hypercat.Source">
-<em class="property">class </em><code class="descclassname">hypercat.</code><code class="descname">Source</code><span class="sig-paren">(</span><em>cube</em>, <em>luminosity=‘1e45 erg/s’</em>, <em>distance=‘1 Mpc’</em>, <em>tsub=1500.0</em>, <em>pa=‘0. deg’</em>, <em>name=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Source" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">hypercat.</code><code class="descname">Source</code><span class="sig-paren">(</span><em>cube</em>, <em>luminosity=‘1e45 erg/s’</em>, <em>distance=‘1 Mpc’</em>, <em>tsub=‘1500 K’</em>, <em>pa=‘0. deg’</em>, <em>objectname=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Source" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="hypercat.Source.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>theta</em>, <em>wave=None</em>, <em>total_flux_density=‘1 Jy’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Source.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Source.__call__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="hypercat.Source.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>cube</em>, <em>luminosity=‘1e45 erg/s’</em>, <em>distance=‘1 Mpc’</em>, <em>tsub=‘1500 K’</em>, <em>pa=‘0. deg’</em>, <em>objectname=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#Source.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.Source.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstraction of an astrophysical source (AGN).</p>
+<p>Takes a hypercube of model images. Instantiates an n-dim
+interpolation object. Computes dust sublimation radius and
+image pixelscale. Resolves source name with Vizier and
+constructs a WCS (optional).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cube</strong> (<em>instance</em>) – Instance of ModelCube. Holds the n-dim hypercube of model
+images.</li>
+<li><strong>luminosity</strong> (<em>str</em>) – AGN bolometric luminosity, e.g. ‘1e45 erg/s’ or ‘1e12 Lsun’.</li>
+<li><strong>distance</strong> (<em>str</em>) – Distance to the source, e.g. ‘14.4 Mpc’.</li>
+<li><strong>tsub</strong> (<em>str</em>) – Dust sublimation temperature. Default is ‘1500 K’,
+appropriate e.g. for astrophysical silicates.</li>
+<li><strong>pa</strong> (<em>str</em>) – Position angle with respect to North (=0 deg). Default is
+‘0. deg’. If not 0, the image will be rotated by pa
+(positive values rotate North-to-East,
+i.e. anti-clockwise, negative values rotate North-to-West,
+i.e. clockwise).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="function">
 <dt id="hypercat.get_Rd">
-<code class="descclassname">hypercat.</code><code class="descname">get_Rd</code><span class="sig-paren">(</span><em>lum</em>, <em>tsub=1500.0</em>, <em>outunit=’pc’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#get_Rd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.get_Rd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get dust sublimation radius Rd from luminosity of source and dust
-sublimation temperature.</p>
-<p>Uses Eq. (1) from Nenkova+2008b.</p>
+<code class="descclassname">hypercat.</code><code class="descname">get_Rd</code><span class="sig-paren">(</span><em>luminosity=‘1e45 erg/s’</em>, <em>tsub=‘1500 K’</em>, <em>outunit=’pc’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hypercat.html#get_Rd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hypercat.get_Rd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the dust sublimation radius <span class="math">\(R_d\)</span> from luminosity of
+source and dust sublimation temperature.</p>
+<p>Uses Eq. (1) from Nenkova+2008b: <a class="reference external" href="http://adsabs.harvard.edu/abs/2008ApJ...685..160N">http://adsabs.harvard.edu/abs/2008ApJ…685..160N</a></p>
+<div class="math">
+\[R_d = 0.4 \left( \frac{L}{10^{45}\,{\rm erg\,s^{-1}}}\right)^{\!1/2} \left( \frac{1500\,\rm K}{T_{\rm sub}}\right)^{\!2.6} {\rm pc}\]</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lum</strong> (<em>float</em>) – AGN bolometric luminosity in erg/s, e.g. 1e45.</li>
-<li><strong>tsub</strong> (<em>float</em>) – Dust sublimation temperature. Default is 1500K, corresponding
-e.g. to astrophysical silicates.</li>
+<li><strong>luminosity</strong> (<em>str</em>) – AGN bolometric luminosity, e.g. ‘1e45 erg/s’.</li>
+<li><strong>tsub</strong> (<em>str</em>) – Dust sublimation temperature. Default is ‘1500 K’,
+corresponding e.g. to astrophysical silicates.</li>
 <li><strong>outunit</strong> (<em>str</em>) – Desired output units of length. The result will be
 automatically converted to these units. Defaults to ‘pc’.</li>
 </ul>

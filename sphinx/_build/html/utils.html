@@ -119,6 +119,55 @@ along rows first, then columns. If ‘y’, the other way round.</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="utils.get_wcs">
+<code class="descclassname">utils.</code><code class="descname">get_wcs</code><span class="sig-paren">(</span><em>image</em>, <em>projection=(‘RA—TAN’</em>, <em>’DEC–TAN’)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#get_wcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.get_wcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve coordinates (via Vizier) of <code class="docutils literal"><span class="pre">image.objectname</span></code> and construct a WCS.</p>
+<p>With the resolved coordinates and with <code class="docutils literal"><span class="pre">image.npix</span></code> an
+<code class="docutils literal"><span class="pre">image.pixelscale</span></code> construct a world coordinate system (WCS).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>instance</em>) – Instance of <a class="reference internal" href="imageops.html#imageops.Image" title="imageops.Image"><code class="xref py py-class docutils literal"><span class="pre">imageops.Image</span></code></a> class. Must have members
+<code class="docutils literal"><span class="pre">.objectname</span></code>, <code class="docutils literal"><span class="pre">.npix</span></code> and <code class="docutils literal"><span class="pre">.pixelscale</span></code>.</li>
+<li><strong>projection</strong> (<em>tuple</em>) – Tuple of two strings, each being the projection to be used for
+the WCS principal axes (usually RA and DEC). Default is
+(“RA—TAN”,”DEC–TAN”), corresponding to a gnomonic
+projection. The formatting of the strings and the possible
+values are described in <a class="reference external" href="http://docs.astropy.org/en/stable/wcs/">http://docs.astropy.org/en/stable/wcs/</a></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>w</strong> – Instance of <code class="xref py py-class docutils literal"><span class="pre">astropy.wcs.wcs.WCS</span></code>. Can be used to plot
+image with sky coordinates (see e.g. function
+<a class="reference internal" href="plotting.html#plotting.plot_with_wcs" title="plotting.plot_with_wcs"><code class="xref py py-func docutils literal"><span class="pre">plotting.plot_with_wcs()</span></code></a>), or to save image to FITS
+file with correct WCS in the header (see function
+<a class="reference internal" href="ioops.html#ioops.save2fits" title="ioops.save2fits"><code class="xref py py-func docutils literal"><span class="pre">ioops.save2fits()</span></code></a>).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">instance</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<p>Creating a source and a sky image…</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hypercat</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># load (sub-)hypercube</span>
+<span class="n">ngc1068</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Source</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;2e45 erg/s&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;14.4 Mpc&#39;</span><span class="p">,</span><span class="n">objectname</span><span class="o">=</span><span class="s1">&#39;ngc1068&#39;</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="s1">&#39;45 deg&#39;</span><span class="p">)</span>
+<span class="n">vec</span> <span class="o">=</span> <span class="p">(</span><span class="mf">40.</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># parameter vector suitable for ``cube``</span>
+<span class="n">sky</span> <span class="o">=</span> <span class="n">ngc1068</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="s1">&#39;2500 mJy&#39;</span><span class="p">)</span> <span class="c1"># ``sky`` inherits ``.objectname`` from source instance (here ``ngc1068``)</span>
+</pre></div>
+</div>
+<p>This prints:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>Rotated image (see self.data) by 45.0 deg in direction &#39;NE&#39;.
+Coordinates for source &#39;ngc1068&#39; successfully resolved. WCS created.
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="utils.mirror_axis">
 <code class="descclassname">utils.</code><code class="descname">mirror_axis</code><span class="sig-paren">(</span><em>cube</em>, <em>axis=-2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#mirror_axis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.mirror_axis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mirror one axis of a cube.</p>

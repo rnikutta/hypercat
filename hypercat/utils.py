@@ -1,4 +1,4 @@
-__version__ = '20170209'   #yyymmdd
+__version__ = '20170731'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -7,6 +7,85 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 """
 
 import numpy as N
+import numpy as np
+from astropy.coordinates import name_resolve
+from astropy import wcs
+import logging
+
+
+def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
+
+    """Resolve coordinates (via Vizier) of ``image.objectname`` and construct a WCS.
+
+    With the resolved coordinates and with ``image.npix`` an
+    ``image.pixelscale`` construct a world coordinate system (WCS).
+
+    Parameters
+    ----------
+    image : instance
+        Instance of :class:`imageops.Image` class. Must have members
+        ``.objectname``, ``.npix`` and ``.pixelscale``.
+
+    projection : tuple
+
+        Tuple of two strings, each being the projection to be used for
+        the WCS principal axes (usually RA and DEC). Default is
+        ("RA---TAN","DEC--TAN"), corresponding to a gnomonic
+        projection. The formatting of the strings and the possible
+        values are described in http://docs.astropy.org/en/stable/wcs/
+
+    Returns
+    -------
+    w : instance
+        Instance of :class:`astropy.wcs.wcs.WCS`. Can be used to plot
+        image with sky coordinates (see e.g. function
+        :func:`plotting.plot_with_wcs()`), or to save image to FITS
+        file with correct WCS in the header (see function
+        :func:`ioops.save2fits()`).
+
+    Example
+    -------
+    Creating a source and a sky image...
+
+    .. code-block:: python
+
+       import hypercat
+       cube = ... # load (sub-)hypercube
+       ngc1068 = hypercat.Source(cube,luminosity='2e45 erg/s',distance='14.4 Mpc',objectname='ngc1068',pa='45 deg')
+       vec = (40.,5,10) # parameter vector suitable for ``cube``
+       sky = ngc1068(vec,total_flux_density='2500 mJy') # ``sky`` inherits ``.objectname`` from source instance (here ``ngc1068``)
+
+    This prints:
+
+    .. code-block:: text
+
+       Rotated image (see self.data) by 45.0 deg in direction 'NE'.
+       Coordinates for source 'ngc1068' successfully resolved. WCS created.
+
+    """
+
+    try:
+        coords = name_resolve.get_icrs_coordinates(image.objectname)
+        logging.info("Coordinates for source '%s' successfully resolved. WCS created." % image.objectname)
+        
+    except name_resolve.NameResolveError as e:
+        msg = """Coordinate resolution for source name '%s' failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.""" % image.objectname
+        logging.warn(msg)
+        return None
+    
+    else:
+        unit = 'deg' #image.pixelscale.unit.to_string()
+        crpix = image.npix/2 + 1
+        cdelt = image.pixelscale.to(unit).value
+        
+        w = wcs.WCS(naxis=2)
+        w.wcs.cunit = (unit,unit)
+        w.wcs.crpix = (crpix,crpix)
+        w.wcs.cdelt = np.array((-cdelt,cdelt))
+        w.wcs.ctype = projection
+        w.wcs.crval = (coords.ra.to(unit).value, coords.dec.to(unit).value)
+
+        return w
 
 
 def arrayify(arg,n=None,shape=None,direction='x'):

@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170717'   #yyymmdd
+__version__ = '20170816'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -9,7 +9,126 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """
 
+import numpy as np
 import astropy.io.fits as fits
+from astropy import wcs
+from astropy.coordinates import name_resolve
+import logging
+
+
+def save2fits(image,fitsfile,usewcs=True):
+
+    """Save instance of class with ``.data`` member to a new ImageHDU in FITS file.
+
+    Some other properties will also be saved, e.g. a WCS (if present),
+    telescope and instrument names, etc.
+
+    Subsequent calls of this function with new image instances will
+    all cause new ImageHDUs to appended to ``fitsfile``.
+
+    Parameters
+    ----------
+    image : instance | seq of instances
+        Instance of a class, which has a ``.data`` member (and
+        optionally ``.wcs``, see below). For example, hypercat's
+        classes :class:`imageops.Image` and :class:`psf.PSF` qualify
+        (sky/obs and psf objects).
+
+       ``image`` can also be a list-like sequence of instances of
+       :class:`imageops.Image` and :class:`psf.PSF`. In that case, all
+       instances will be saved to the ``fitsfile`` in sequential HDUs.
+
+    fitsfile : str
+        Path to FITS file. If the file does not yet exist, it will be
+        created, and a new empty PrimaryHDU will be created. If
+        ``fitsfile`` does already exist, it will be opened in append
+        mode. In both cases, ``image.data`` will then be written to a
+        new ImageHDU, which will be appended to the FITS file.
+
+    usewcs : bool
+        If ``True`` (default) and if image has a member ``.wcs``
+        (which is an instance of :class:`astropy.wcs.wcs.WCS`), the
+        header of the ImageHDU to be created will be constructed with
+        a proper world coordinate system. Otherwise, a minimal header
+        will be constructed (without a WCS).
+
+    Returns
+    -------
+    Nothing.
+
+    Examples
+    --------
+    Assuming you have several instances with ``.data`` members (and
+    optionally ``.wcs``), e.g. ``sky``, ``obs``, ``psf``:
+
+    .. code-block:: python
+
+       import ioops
+       ioops.save2fits(sky,'myfitsfile.fits') # new file created, new ImageHDU appended
+       ioops.save2fits(obs,'myfitsfile.fits') # new ImageHDU appended
+       ioops.save2fits(psf,'myfitsfile.fits') # new ImageHDU appended
+
+    Or do it in one go:
+
+    .. code-block:: python
+
+       ioops.save2fits((sky,obs,psf),'myfitsfile.fits') # all 3 instances saved to separate HDUs
+
+    """
+
+    # open existing or create new FITS file
+    fout = fits.open(fitsfile,mode='append')
+
+    try:
+        phdu = fout[0].header
+        logging.info("Existing FITS file '%s' opened." % fitsfile)
+    except IndexError:
+        logging.info("New FITS file '%s' created." % fitsfile)
+        phdu = fits.PrimaryHDU()
+        fout.append(phdu)
+        logging.info("New (empty) primary HDU written.")
+
+    if not isinstance(image,(tuple,list)):
+        image = (image,)
+
+    for image_ in image:
+        
+        # use WCS system if requested (and if present)
+        if usewcs is True and hasattr(image_,'wcs') and isinstance(image_.wcs,wcs.wcs.WCS):
+            header = image_.wcs.to_header()
+        else:
+            header = fits.Header()
+
+        # add type of image to header
+        try:
+            imgtype = image_.__class__.__name__
+            header['IMGTYPE'] = (imgtype, 'Content of image')
+        except:
+            raise
+            
+        # add cards for scaling and units
+        header['BSCALE'] = (1.00000, 'Scaling of pixel values')
+        header['BZERO'] = (0.00000, 'Zero offset')
+        header['BUNIT'] = (image_.data.unit.to_string(), 'Unit of image data')
+
+        if hasattr(image_,'objectname'):
+            header['OBJECT'] = (image_.objectname, 'target name')
+
+        if hasattr(image_,'telescope'):
+            header['TELESCOP'] = (image_.telescope, '')
+
+        if hasattr(image_,'instrument'):
+            header['INSTRUME'] = (image_.instrument, '')
+
+#TODO    header['DATE'] = (image_.data.unit.to_string(), 'Creation UTC (CCCC-MM-DD) date of FITS header')
+            
+        # encapsulate image date in new ImageHDU and append
+        dhdu = fits.ImageHDU(image_.data.value.T,header=header)
+        fout.append(dhdu)
+        logging.info("Data saved as new ImageHDU.")
+
+    fout.close()
+    
 
 class FitsFile:
 
@@ -70,7 +189,8 @@ class FitsFile:
 
         Parameters
         ----------
-        key : str Name of key, e.g. ``'naxis'``. Capitalization is not
+        key : str
+            Name of key, e.g. ``'naxis'``. Capitalization is not
             important.
 
         hdu : int

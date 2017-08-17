@@ -1,4 +1,4 @@
-__version__ = '20170131'   #yyymmdd
+__version__ = '20170728'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling units and units strings.
@@ -10,17 +10,22 @@ import numpy as N
 from astropy import units as u
 import re
 
-# Allowed units, per type; add more as required
-UNITS_ANGULAR = ('arcsec','mas','milliarcsecond','deg','degree','rad','radian')  #: Recognized angular units, e.g. for pixel scale.
-UNITS_LINEAR = ('cm','m','AU','lyr','pc','kpc','Mpc','Gpc')  #: Recognized linear units (either for pixel scale, or for source distance, etc.)
-CUNITS = UNITS_ANGULAR + UNITS_LINEAR  #: Their union.
-# TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)
-UNITS_WAVE = ('Angstrom','nm','micron','mm')
-UNITS_LUMINOSITY = ('erg/s','W','Lsun','solLum')
-UNITS_BRIGHTNESS = ('Jy/pix','mJy/pix')  #: Recognized units for brightness-per-pixel.
-UNITS_FLUXDENSITY = ('Jy','mJy','MJy','erg/s/cm^2/Hz','W/m^2/Hz')  #: Recognized units for flux denisty
-#        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
+## Allowed units, per category; add more as required
+UNITS = {\
+         'ANGULAR' : ('arcsec','mas','milliarcsecond','deg','degree','rad','radian'), #: Recognized angular units, e.g. for pixel scale.
+         'LINEAR' : ('cm','m','AU','lyr','pc','kpc','Mpc','Gpc'), #: Recognized linear units (either for pixel scale, or for source distance, etc.)
+         'TEMPERATURE' : ('K',), #: Recognized units of temperature
+         'WAVE' : ('Angstrom','nm','micron','mm'), #: Recognized units of wavelength
+         'LUMINOSITY' : ('erg/s','W','Lsun','solLum'), #: Recognized units of luminosity
+         'BRIGHTNESS' : ('Jy/pix','mJy/pix'), #: Recognized units of brightness-per-pixel.
+         'FLUXDENSITY' : ('Jy','mJy','MJy','erg/s/cm^2/Hz','W/m^2/Hz') #: Recognized units of flux denisty
+} #: Dictionary of permitted units.
 
+UNITS['CUNITS'] = UNITS['ANGULAR'] + UNITS['LINEAR'] # Union of permitted angular and linear units.
+## TODO: implement also per-beam, brightness specifications (and maybe also per-pc^2 etc.)
+##        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
+
+         
 # compile regex pattern to identify numbers in a string
 numeric_pattern = r"""^\s*
          [-+]? # optional sign
@@ -32,9 +37,39 @@ numeric_pattern = r"""^\s*
          )
          # followed by optional exponent part if desired
          (?: [Ee] [+-]? \d+ ) ?
-         """
+         """ #: Regex pattern to identify numbers in a string.
 rx = re.compile(numeric_pattern, re.VERBOSE)
 
+
+def list_recognized_units():
+
+    """Print simple table of permitted units per category.
+
+    Example
+    -------
+    .. code-block:: python
+
+        units.list_recognized_units()
+
+    Prints
+
+    .. code-block:: text
+
+        Category       Permitted units
+         FLUXDENSITY   ('Jy', 'mJy', 'MJy', 'erg/s/cm^2/Hz', 'W/m^2/Hz')
+         TEMPERATURE   ('K',)
+          BRIGHTNESS   ('Jy/pix', 'mJy/pix')
+          LUMINOSITY   ('erg/s', 'W', 'Lsun', 'solLum')
+                WAVE   ('Angstrom', 'nm', 'micron', 'mm')
+              CUNITS   ('arcsec', 'mas', 'milliarcsecond', 'deg', 'degree', 'rad', 'radian', 'cm', 'm', 'AU', 'lyr', 'pc', 'kpc', 'Mpc', 'Gpc')
+             ANGULAR   ('arcsec', 'mas', 'milliarcsecond', 'deg', 'degree', 'rad', 'radian')
+              LINEAR   ('cm', 'm', 'AU', 'lyr', 'pc', 'kpc', 'Mpc', 'Gpc')
+    """
+    
+    print "Category       Permitted units"
+    for k,v in UNITS.items():
+        print "%12s  " % k, v
+    
 
 def getQuantity(quantity,recognized_units):
 
@@ -45,7 +80,7 @@ def getQuantity(quantity,recognized_units):
     ----------
     
     quantity : str
-       E.g. quantity='1 Jy' would return <Quantity 1.0 Jy>
+       E.g. ``quantity='1 Jy'`` would return ``<Quantity 1.0 Jy>``
 
     recognized_units : tuple
         Tuple of valid units (as strings) for ``quantity``. E.g., for
@@ -55,15 +90,18 @@ def getQuantity(quantity,recognized_units):
     Returns
     -------
     quantity : instance
-        Instance of astropy.units.Quantity, i.e. a value with units.
+        Instance of class :class:`astropy.units.Quantity`, i.e. a value with units.
 
     Examples
     --------
-    getQuantity('1 m',('micron','m','pc','AU'))
-      <Quantity 1.0 m>
 
-    getQuantity('1 W',('micron','m','pc','AU'))
-      ValueError: Specified unit 'W' is not recognized. Recognized are: m,AU,pc
+    .. code-block:: python
+
+        getQuantity('1 m',('micron','m','pc','AU'))
+          <Quantity 1.0 m>
+
+        getQuantity('1 W',('micron','m','pc','AU'))
+          ValueError: Specified unit 'W' is not recognized. Recognized are: m,AU,pc
 
     """
     

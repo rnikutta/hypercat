@@ -62,6 +62,23 @@
 <em class="property">class </em><code class="descclassname">psf.</code><code class="descname">PSF</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#PSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.PSF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="imageops.html#imageops.ImageFrame" title="imageops.ImageFrame"><code class="xref py py-class docutils literal"><span class="pre">imageops.ImageFrame</span></code></a></p>
 <dl class="method">
+<dt id="psf.PSF.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#PSF.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.PSF.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>image</strong> (<em>array</em>) – The PSF image (raw 2d array)</li>
+<li><strong>pixelscale</strong> (<em>str | 'Quantity' instance</em>) – The pixelscale of <cite>image</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="psf.PSF.convolve">
 <code class="descname">convolve</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#PSF.convolve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.PSF.convolve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convolution of the model PSF with a CUMPY image</p>
@@ -104,33 +121,64 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="psf.get_normalization">
+<code class="descclassname">psf.</code><code class="descname">get_normalization</code><span class="sig-paren">(</span><em>r_0=‘0.15 m’</em>, <em>wave=‘0.5 micron’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#get_normalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.get_normalization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute PSF normalization.</p>
+<p>Assumes r_o is a function of the wavelength such as r_o = C*lambda^(6/5).</p>
+<p>r_0 is in the range of 0.1-0.2m at 0.5um. Assuming r_0 = 0.15m at
+0.5um, the constant C = r_0/lambda^(6/5) =
+0.15/((0.5E-6)**(6./5.)) = 5461692.609 in meters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>r_0</strong> (<em>str | 'Quantity' instance</em>) – Size of r_0.</li>
+<li><strong>wave</strong> (<em>str | 'Quantity' instance</em>) – Wavelength at which r_o has its value.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>C</strong> – Normalization C = r_0/lambda^(6/5).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="psf.loadPSFfromFITS">
 <code class="descclassname">psf.</code><code class="descname">loadPSFfromFITS</code><span class="sig-paren">(</span><em>fitsfile</em>, <em>psfdict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#loadPSFfromFITS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.loadPSFfromFITS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="psf.modelPSF">
-<code class="descclassname">psf.</code><code class="descname">modelPSF</code><span class="sig-paren">(</span><em>npix</em>, <em>wavelength=1.25</em>, <em>diameter=30.0</em>, <em>strehl=0.8</em>, <em>pixelscale=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#modelPSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.modelPSF" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">psf.</code><code class="descname">modelPSF</code><span class="sig-paren">(</span><em>npix</em>, <em>wavelength=‘1.25 micron’</em>, <em>diameter=‘30 m’</em>, <em>strehl=0.8</em>, <em>pixelscale=‘0.01 arcsec’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/psf.html#modelPSF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psf.modelPSF" title="Permalink to this definition">¶</a></dt>
 <dd><p>PSF modeling of CLUMPY images given a specific telescope and wavelength</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>image</strong> (<em>float array</em><em> (</em><em>2D</em><em>)</em>) – Array obtained from hypercat using get_image module</li>
-<li><strong>wavelength</strong> (<em>array</em>) – List of wavelengths in microns to create PSF</li>
-<li><strong>diameter</strong> (<em>array</em>) – Diameter of the telescope in meters</li>
-<li><strong>strehl</strong> (<em>array</em>) – Strehl of the model PSF</li>
-<li><strong>pxscale</strong> (<em>array</em>) – Pixel-scale of the instrument in arcsec/px</li>
+<li><strong>npix</strong> (<em>int</em>) – Size of PSF image to produce (in pixels). The PSF image will
+be <code class="docutils literal"><span class="pre">npix</span></code> x <code class="docutils literal"><span class="pre">npix</span></code> large.</li>
+<li><strong>wavelength</strong> (<em>str | instance</em>) – Wavelength at which to create PSF, e.g. ‘2.2 micron’. Can also
+be instance of <code class="xref py py-class docutils literal"><span class="pre">astropy.units.quantity.Quantity</span></code>.</li>
+<li><strong>diameter</strong> (<em>array</em>) – Diameter of the telescope, e.g. ‘30 m’. Can also be instance
+of <code class="xref py py-class docutils literal"><span class="pre">astropy.units.quantity.Quantity</span></code>.</li>
+<li><strong>strehl</strong> (<em>float</em>) – Strehl ratio of the model PSF.</li>
+<li><strong>pixelscale</strong> (<em>str | instance</em>) – Angular scale of the instrument, per pixel, e.g. ‘0.1 arcsec’
+(the ‘per pixel’ is assumed implicitly). Can also be instance
+of <code class="xref py py-class docutils literal"><span class="pre">astropy.units.quantity.Quantity</span></code></li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PSF</span> <span class="o">=</span> <span class="n">PSF_model</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>tbd</p>
 </dd></dl>
 
 </div>

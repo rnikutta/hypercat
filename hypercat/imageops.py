@@ -1,4 +1,4 @@
-__version__ = '20170209'   #yyymmdd
+__version__ = '20170726'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -10,6 +10,7 @@ import logging
 import numpy as N
 from scipy import ndimage
 from units import *
+import astropy
 from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
 
 
@@ -42,9 +43,9 @@ class ImageFrame:
             Angular or linear scale of one pixel. See docstring of
             :func:`getValueUnit` for the requirements.
 
-            Recognized angular units: (see ``UNITS_ANGULAR`` in :module:`units`)
+            Recognized angular units: (see ``UNITS['ANGULAR']`` in :module:`units`)
 
-            Recognized linear units: (see ``UNITS_LINEAR`` in :module:`units`)
+            Recognized linear units: (see ``UNITS['LINEAR']`` in :module:`units`)
 
             If linear unit, then it is the linear size of a pixel at
             the distance of the source. Then the `distance` argument
@@ -56,7 +57,7 @@ class ImageFrame:
             rather an argument akin to 'pixelscale' above, i.e. str or
             'Quantity' instance.
 
-            Recognized linear units: (see ``UNITS_LINEAR`` in :module:`units`)
+            Recognized linear units: (see ``UNITS['LINEAR']`` in :module:`units`)
 
         Examples
         --------
@@ -74,11 +75,11 @@ class ImageFrame:
 
         """
 
-        self.pixelscale = getQuantity(pixelscale,CUNITS)
+        self.pixelscale = getQuantity(pixelscale,UNITS['CUNITS'])
 
-        if self.pixelscale.unit in UNITS_LINEAR:
+        if self.pixelscale.unit in UNITS['LINEAR']:
             try:
-                self.distance = getQuantity(distance,UNITS_LINEAR)
+                self.distance = getQuantity(distance,UNITS['LINEAR'])
             except AttributeError:
                 logging.error("Must provide a value for 'distance' argument. Current value is: "+str(distance))
                 raise
@@ -159,7 +160,7 @@ class ImageFrame:
 
         """
 
-        newpixelscale = getQuantity(newpixelscale,recognized_units=UNITS_ANGULAR)
+        newpixelscale = getQuantity(newpixelscale,recognized_units=UNITS['ANGULAR'])
         
         resamplingfactor = (self.pixelscale / newpixelscale).decompose().value
         newimage, newfactor, self.npix = resampleImage(self.data.value,resamplingfactor,conserve=True)
@@ -180,6 +181,8 @@ class ImageFrame:
 
         """
         
+#        self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
+#        self.data = rotateImage(self.data.value,angle=angle.to('deg').value,direction=direction) * self.data.unit
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
         logging.info("Rotated image (see self.data) by %s in direction '%s'." % (str(angle),direction))
 
@@ -201,7 +204,7 @@ class ImageFrame:
             Target angular size of the field-of-view. See docstring of
             :func:`getValueUnit` for the requirements.
 
-            Recognized angular units: (see ``UNITS_ANGULAR`` in :class:`Image`)
+            Recognized angular units: (see ``UNITS['ANGULAR']`` in :class:`Image`)
 
         Examples
         --------
@@ -223,7 +226,7 @@ class ImageFrame:
 
         """
 
-        FOV = getQuantity(fov,UNITS_ANGULAR)
+        FOV = getQuantity(fov,UNITS['ANGULAR'])
         self.pixelscale = FOV / N.float(self.npix)
         self.__computePixelarea()
         self.__computeFOV()
@@ -257,11 +260,10 @@ class ImageFrame:
 
         """
         
-        FOV = getQuantity(fov,UNITS_ANGULAR)
+        FOV = getQuantity(fov,UNITS['ANGULAR'])
         factor = (FOV/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
         cpix = self.npix/2
-
 
         def get_newimage(image):
             return nddata.extract_array(image,(newsize_int,newsize_int),(cpix,cpix),fill_value=0.)
@@ -359,9 +361,13 @@ class Image(ImageFrame):
         
         if total_flux_density is not None:
             self.setBrightness(total_flux_density)
+            
 
-        if pa != None:
-            self.rotate(pa)
+        if not isinstance(pa,astropy.units.quantity.Quantity):
+            pa = units.getQuantity(pa,recognized_units=UNITS['ANGULAR'])
+
+#        if pa.to('deg') != 0.:
+        self.rotate(pa)
             
 
     def setBrightness(self,total_flux_density='1 Jy'):
@@ -378,7 +384,7 @@ class Image(ImageFrame):
             ``self.data``. See docstring of :func:`getValueUnit` for
             the requirements.
 
-            Recognized brightness units: (see ``UNITS_FLUXDENSITY`` in
+            Recognized brightness units: (see ``UNITS['FLUXDENSITY']`` in
             :module:`units`)
 
         Examples
@@ -395,7 +401,7 @@ class Image(ImageFrame):
             1.99999992838 Jy
         """
 
-        total_flux_density = getQuantity(total_flux_density,recognized_units=UNITS_FLUXDENSITY)
+        total_flux_density = getQuantity(total_flux_density,recognized_units=UNITS['FLUXDENSITY'])
         self.data = (self.data/self.data.sum()) * total_flux_density / u.pix
         
         
@@ -466,7 +472,7 @@ class Image(ImageFrame):
 
         """
 
-        val, unit = getValueUnit(units,UNITS_FLUXDENSITY)  # val is dummy here, since no actual value
+        val, unit = getValueUnit(units,UNITS['FLUXDENSITY'])  # val is dummy here, since no actual value
         
         return (self.getBrightness('Jy/mas^2').sum() * self.pixelarea).to(unit)
     
@@ -508,7 +514,7 @@ def rotateImage(image,angle,direction='NE'):
 
     checkImage(image,returnsize=False)
 
-    angle = getQuantity(angle,recognized_units=UNITS_ANGULAR)
+    angle = getQuantity(angle,recognized_units=UNITS['ANGULAR'])
     
     if direction == 'NW':
         angle = -angle

@@ -1,4 +1,4 @@
-__version__ = '20170714'   #yyymmdd
+__version__ = '20170816' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -16,8 +16,10 @@ from copy import copy
 
 # 3rd party
 import numpy as N
+import numpy as np
 from astropy import units as u
 from units import *
+from astropy import wcs
 from astropy.io import fits as pyfits
 import h5py
 
@@ -25,7 +27,6 @@ import h5py
 from loggers import *
 import ndiminterpolation
 import bigfileops as bfo
-import psf
 from instruments import *
 from imageops import *
 from utils import *
@@ -46,39 +47,48 @@ class ModelCube:
         Parameters
         ----------
         hdffile : str
-            Path to the model hdf5 file. Default:
-            `hypercat_20170109.hdf5`
+            Path to the model hdf5 file. Default: ``'hypercat_20170714.hdf5'``
 
         hypercube : str
-            Name of the hypercube within `hdffile` to use (currently
-            either ``imgdata`` or ``clddata``). Default" ``imgdata``.
+            Name of the hypercube within ``hdffile`` to use (currently
+            either ``'imgdata'`` or ``'clddata'``). Default: ``'imgdata'``.
 
         subcube_selection : str | None
+            ``'interactive'`` or path to a json file containing the
+            indices to select for every axis in the ``hypercube`` in the
+            ``hdffile``.
 
-            'interactive' or the name of a json file containing the
-            indices to select for every axis in the `hypercube` in the
-            `hdffile`.
-
-            If 'interactive', a simple selection dialog will be
-            launched int the terminal/session, allowing to
+            If ``'interactive'``, a simple selection dialog will be
+            launched in the terminal/session, allowing to
             select/unselect entries from every axis (one at a
             time). Once done, the corresponding list of index lists is
             created, and the hyper-slab (sub-cube) loaded from disk to
-            RAM.
+            RAM. The nested list of selected indices can be
+            conveniently stored into a json file for later re-use (see
+            arg ``subcube_selection_save``).
 
-            If a json file, it is a file that can be created with
-            subcube_selection=True, and providing as
-            subcube_selection_save a file path to the to-be-stored
+            If ``subcube_selection`` is the path to a json file, it is
+            a file that can be created with
+            ``subcube_selection='interactive'``. Then also provide as
+            ``subcube_selection_save`` a file path to the to-be-stored
             json file.
 
         subcube_selection_save : str | None
-            If not None, it a the path to a json file withe the list
-            of index lists that select a subcube from the full
-            'hypercube'.
+            If not ``None``, it a the path to a json file with the list of
+            index lists that select a subcube from the full
+            ``hypercube``. I.e. a json file with selection indices can
+            be created once, and then the same selection can be
+            repeated any time by simply loading the json file.
 
         omit : tuple
+            Tuple of parameter names (as strings) to omit from subcube
+            selection. These axes will be automatically handled.
+        
+            .. warning:: 
 
-            Tuple of parameter names (as strings) to omit from subcube selection, and from
+               This functionality is not fully implemented yet, and is
+               currently meant for the 'x' and 'y' axes only. Best not
+               to touch for now.
 
         ndinterpolator : bool
             If ``True`` (default), an interpolation object for
@@ -90,7 +100,7 @@ class ModelCube:
         .. code-block:: python
 
             # instantiate
-            M = ModelCube()
+            cube = ModelCube()  # all defaults
 
         """
 
@@ -105,10 +115,6 @@ class ModelCube:
         self.paramnames = self.group['paramnames'].value.tolist()
         self.theta = self.group['theta'].value
 
-        # for each parameter save its sampling as a member (attach '_' to the name)
-        for j,pn in enumerate(self.paramnames):
-            setattr(self,pn+'_',self.theta[j])
-        
         iY = self.paramnames.index('Y')
         self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
         iy = self.paramnames.index('y')
@@ -127,9 +133,7 @@ class ModelCube:
         self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
         self.subcubesize = self.fullcubesize
 
-#        self.paramnames = (self.group['paramnames'].value)[select]
-
-# SELECT A SUB-HYPERCUBE
+        # SELECT A SUB-HYPERCUBE
         if subcube_selection is not None:
 
             if subcube_selection == 'interactive':
@@ -144,6 +148,10 @@ class ModelCube:
                 self.idxes = d['idxes']
                 self.theta = [self.theta[j][self.idxes[j]] for j in xrange(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
+
+        # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
+        for j,pn in enumerate(self.paramnames):
+            setattr(self,pn+'_',self.theta[j])
 
         self.theta_full = copy(self.theta)
                 
@@ -218,8 +226,27 @@ class ModelCube:
         -------
         .. code-block:: python
 
-            M.print_sampling(n=6)
+            cube.print_sampling(n=5)
 
+        Prints for instance:
+
+        .. code-block:: text
+
+           -------------------------------------------------------
+           Parameter  Range                Nvalues  Sampled values
+           -------------------------------------------------------
+             sig      [ 15.000 -  15.000]  (  1)    15.000
+               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
+               Y      [ 20.000 -  20.000]  (  1)    20.000
+               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
+               q      [  0.000 -   0.000]  (  1)     0.000
+              tv      [ 40.000 -  40.000]  (  1)    40.000
+            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
+               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+           -------------------------------------------------------
+           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
+           Hypercube size: 14.8714 (MB)
         """
 
         maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
@@ -285,19 +312,19 @@ class ModelCube:
 
             # vector of parameter values; pixel axes are implicit (i.e. don't specify them)
             theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)
-            image = M.get_image(theta)
+            image = cube.get_image(theta)
             print image.shape
               (441,441)   # (x,y)
 
             # multi-wavelength cube
             theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values
-            image = M.get_image(theta)
+            image = cube.get_image(theta)
             print image.shape
               (3,441,441)   # (x,y,lambda)
             
             # multi-wavelength and multi-viewing angle
             theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas
-            image = M.get_image(theta)
+            image = cube.get_image(theta)
             print image.shape
               (4,3,441,441)
         """
@@ -315,7 +342,7 @@ class ModelCube:
         vec.append(tuple(self.y.tolist()))
         
         vec = tuple(vec)
-        
+
         image = self.ip(vec)
         image = image.squeeze()
 
@@ -330,24 +357,45 @@ class ModelCube:
 
 class Source:
     
-    def __init__(self,cube,luminosity='1e45 erg/s',distance='1 Mpc',tsub=1500.,pa='0. deg',name=''):
+    def __init__(self,cube,luminosity='1e45 erg/s',distance='1 Mpc',tsub='1500 K',pa='0. deg',objectname=''):
+
+        """Abstraction of an astrophysical source (AGN).
+
+        Takes a hypercube of model images. Instantiates an n-dim
+        interpolation object. Computes dust sublimation radius and
+        image pixelscale. Resolves source name with Vizier and
+        constructs a WCS (optional).
+
+        Parameters
+        ----------
+        cube : instance
+            Instance of ModelCube. Holds the n-dim hypercube of model
+            images.
+
+        luminosity : str
+            AGN bolometric luminosity, e.g. '1e45 erg/s' or '1e12 Lsun'.
+
+        distance : str
+            Distance to the source, e.g. '14.4 Mpc'.
+
+        tsub : str
+            Dust sublimation temperature. Default is '1500 K',
+            appropriate e.g. for astrophysical silicates.
+
+        pa : str
+            Position angle with respect to North (=0 deg). Default is
+            '0. deg'. If not 0, the image will be rotated by pa
+            (positive values rotate North-to-East,
+            i.e. anti-clockwise, negative values rotate North-to-West,
+            i.e. clockwise).
 
         """
-        pa : str | 'Quantity' instance
-            Position angle with respect to North (=0 deg). If not 0,
-            the image will be rotated by pa (positive values rotate
-            North-to-East, i.e. anti-clockwise, negative values rotate
-            North-to-West, i.e. clockwise). Example: ```pa='42
-            deg'```.
 
-
-
-        """
-        
+        self.objectname = objectname
         self.cube = cube  # instance of ModelCube
-        self.luminosity = getQuantity(luminosity,recognized_units=UNITS_LUMINOSITY)
-        self.distance = getQuantity(distance,recognized_units=CUNITS)
-        self.pa = getQuantity(pa,recognized_units=UNITS_ANGULAR)  # PA of source, in angular unitsfrom N to E
+        self.luminosity = getQuantity(luminosity,recognized_units=UNITS['LUMINOSITY'])
+        self.distance = getQuantity(distance,recognized_units=UNITS['CUNITS'])
+        self.pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])  # PA of source, in angular unitsfrom N to E
         
         self.Rd = get_Rd(luminosity,tsub=tsub,outunit='pc')
         self.pixelscale = get_pixelscale(self.Rd,self.distance,outunit='mas',npix=cube.eta)[2]*u.pix  # mas (per pixel)
@@ -365,19 +413,28 @@ class Source:
         if wave is None:
             self.wave = self.theta[-1] * u.micron
         else:
-            self.wave = getQuantity(wave,recognized_units=UNITS_WAVE)
+            self.wave = getQuantity(wave,recognized_units=UNITS['WAVE'])
 
         # get raw image
         rawimage = self.cube.get_image(theta)
 
         # instantiatie Image class, with physical units
+        print "SOURCE: self.pa before instaniating Image = "
+        print self.pa, type(self.pa)
         sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density)
         sky.theta = self.theta
         sky.wave = self.wave
         sky.pa = self.pa
+        sky.objectname = self.objectname  # attach source.objectname to the image of the sky
+
+        wcs = get_wcs(sky)
+        if wcs is not None:
+            sky.wcs = wcs
+
         return sky
-        
-    
+
+
+
 # HELPER FUNCTIONS
 
 def lum_dist_to_pixelscale(lum,dist,cube):
@@ -389,21 +446,25 @@ def lum_dist_to_pixelscale(lum,dist,cube):
     return angular, angular_per_linsize, angular_per_pixel
     
 
-def get_Rd(lum,tsub=1500.,outunit='pc'):
+def get_Rd(luminosity='1e45 erg/s',tsub='1500 K',outunit='pc'):
 
-    """Get dust sublimation radius Rd from luminosity of source and dust
-    sublimation temperature.
+    """Compute the dust sublimation radius :math:`R_d` from luminosity of
+    source and dust sublimation temperature.
 
-    Uses Eq. (1) from Nenkova+2008b.
+    Uses Eq. (1) from Nenkova+2008b: http://adsabs.harvard.edu/abs/2008ApJ...685..160N
+
+    .. math::
+
+       R_d = 0.4 \\left( \\frac{L}{10^{45}\,{\\rm erg\,s^{-1}}}\\right)^{\\!1/2} \\left( \\frac{1500\,\\rm K}{T_{\\rm sub}}\\right)^{\\!2.6} {\\rm pc}
 
     Parameters
     ----------
-    lum : float
-        AGN bolometric luminosity in erg/s, e.g. 1e45.
+    luminosity : str
+        AGN bolometric luminosity, e.g. '1e45 erg/s'.
 
-    tsub : float
-        Dust sublimation temperature. Default is 1500K, corresponding
-        e.g. to astrophysical silicates.
+    tsub : str
+        Dust sublimation temperature. Default is '1500 K',
+        corresponding e.g. to astrophysical silicates.
 
     outunit : str
         Desired output units of length. The result will be
@@ -411,12 +472,13 @@ def get_Rd(lum,tsub=1500.,outunit='pc'):
 
     Returns
     -------
-
     Rd : float
         Dust sublimation radius Rd in units `outunit`.
+
     """
 
-    lum = getQuantity(lum,recognized_units=UNITS_LUMINOSITY).to('erg/s').value
+    lum = getQuantity(luminosity,recognized_units=UNITS['LUMINOSITY']).to('erg/s').value
+    tsub = getQuantity(tsub,recognized_units=UNITS['TEMPERATURE']).to('K').value
     
     Rd = 0.4*N.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
 
@@ -446,8 +508,8 @@ def get_pixelscale(linsize,distance,outunit='arcsec',npix=1):
         with.
     """
     
-    linsize = getQuantity(linsize,UNITS_LINEAR)
-    distance = getQuantity(distance,UNITS_LINEAR)
+    linsize = getQuantity(linsize,UNITS['LINEAR'])
+    distance = getQuantity(distance,UNITS['LINEAR'])
     
     angular = N.arctan2(linsize,distance).to(outunit)
     angular_per_linsize = angular / linsize  # e.g. arcsec/pc

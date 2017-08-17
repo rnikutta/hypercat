@@ -49,26 +49,41 @@
           <div class="body" role="main">
             
   <h1>Source code for instruments</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170202&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
+<span class="kn">import</span> <span class="nn">psf</span>
+<span class="kn">from</span> <span class="nn">units</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="k">import</span> <span class="n">name_resolve</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170814&#39;</span> <span class="c1">#yyyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
 
-<span class="sd">.. automodule:: instruments</span>
+<span class="sd">.. automodule:: instrumsents</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
-<span class="kn">import</span> <span class="nn">psf</span>
-<span class="kn">from</span> <span class="nn">units</span> <span class="k">import</span> <span class="o">*</span>
-
 
 <div class="viewcode-block" id="Instrument"><a class="viewcode-back" href="../instruments.html#instruments.Instrument">[docs]</a><span class="k">class</span> <span class="nc">Instrument</span><span class="p">:</span>
 
-    <span class="sd">&quot;&quot;&quot;Base class for instruments of all kind (e.g. Telescope, Interferometer, etc.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Base class for optical observing apparatus of all kinds (e.g. Telescope, Interferometer, etc.)&quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+<div class="viewcode-block" id="Instrument.__init__"><a class="viewcode-back" href="../instruments.html#instruments.Instrument.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">telescope</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">instrument</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;Instantiate observing instrument.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        telescope : str</span>
+<span class="sd">            Name of telescope, optional. E.g. &#39;TMT&#39;. Default &#39;&#39;.</span>
+
+<span class="sd">        instrument : str</span>
+<span class="sd">            Name of instrument mounted to telescope, optional. E.g. &#39;VISIR&#39;. Default &#39;&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span> <span class="o">=</span> <span class="n">telescope</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="n">instrument</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span></div>
 
 <div class="viewcode-block" id="Instrument.observe"><a class="viewcode-back" href="../instruments.html#instruments.Instrument.observe">[docs]</a>    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sky</span><span class="p">):</span>
 
@@ -92,104 +107,100 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span><span class="n">sky</span><span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">observation</span></div></div>
 
 
 <div class="viewcode-block" id="Telescope"><a class="viewcode-back" href="../instruments.html#instruments.Telescope">[docs]</a><span class="k">class</span> <span class="nc">Telescope</span><span class="p">(</span><span class="n">Instrument</span><span class="p">):</span>
 
-    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">psfdict</span><span class="o">=</span><span class="p">{},</span><span class="n">pixelscale_detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="c1">#TODO:go this route    def __init__(self,psf=&#39;model&#39;, diameter=None,strehl=None, hdukw=None,    pixelscale_detector=None,telescope=&#39;&#39;,instrument=&#39;&#39;):</span>
+<div class="viewcode-block" id="Telescope.__init__"><a class="viewcode-back" href="../instruments.html#instruments.Telescope.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">psfdict</span><span class="o">=</span><span class="p">{},</span><span class="n">pixelscale_detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">telescope</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">instrument</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 
-        <span class="sd">&quot;&quot;&quot;Instrument to simulate the effects of a single-dish telescope with</span>
-<span class="sd">        a pixel camera attached to it.</span>
+        <span class="sd">&quot;&quot;&quot;Simulate the effects of a single-dish telescope with a pixel camera</span>
+<span class="sd">        attached to it.</span>
 
 <span class="sd">        Model a Gaussian+Airy PSF, or load PSF from a FITS file. Apply</span>
 <span class="sd">        PSF to sky image.</span>
 <span class="sd">        </span>
-<span class="sd">        Resample resulting image to ``pixelscale_detector``.</span>
+<span class="sd">        Resample resulting image to ``pixelscale_detector``, if not ``None``.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-
 <span class="sd">        psfdict : dict</span>
+<span class="sd">            A dictionary with several keys. Key ``psf`` is common to</span>
+<span class="sd">            all configurations, and must be either: ``None``, or</span>
+<span class="sd">            ``&#39;model&#39;``, or the path to a FITS file that contains an</span>
+<span class="sd">            image of the PSF to be used.</span>
 
-<span class="sd">            A dictionary with several keys. Key &#39;psf&#39; is common to all</span>
-<span class="sd">            configurations, and must be either &#39;model&#39; oder the path</span>
-<span class="sd">            to a FITS file that contains an image of the PSF to be</span>
-<span class="sd">            used.</span>
+<span class="sd">            - If ``psf=None``, the model image will not be convolved</span>
+<span class="sd">              with any PSF.</span>
 
-<span class="sd">            If &#39;model&#39;</span>
+<span class="sd">            - If ``psf=&#39;model&#39;``, the PSF will be modeled with a</span>
+<span class="sd">              Gaussian+Airy pattern.</span>
 
+<span class="sd">              .. note:: Reference: John W. Hardy &quot;Adaptive Optics for</span>
+<span class="sd">                Astronomical Telescopes&quot; Oxford Series in Optical and</span>
+<span class="sd">                Imaging Sciences, 1998</span>
 
-<span class="sd">        psf : None | &#39;model&#39; | FITS filename</span>
+<span class="sd">              In this case, ``psfdict`` must also contain the keys</span>
+<span class="sd">              ``diameter`` and ``strehl``, and their values.  They are</span>
+<span class="sd">              the diameter of the telescope aperture and the strehl</span>
+<span class="sd">              ratio. E.g.</span>
 
-<span class="sd">            If None, the model image will not be convolved with any</span>
-<span class="sd">            PSF.</span>
+<span class="sd">              .. code-block:: text</span>
 
-<span class="sd">            If &#39;model&#39;, then psfdict must also be provided (see</span>
-<span class="sd">            there), and the PSF will be modeled with a Gaussian+Airy</span>
-<span class="sd">            pattern. Reference:</span>
+<span class="sd">                 psfdict = {&#39;psf&#39;:&#39;model&#39;,&#39;diameter&#39;:&#39;30 m&#39;,&#39;strehl&#39;:0.8}</span>
 
-<span class="sd">              John W. Hardy &quot;Adaptive Optics for Astronomical</span>
-<span class="sd">              Telescopes&quot;, Oxford Series in Optical and Imaging</span>
-<span class="sd">              Sciences 1998</span>
-
-<span class="sd">            If psf is a string ending it &#39;.fits&#39;, it is the path to a</span>
-<span class="sd">            FITS file containing the image of a PSF (for instance</span>
-<span class="sd">            generated with the WebbPSF tool:</span>
-
+<span class="sd">            - If ``psf`` is a string ending with ``&#39;.fits&#39;``, it is</span>
+<span class="sd">              the path to a FITS file that contains the image of a PSF</span>
+<span class="sd">              (for instance generated with the WebbPSF tool:</span>
 <span class="sd">              http://www.stsci.edu/~mperrin/software/webbpsf.html).</span>
 
-<span class="sd">            psfdict must then also be provided, but with different</span>
-<span class="sd">            content (see there).</span>
+<span class="sd">              In this case, ``psfdict`` must also have the keys and</span>
+<span class="sd">              values for the HDU extension (name or numeric) that</span>
+<span class="sd">              contains the PSF image (EXT name or HDU number), and the</span>
+<span class="sd">              name of the keyword containing the PSF&#39;s image pixel</span>
+<span class="sd">              scale. E.g.:</span>
 
-<span class="sd">        psfdict : dictionary</span>
-<span class="sd">            Only used when psf is not None.</span>
+<span class="sd">              .. code-block:: text</span>
 
-<span class="sd">            If psf=&#39;model&#39;, then psfdict must contain the keys and</span>
-<span class="sd">            values for the wavelength in micron, telescope diameter in</span>
-<span class="sd">            meters, and Strehl ratio, e.g. like this:</span>
+<span class="sd">                 # FITS file containing PSF image made with WebbPSF tool, name/number of HDU, pixelscale keyword</span>
+<span class="sd">                 psfdict = {&#39;psf&#39;:&#39;PSF_MIRI_F1000W.fits&#39;,&#39;hdukw&#39;:1,&#39;pixelscalekw&#39;:&#39;pixelscl&#39;}</span>
 
-<span class="sd">              psfdict = {&#39;wavelength&#39;:2.2, &#39;diameter&#39;: 30., &#39;strehl&#39;: 0.8}</span>
+<span class="sd">        pixelscale_detector : str | None</span>
+<span class="sd">            If not ``None``, then the model image will be resampled</span>
+<span class="sd">            such that the pixelscale of the final image corresponds to</span>
+<span class="sd">            pixelscale_detector. This will increase or decrease the</span>
+<span class="sd">            number of pixels in the model image, but the FOV is</span>
+<span class="sd">            preserved. If ``psf`` is not ``None``, the resampling will</span>
+<span class="sd">            be performed on the PSF-convolved image.</span>
 
-<span class="sd">            If psf is the path to a FITS file that contains a PSF</span>
-<span class="sd">            image, then the content of psfdict must be the keys and</span>
-<span class="sd">            values for the HDU extension (name or numeric) that</span>
-<span class="sd">            contains the PSF image (EXT name HDU number), and the name</span>
-<span class="sd">            of the keyword containing the PSF&#39;s image pixel scale</span>
-<span class="sd">            (in arcsec/pixel). E.g.:</span>
+<span class="sd">            The total flux density will also be preserved. You can</span>
+<span class="sd">            check this by calling :func:`self.getTotalFluxDensity()`.</span>
 
-<span class="sd">              psf=&#39;PSF_MIRI_F1000W.fits&#39;  # from WebbPSF tool</span>
-<span class="sd">              psfdict = {&#39;hdukw&#39;:1, &#39;pixelscalekw&#39;:&#39;pixelscl&#39;}  # name of HDU and pixelscale keyword</span>
+<span class="sd">            Typical detector pixelscales are e.g.:</span>
 
-<span class="sd">        pixelscale_detector : float | None</span>
-<span class="sd">            If not None, the (PSF-convolved, if psf not None) model</span>
-<span class="sd">            image will be resampled such that the pixelscale of the</span>
-<span class="sd">            final image corresponds to pixelscale_detector. This will</span>
-<span class="sd">            increase or decrease the number of pixels in the model</span>
-<span class="sd">            image, but the FOV is preserved. The total flux density</span>
-<span class="sd">            will also be preserved (you can check this by calling</span>
-<span class="sd">            self.getTotalFluxDensity()) Typical detector pixelscales</span>
-<span class="sd">            are e.g.:</span>
-<span class="sd">              TMT_IRIS = 4 mas/pix</span>
-<span class="sd">              TMT_MICHI = 11.9 mas/pix.</span>
+<span class="sd">            TMT_IRIS:  ``pixelscale_detector=&#39;4 mas/pix&#39;``</span>
+
+<span class="sd">            TMT_MICHI: ``pixelscale_detector=&#39;11.9 mas/pix&#39;``</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         
-        <span class="n">Instrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">Instrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">telescope</span><span class="o">=</span><span class="n">telescope</span><span class="p">,</span><span class="n">instrument</span><span class="o">=</span><span class="n">instrument</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">psfdict</span> <span class="o">=</span> <span class="n">psfdict</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale_detector</span> <span class="o">=</span> <span class="n">pixelscale_detector</span>
         <span class="k">if</span> <span class="n">pixelscale_detector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale_detector</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale_detector</span><span class="p">,</span><span class="n">CUNITS</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale_detector</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale_detector</span><span class="p">,</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;CUNITS&#39;</span><span class="p">])</span></div>
+<span class="c1">#        self.name = name</span>
         
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sky</span><span class="p">):</span>  <span class="c1"># __call__ is invoked by Instrument.observe()</span>
+<div class="viewcode-block" id="Telescope.__call__"><a class="viewcode-back" href="../instruments.html#instruments.Telescope.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sky</span><span class="p">):</span>  <span class="c1"># __call__ is invoked by Instrument.observe()</span>
         
         <span class="c1"># do all the deeds a single-dish observation does</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">sky</span><span class="p">)</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">telescope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">telescope</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">instrument</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">instrument</span>
         
         <span class="k">if</span> <span class="s1">&#39;psf&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psfdict</span><span class="p">:</span>
             <span class="n">PSF</span> <span class="o">=</span> <span class="n">psf</span><span class="o">.</span><span class="n">getPSF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psfdict</span><span class="p">,</span><span class="n">image</span><span class="p">)</span>  <span class="c1"># instance of &#39;PSF&#39; class, which itself is instance of &#39;Image&#39;</span>
@@ -205,12 +216,16 @@
 
         <span class="k">if</span> <span class="n">PSF</span><span class="o">.</span><span class="n">FOV</span> <span class="o">!=</span> <span class="n">image</span><span class="o">.</span><span class="n">FOV</span><span class="p">:</span>
             <span class="n">PSF</span><span class="o">.</span><span class="n">changeFOV</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">FOV</span><span class="p">))</span>
-        
+
+        <span class="n">wcs</span> <span class="o">=</span> <span class="n">get_wcs</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wcs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">wcs</span> <span class="o">=</span> <span class="n">wcs</span>
+
         <span class="c1"># return a convenient instance</span>
         <span class="k">if</span> <span class="s1">&#39;psf&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">psfdict</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">PSF</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">image</span></div>
+            <span class="k">return</span> <span class="n">image</span></div></div>
 
         
 <div class="viewcode-block" id="Interferometer"><a class="viewcode-back" href="../instruments.html#instruments.Interferometer">[docs]</a><span class="k">class</span> <span class="nc">Interferometer</span><span class="p">(</span><span class="n">Instrument</span><span class="p">):</span>
@@ -222,11 +237,11 @@
 <span class="sd">    input baseline (BL length and PA).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">Instrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<div class="viewcode-block" id="Interferometer.__init__"><a class="viewcode-back" href="../instruments.html#instruments.Interferometer.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Instrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
         
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span> <span class="c1"># do all the deeds an interferometer does</span></div>
+<div class="viewcode-block" id="Interferometer.__call__"><a class="viewcode-back" href="../instruments.html#instruments.Interferometer.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span> <span class="c1"># do all the deeds an interferometer does</span></div></div>
 </pre></div>
 
           </div>

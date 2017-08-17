@@ -49,7 +49,7 @@
           <div class="body" role="main">
             
   <h1>Source code for plotting</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170208&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170816&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Plotting funcs for hypercat.</span>
@@ -66,10 +66,41 @@
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">p</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="k">import</span> <span class="n">make_axes_locatable</span>
-<span class="c1">#import astropy</span>
 
 <span class="c1"># own</span>
 <span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="plot_with_wcs"><a class="viewcode-back" href="../plotting.html#plotting.plot_with_wcs">[docs]</a><span class="k">def</span> <span class="nf">plot_with_wcs</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Demonstration function to show plotting with WCS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : instance</span>
+<span class="sd">        Instance of :class:`imageops.Image` class. Must have member</span>
+<span class="sd">        ``.wcs`` which is an instance of :class:`astropy.wcs.wcs.WCS`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Nothing.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Assuming you have an instance of :class:`imageops.Image`, e.g. ``sky``:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       import plotting</span>
+<span class="sd">       plotting.plot_with_wcs(sky)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>           
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">wcs</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;RA&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Dec&#39;</span><span class="p">)</span></div>
+    
 
 <div class="viewcode-block" id="plotPanel"><a class="viewcode-back" href="../plotting.html#plotting.plotPanel">[docs]</a><span class="k">def</span> <span class="nf">plotPanel</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">,</span><span class="n">contours</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
@@ -109,6 +140,7 @@
     
     <span class="c1"># image normalization</span>
     <span class="n">norm</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">()</span>  <span class="c1"># possibly allow this to be an argument? (e.g. for absolute normalizations)</span>
+<span class="c1">#    norm = matplotlib.colors.PowerNorm(1.)  # possibly allow this to be an argument? (e.g. for absolute normalizations)</span>
 
     <span class="k">if</span> <span class="n">cls</span> <span class="o">==</span> <span class="s1">&#39;PSF&#39;</span><span class="p">:</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">()</span>
@@ -142,6 +174,7 @@
         <span class="k">if</span> <span class="n">cls</span> <span class="o">==</span> <span class="s1">&#39;Image&#39;</span><span class="p">:</span>
             <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot;Setting cax.set_visible(False)&quot;</span>
         <span class="n">cax</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>    </div>
 
             
@@ -209,6 +242,8 @@
     <span class="c1"># figure super title</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">figtitle</span><span class="p">)</span>
 
+
+    <span class="c1"># TODO: fix this; only check for the adjustment keys in kwargs (i.e. left,right, etc)</span>
     <span class="c1"># fig.subplots_adjust() arguments; can be modified via kwargs</span>
     <span class="n">adjustkwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span><span class="mf">0.15</span><span class="p">,</span><span class="s1">&#39;right&#39;</span><span class="p">:</span><span class="mf">0.88</span><span class="p">,</span><span class="s1">&#39;top&#39;</span><span class="p">:</span><span class="mf">0.97</span><span class="p">,</span><span class="s1">&#39;bottom&#39;</span><span class="p">:</span><span class="mf">0.06</span><span class="p">,</span><span class="s1">&#39;hspace&#39;</span><span class="p">:</span><span class="mf">0.15</span><span class="p">,</span><span class="s1">&#39;wspace&#39;</span><span class="p">:</span><span class="mf">0.35</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>

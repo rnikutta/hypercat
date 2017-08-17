@@ -51,7 +51,7 @@
   <h1>Source code for ioops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170717&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170816&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling I/O.</span>
@@ -60,13 +60,132 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">fits</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">wcs</span>
+<span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="k">import</span> <span class="n">name_resolve</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="save2fits"><a class="viewcode-back" href="../ioops.html#ioops.save2fits">[docs]</a><span class="k">def</span> <span class="nf">save2fits</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">usewcs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Save instance of class with ``.data`` member to a new ImageHDU in FITS file.</span>
+
+<span class="sd">    Some other properties will also be saved, e.g. a WCS (if present),</span>
+<span class="sd">    telescope and instrument names, etc.</span>
+
+<span class="sd">    Subsequent calls of this function with new image instances will</span>
+<span class="sd">    all cause new ImageHDUs to appended to ``fitsfile``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : instance | seq of instances</span>
+<span class="sd">        Instance of a class, which has a ``.data`` member (and</span>
+<span class="sd">        optionally ``.wcs``, see below). For example, hypercat&#39;s</span>
+<span class="sd">        classes :class:`imageops.Image` and :class:`psf.PSF` qualify</span>
+<span class="sd">        (sky/obs and psf objects).</span>
+
+<span class="sd">       ``image`` can also be a list-like sequence of instances of</span>
+<span class="sd">       :class:`imageops.Image` and :class:`psf.PSF`. In that case, all</span>
+<span class="sd">       instances will be saved to the ``fitsfile`` in sequential HDUs.</span>
+
+<span class="sd">    fitsfile : str</span>
+<span class="sd">        Path to FITS file. If the file does not yet exist, it will be</span>
+<span class="sd">        created, and a new empty PrimaryHDU will be created. If</span>
+<span class="sd">        ``fitsfile`` does already exist, it will be opened in append</span>
+<span class="sd">        mode. In both cases, ``image.data`` will then be written to a</span>
+<span class="sd">        new ImageHDU, which will be appended to the FITS file.</span>
+
+<span class="sd">    usewcs : bool</span>
+<span class="sd">        If ``True`` (default) and if image has a member ``.wcs``</span>
+<span class="sd">        (which is an instance of :class:`astropy.wcs.wcs.WCS`), the</span>
+<span class="sd">        header of the ImageHDU to be created will be constructed with</span>
+<span class="sd">        a proper world coordinate system. Otherwise, a minimal header</span>
+<span class="sd">        will be constructed (without a WCS).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Nothing.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Assuming you have several instances with ``.data`` members (and</span>
+<span class="sd">    optionally ``.wcs``), e.g. ``sky``, ``obs``, ``psf``:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       import ioops</span>
+<span class="sd">       ioops.save2fits(sky,&#39;myfitsfile.fits&#39;) # new file created, new ImageHDU appended</span>
+<span class="sd">       ioops.save2fits(obs,&#39;myfitsfile.fits&#39;) # new ImageHDU appended</span>
+<span class="sd">       ioops.save2fits(psf,&#39;myfitsfile.fits&#39;) # new ImageHDU appended</span>
+
+<span class="sd">    Or do it in one go:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       ioops.save2fits((sky,obs,psf),&#39;myfitsfile.fits&#39;) # all 3 instances saved to separate HDUs</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># open existing or create new FITS file</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;append&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">phdu</span> <span class="o">=</span> <span class="n">fout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Existing FITS file &#39;</span><span class="si">%s</span><span class="s2">&#39; opened.&quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New FITS file &#39;</span><span class="si">%s</span><span class="s2">&#39; created.&quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+        <span class="n">phdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()</span>
+        <span class="n">fout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phdu</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New (empty) primary HDU written.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,(</span><span class="nb">tuple</span><span class="p">,</span><span class="nb">list</span><span class="p">)):</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span><span class="p">,)</span>
+
+    <span class="k">for</span> <span class="n">image_</span> <span class="ow">in</span> <span class="n">image</span><span class="p">:</span>
+        
+        <span class="c1"># use WCS system if requested (and if present)</span>
+        <span class="k">if</span> <span class="n">usewcs</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;wcs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">wcs</span><span class="p">,</span><span class="n">wcs</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">WCS</span><span class="p">):</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">image_</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">to_header</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">Header</span><span class="p">()</span>
+
+        <span class="c1"># add type of image to header</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">imgtype</span> <span class="o">=</span> <span class="n">image_</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;IMGTYPE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgtype</span><span class="p">,</span> <span class="s1">&#39;Content of image&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span>
+            
+        <span class="c1"># add cards for scaling and units</span>
+        <span class="n">header</span><span class="p">[</span><span class="s1">&#39;BSCALE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.00000</span><span class="p">,</span> <span class="s1">&#39;Scaling of pixel values&#39;</span><span class="p">)</span>
+        <span class="n">header</span><span class="p">[</span><span class="s1">&#39;BZERO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.00000</span><span class="p">,</span> <span class="s1">&#39;Zero offset&#39;</span><span class="p">)</span>
+        <span class="n">header</span><span class="p">[</span><span class="s1">&#39;BUNIT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="s1">&#39;Unit of image data&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;objectname&#39;</span><span class="p">):</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;OBJECT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">objectname</span><span class="p">,</span> <span class="s1">&#39;target name&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;telescope&#39;</span><span class="p">):</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">telescope</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;instrument&#39;</span><span class="p">):</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c1">#TODO    header[&#39;DATE&#39;] = (image_.data.unit.to_string(), &#39;Creation UTC (CCCC-MM-DD) date of FITS header&#39;)</span>
+            
+        <span class="c1"># encapsulate image date in new ImageHDU and append</span>
+        <span class="n">dhdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">)</span>
+        <span class="n">fout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dhdu</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data saved as new ImageHDU.&quot;</span><span class="p">)</span>
+
+    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    
 
 <div class="viewcode-block" id="FitsFile"><a class="viewcode-back" href="../ioops.html#ioops.FitsFile">[docs]</a><span class="k">class</span> <span class="nc">FitsFile</span><span class="p">:</span>
 
     <span class="sd">&quot;&quot;&quot;Convenience class to read (OI)FITS files.&quot;&quot;&quot;</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="FitsFile.__init__"><a class="viewcode-back" href="../ioops.html#ioops.FitsFile.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
 
         <span class="sd">&quot;&quot;&quot;Init.</span>
 
@@ -77,7 +196,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">oifitsfile</span> <span class="o">=</span> <span class="n">f</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hdulist</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oifitsfile</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;readonly&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hdulist</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oifitsfile</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;readonly&#39;</span><span class="p">)</span></div>
         
 
 <div class="viewcode-block" id="FitsFile.info"><a class="viewcode-back" href="../ioops.html#ioops.FitsFile.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -121,7 +240,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        key : str Name of key, e.g. ``&#39;naxis&#39;``. Capitalization is not</span>
+<span class="sd">        key : str</span>
+<span class="sd">            Name of key, e.g. ``&#39;naxis&#39;``. Capitalization is not</span>
 <span class="sd">            important.</span>
 
 <span class="sd">        hdu : int</span>

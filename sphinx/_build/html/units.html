@@ -58,33 +58,9 @@
   <div class="section" id="module-units">
 <span id="units-module"></span><h1>units module<a class="headerlink" href="#module-units" title="Permalink to this headline">¶</a></h1>
 <dl class="data">
-<dt id="units.CUNITS">
-<code class="descclassname">units.</code><code class="descname">CUNITS</code><em class="property"> = (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’, ‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)</em><a class="headerlink" href="#units.CUNITS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Their union.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="units.UNITS_ANGULAR">
-<code class="descclassname">units.</code><code class="descname">UNITS_ANGULAR</code><em class="property"> = (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’)</em><a class="headerlink" href="#units.UNITS_ANGULAR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recognized angular units, e.g. for pixel scale.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="units.UNITS_BRIGHTNESS">
-<code class="descclassname">units.</code><code class="descname">UNITS_BRIGHTNESS</code><em class="property"> = (‘Jy/pix’, ‘mJy/pix’)</em><a class="headerlink" href="#units.UNITS_BRIGHTNESS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recognized units for brightness-per-pixel.</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="units.UNITS_FLUXDENSITY">
-<code class="descclassname">units.</code><code class="descname">UNITS_FLUXDENSITY</code><em class="property"> = (‘Jy’, ‘mJy’, ‘MJy’, ‘erg/s/cm^2/Hz’, ‘W/m^2/Hz’)</em><a class="headerlink" href="#units.UNITS_FLUXDENSITY" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recognized units for flux denisty</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="units.UNITS_LINEAR">
-<code class="descclassname">units.</code><code class="descname">UNITS_LINEAR</code><em class="property"> = (‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)</em><a class="headerlink" href="#units.UNITS_LINEAR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Recognized linear units (either for pixel scale, or for source distance, etc.)</p>
+<dt id="units.UNITS">
+<code class="descclassname">units.</code><code class="descname">UNITS</code><em class="property"> = {‘FLUXDENSITY’: (‘Jy’, ‘mJy’, ‘MJy’, ‘erg/s/cm^2/Hz’, ‘W/m^2/Hz’), ‘TEMPERATURE’: (‘K’,), ‘BRIGHTNESS’: (‘Jy/pix’, ‘mJy/pix’), ‘LUMINOSITY’: (‘erg/s’, ‘W’, ‘Lsun’, ‘solLum’), ‘WAVE’: (‘Angstrom’, ‘nm’, ‘micron’, ‘mm’), ‘CUNITS’: (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’, ‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’), ‘ANGULAR’: (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’), ‘LINEAR’: (‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)}</em><a class="headerlink" href="#units.UNITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of permitted units.</p>
 </dd></dl>
 
 <dl class="function">
@@ -97,14 +73,14 @@ and create an instance of astropy.units.Quantity.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>quantity</strong> (<em>str</em>) – E.g. quantity=‘1 Jy’ would return &lt;Quantity 1.0 Jy&gt;</li>
+<li><strong>quantity</strong> (<em>str</em>) – E.g. <code class="docutils literal"><span class="pre">quantity='1</span> <span class="pre">Jy'</span></code> would return <code class="docutils literal"><span class="pre">&lt;Quantity</span> <span class="pre">1.0</span> <span class="pre">Jy&gt;</span></code></li>
 <li><strong>recognized_units</strong> (<em>tuple</em>) – Tuple of valid units (as strings) for <code class="docutils literal"><span class="pre">quantity</span></code>. E.g., for
 a length quantity, recognized units could be
 (‘micron’,’m’,’pc’,’AU’), etc.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>quantity</strong> – Instance of astropy.units.Quantity, i.e. a value with units.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>quantity</strong> – Instance of class <code class="xref py py-class docutils literal"><span class="pre">astropy.units.Quantity</span></code>, i.e. a value with units.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">instance</p>
@@ -113,12 +89,13 @@ a length quantity, recognized units could be
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<dl class="docutils">
-<dt>getQuantity(‘1 m’,(‘micron’,’m’,’pc’,’AU’))</dt>
-<dd>&lt;Quantity 1.0 m&gt;</dd>
-<dt>getQuantity(‘1 W’,(‘micron’,’m’,’pc’,’AU’))</dt>
-<dd>ValueError: Specified unit ‘W’ is not recognized. Recognized are: m,AU,pc</dd>
-</dl>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">getQuantity</span><span class="p">(</span><span class="s1">&#39;1 m&#39;</span><span class="p">,(</span><span class="s1">&#39;micron&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">))</span>
+  <span class="o">&lt;</span><span class="n">Quantity</span> <span class="mf">1.0</span> <span class="n">m</span><span class="o">&gt;</span>
+
+<span class="n">getQuantity</span><span class="p">(</span><span class="s1">&#39;1 W&#39;</span><span class="p">,(</span><span class="s1">&#39;micron&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">))</span>
+  <span class="ne">ValueError</span><span class="p">:</span> <span class="n">Specified</span> <span class="n">unit</span> <span class="s1">&#39;W&#39;</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">recognized</span><span class="o">.</span> <span class="n">Recognized</span> <span class="n">are</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span><span class="n">AU</span><span class="p">,</span><span class="n">pc</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -152,6 +129,34 @@ of <cite>string</cite> will be checked against.</li>
   <span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="n">Unit</span><span class="p">(</span><span class="s2">&quot;Jy / arcsec2&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="function">
+<dt id="units.list_recognized_units">
+<code class="descclassname">units.</code><code class="descname">list_recognized_units</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/units.html#list_recognized_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#units.list_recognized_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print simple table of permitted units per category.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">units</span><span class="o">.</span><span class="n">list_recognized_units</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Prints</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>Category       Permitted units
+ FLUXDENSITY   (&#39;Jy&#39;, &#39;mJy&#39;, &#39;MJy&#39;, &#39;erg/s/cm^2/Hz&#39;, &#39;W/m^2/Hz&#39;)
+ TEMPERATURE   (&#39;K&#39;,)
+  BRIGHTNESS   (&#39;Jy/pix&#39;, &#39;mJy/pix&#39;)
+  LUMINOSITY   (&#39;erg/s&#39;, &#39;W&#39;, &#39;Lsun&#39;, &#39;solLum&#39;)
+        WAVE   (&#39;Angstrom&#39;, &#39;nm&#39;, &#39;micron&#39;, &#39;mm&#39;)
+      CUNITS   (&#39;arcsec&#39;, &#39;mas&#39;, &#39;milliarcsecond&#39;, &#39;deg&#39;, &#39;degree&#39;, &#39;rad&#39;, &#39;radian&#39;, &#39;cm&#39;, &#39;m&#39;, &#39;AU&#39;, &#39;lyr&#39;, &#39;pc&#39;, &#39;kpc&#39;, &#39;Mpc&#39;, &#39;Gpc&#39;)
+     ANGULAR   (&#39;arcsec&#39;, &#39;mas&#39;, &#39;milliarcsecond&#39;, &#39;deg&#39;, &#39;degree&#39;, &#39;rad&#39;, &#39;radian&#39;)
+      LINEAR   (&#39;cm&#39;, &#39;m&#39;, &#39;AU&#39;, &#39;lyr&#39;, &#39;pc&#39;, &#39;kpc&#39;, &#39;Mpc&#39;, &#39;Gpc&#39;)
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="data">
+<dt id="units.numeric_pattern">
+<code class="descclassname">units.</code><code class="descname">numeric_pattern</code><em class="property"> = ‘^\s*\n         [-+]? # optional sign\n         \s*\n         (?:\n             (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc\n             |\n             (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc\n         )\n         # followed by optional exponent part if desired\n         (?: [Ee] [+-]? \d+ ) ?\n         ‘</em><a class="headerlink" href="#units.numeric_pattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Regex pattern to identify numbers in a string.</p>
 </dd></dl>
 
 </div>

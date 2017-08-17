@@ -51,7 +51,10 @@ def rotateVector(vec,deg=90.):
     c = math.cos(angle)
     matrix = N.array([[ c, s],
                       [-s, c]])
-    rvec = N.dot(matrix.T,vec)  # transposing matrix to make positive angles rotate counter-clockwise, i.e. as is convention in mathematics
+
+    # transposing matrix to make positive angles rotate
+    # counter-clockwise, i.e. as is convention in mathematics
+    rvec = N.dot(matrix.T,vec)
 
     return rvec
     
@@ -134,12 +137,76 @@ def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.,norm=None):
     g = Gaussian2D(norm,x0,y0,sx,sy,N.radians(theta))
     Z = g(X,Y)
 
-#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))
-#    
-#    if theta != 0.:
-#        Z = ndimage.rotate(Z,theta,reshape=False)
-        
     return Z
+
+
+#def getImageEigenvectors2D(image,thresh=0.001):
+#
+#    """Compute eigenvectors of image covariance matrix.
+#
+#    Parameters
+#    ----------
+#    image : 2-d array
+#        Image.
+#
+#    thresh : float
+#        Pixels as dim as ``'thresh`` (fraction) of peak pixel
+#        brightness will be considered. Default 0.001 (= 0.1 %).
+#
+#    """
+#    
+#    xind, yind = N.argwhere(image>thresh*image.max()).T
+#    coords = N.vstack((xind,yind))
+#    cov = N.cov(coords)
+#    evals, evecs = N.linalg.eig(cov)
+#    idmax = N.argmax(evals)
+#    evec1 = evecs[idmax]
+#
+#    return evals, evecs
+
+
+def getImageEigenvectors(image,thresh=0.001,sortdescending=True):
+
+    """Compute eigenvectors of image covariance matrix.
+
+    Parameters
+    ----------
+    image : 2-d array
+        Image.
+
+    thresh : float
+        Pixels as dim as ``'thresh`` (fraction) of peak pixel
+        brightness will be considered. Default 0.001 (= 0.1 %).
+
+    sortdescending : bool
+        If True (the default), returns the eigenvalues and
+        eigentvectors sorted by the eigenvalues in descending order
+        (i.e. the first eigenvector is the largest). If False, keeps
+        the original order.
+
+    Returns
+    -------
+
+    evals : array
+        1-d array of eigenvalues vor each axis in ``image``.
+
+    evecs : aray
+    """
+    
+    idxes = N.argwhere(image>thresh*image.max()).T
+    coords = N.vstack(idxes)
+    cov = N.cov(coords)
+    eigenvalues, eigenvectors = N.linalg.eig(cov)
+
+    if sortdescending is True:
+        idxsort = N.argsort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[idxsort]
+        eigenvectors = eigenvectors[idxsort]
+        
+#    idmax = N.argmax(evals)
+#    evec1 = evecs[idmax]
+
+    return eigenvalues, eigenvectors
 
 
 def imageToEigenvectors(image):
@@ -574,11 +641,71 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
     fig.subplots_adjust(left=0.1,right=0.98,top=0.99,bottom=0.08,hspace=0.3,wspace=0.3)
     return fig
     
+
+def findEmissionCentroid(img):
+
+    """Return (fractional) pixel coordinates of the emission centroid in ``image``.
+
+
+    Parameters
+    ----------
+    img : 2-d array
+        2-d image.
+
+    Returns
+    -------
+    x0, y0 : float
+        Fractional pixel coordinates of the emission centroid in
+        ``image``
+
+    """
     
+    x0, y0 = ndimage.center_of_mass(image)
+
+    return x0, y0
+
+    
+def findEmissionPA(image):
+
+    """Find position angle of dominant emission feature via cov. matrix analysis.
+
+    Parameters
+    ----------
+    image : 2-d array
+
+    Returns
+    -------
+    pa : float
+        Postion angle (PA) of the dominant emission feature in
+        ``image``, measured in degrees counter-clockwise from North
+        (i.e. from the positive y-axis.
+    """
+
+#    x0,y0 = ndimage.center_of_mass(image)
+    npix = image.shape[0]
+    cpix = npix/2
+#    p.imshow(image.T,origin='lower',interpolation='none')
+    evec1,x_,y_,sig2 = imageToEigenvectors(image)
+    measured = getAngle(evec1,ey)
+#        p.axvline(cpix,c='w',lw=1)
+#        scale = 20
+#        m = N.tan(N.radians(measured-90.))
+#        b = y0-m*x0
+#        xl = 0.
+#        yl = m*xl+b
+#        xr = npix
+#        yr = m*xr+b
+#        p.plot((xl,xr),(yl,yr),ls='-',lw=1,c='b')
+#        p.xlim(0,npix-1)
+#        p.ylim(0,npix-1)
+#        p.title('measured PA = %.2f, with x-axis = %.2f' % (measured,measured-90.))
+#        p.gca().get_xaxis().set_visible(False)
+#        p.gca().get_yaxis().set_visible(False)
+#        p.waitforbuttonpress()
+#        p.draw()
 
 
-
-def findOrientation(I):
+def findOrientation_loop(I):
 
     ey = getUnitVector(axis=1,ndim=2)
     angles = N.arange(0,181,10)

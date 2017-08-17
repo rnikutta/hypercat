@@ -62,6 +62,20 @@
 <em class="property">class </em><code class="descclassname">ioops.</code><code class="descname">FitsFile</code><span class="sig-paren">(</span><em>f</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience class to read (OI)FITS files.</p>
 <dl class="method">
+<dt id="ioops.FitsFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>f</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Init.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>str</em>) – Path to (oi)fits file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="ioops.FitsFile.get">
 <code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>hdu=0</em>, <em>what=’value’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get either a card, value, or comment, from the header of hdu.</p>
@@ -70,7 +84,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>key</strong> (str Name of key, e.g. <code class="docutils literal"><span class="pre">'naxis'</span></code>. Capitalization is not) – important.</li>
+<li><strong>key</strong> (<em>str</em>) – Name of key, e.g. <code class="docutils literal"><span class="pre">'naxis'</span></code>. Capitalization is not
+important.</li>
 <li><strong>hdu</strong> (<em>int</em>) – hdu number to read. Default = 0</li>
 <li><strong>what</strong> (<em>str</em>) – <p>What to return from the header of hdu. Possible values are
 <code class="docutils literal"><span class="pre">'card'</span></code>, <code class="docutils literal"><span class="pre">'value'</span></code>, and <code class="docutils literal"><span class="pre">'comment'</span></code>.</p>
@@ -173,6 +188,65 @@ return it.</li>
 <dd><p>Print hdulist.info()</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="ioops.save2fits">
+<code class="descclassname">ioops.</code><code class="descname">save2fits</code><span class="sig-paren">(</span><em>image</em>, <em>fitsfile</em>, <em>usewcs=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#save2fits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.save2fits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save instance of class with <code class="docutils literal"><span class="pre">.data</span></code> member to a new ImageHDU in FITS file.</p>
+<p>Some other properties will also be saved, e.g. a WCS (if present),
+telescope and instrument names, etc.</p>
+<p>Subsequent calls of this function with new image instances will
+all cause new ImageHDUs to appended to <code class="docutils literal"><span class="pre">fitsfile</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>instance | seq of instances</em>) – <dl class="docutils">
+<dt>Instance of a class, which has a <code class="docutils literal"><span class="pre">.data</span></code> member (and</dt>
+<dd>optionally <code class="docutils literal"><span class="pre">.wcs</span></code>, see below). For example, hypercat’s
+classes <a class="reference internal" href="imageops.html#imageops.Image" title="imageops.Image"><code class="xref py py-class docutils literal"><span class="pre">imageops.Image</span></code></a> and <a class="reference internal" href="psf.html#psf.PSF" title="psf.PSF"><code class="xref py py-class docutils literal"><span class="pre">psf.PSF</span></code></a> qualify
+(sky/obs and psf objects).</dd>
+</dl>
+<p><code class="docutils literal"><span class="pre">image</span></code> can also be a list-like sequence of instances of
+<a class="reference internal" href="imageops.html#imageops.Image" title="imageops.Image"><code class="xref py py-class docutils literal"><span class="pre">imageops.Image</span></code></a> and <a class="reference internal" href="psf.html#psf.PSF" title="psf.PSF"><code class="xref py py-class docutils literal"><span class="pre">psf.PSF</span></code></a>. In that case, all
+instances will be saved to the <code class="docutils literal"><span class="pre">fitsfile</span></code> in sequential HDUs.</p>
+</li>
+<li><strong>fitsfile</strong> (<em>str</em>) – Path to FITS file. If the file does not yet exist, it will be
+created, and a new empty PrimaryHDU will be created. If
+<code class="docutils literal"><span class="pre">fitsfile</span></code> does already exist, it will be opened in append
+mode. In both cases, <code class="docutils literal"><span class="pre">image.data</span></code> will then be written to a
+new ImageHDU, which will be appended to the FITS file.</li>
+<li><strong>usewcs</strong> (<em>bool</em>) – If <code class="docutils literal"><span class="pre">True</span></code> (default) and if image has a member <code class="docutils literal"><span class="pre">.wcs</span></code>
+(which is an instance of <code class="xref py py-class docutils literal"><span class="pre">astropy.wcs.wcs.WCS</span></code>), the
+header of the ImageHDU to be created will be constructed with
+a proper world coordinate system. Otherwise, a minimal header
+will be constructed (without a WCS).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Nothing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Assuming you have several instances with <code class="docutils literal"><span class="pre">.data</span></code> members (and
+optionally <code class="docutils literal"><span class="pre">.wcs</span></code>), e.g. <code class="docutils literal"><span class="pre">sky</span></code>, <code class="docutils literal"><span class="pre">obs</span></code>, <code class="docutils literal"><span class="pre">psf</span></code>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ioops</span>
+<span class="n">ioops</span><span class="o">.</span><span class="n">save2fits</span><span class="p">(</span><span class="n">sky</span><span class="p">,</span><span class="s1">&#39;myfitsfile.fits&#39;</span><span class="p">)</span> <span class="c1"># new file created, new ImageHDU appended</span>
+<span class="n">ioops</span><span class="o">.</span><span class="n">save2fits</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span><span class="s1">&#39;myfitsfile.fits&#39;</span><span class="p">)</span> <span class="c1"># new ImageHDU appended</span>
+<span class="n">ioops</span><span class="o">.</span><span class="n">save2fits</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span><span class="s1">&#39;myfitsfile.fits&#39;</span><span class="p">)</span> <span class="c1"># new ImageHDU appended</span>
+</pre></div>
+</div>
+<p>Or do it in one go:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ioops</span><span class="o">.</span><span class="n">save2fits</span><span class="p">((</span><span class="n">sky</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">psf</span><span class="p">),</span><span class="s1">&#39;myfitsfile.fits&#39;</span><span class="p">)</span> <span class="c1"># all 3 instances saved to separate HDUs</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>

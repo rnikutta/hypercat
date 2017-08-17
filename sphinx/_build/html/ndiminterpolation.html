@@ -65,6 +65,79 @@
 <p>Operates on image(index) coordinates. Multi-linear (default) or
 cubic-spline (currently deactivated; needs more testing).</p>
 <dl class="method">
+<dt id="ndiminterpolation.NdimInterpolation.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>vector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ndiminterpolation.html#NdimInterpolation.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ndiminterpolation.NdimInterpolation.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate in N dimensions, using mapping to image coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ndiminterpolation.NdimInterpolation.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>data</em>, <em>theta</em>, <em>order=1</em>, <em>mode=’log’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ndiminterpolation.html#NdimInterpolation.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ndiminterpolation.NdimInterpolation.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an interpolator object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>n-dim array</em><em> or </em><em>1-d array</em>) – <p>Datacube to be interpolated. Sampled on a rectilinear grid
+(it need not be regular!). ‘data’ is either an
+n-dimensional array (hypercube), or a 1-dimensional
+array. If hypercube, each axis corresponds to one of the
+model parameters, and the index location along each axis
+grows with the parameter value (the parameter values are
+given in <cite>theta</cite>). If ‘data’ is a 1-d array of values, it
+will be converted into the hypercube format. This means
+that the order of entries in the 1-d array must be as if
+constructed via looping over all axes, i.e.</p>
+<pre class="code python literal-block">
+<span class="name">counter</span> <span class="operator">=</span> <span class="literal number integer">0</span>
+<span class="keyword">for</span> <span class="name">j0</span> <span class="operator word">in</span> <span class="name">theta</span><span class="punctuation">[</span><span class="literal number integer">0</span><span class="punctuation">]:</span>
+    <span class="keyword">for</span> <span class="name">j1</span> <span class="operator word">in</span> <span class="name">theta</span><span class="punctuation">[</span><span class="literal number integer">1</span><span class="punctuation">]:</span>
+        <span class="keyword">for</span> <span class="name">j2</span> <span class="operator word">in</span> <span class="name">theta</span><span class="punctuation">[</span><span class="literal number integer">2</span><span class="punctuation">]:</span>
+            <span class="operator">…</span>
+            <span class="name">hypercube</span><span class="punctuation">[</span><span class="name">j0</span><span class="punctuation">,</span><span class="name">j1</span><span class="punctuation">,</span><span class="name">j2</span><span class="punctuation">,</span><span class="operator">…</span><span class="punctuation">]</span> <span class="operator">=</span> <span class="name">onedarray</span><span class="punctuation">[</span><span class="name">counter</span><span class="punctuation">]</span>
+            <span class="name">counter</span> <span class="operator">+=</span> <span class="literal number integer">1</span>
+</pre>
+</li>
+<li><strong>theta</strong> (<em>list</em>) – <p>List of lists, each holding in ascending order the unique
+values for one of the axes in <cite>data</cite> hypercube. Example:
+for the CLUMPY models of AGN tori (Nenkova et al. 2008)</p>
+<blockquote>
+<div>theta = [{i}, {tv}, {q}, {N0}, {sig}, {Y}, {wave}]</div></blockquote>
+<p>where the {.} are 1-d arrays of unique model parameter
+values, e.g.</p>
+<blockquote>
+<div>{i} = array([0,10,20,30,40,50,60,70,80,90]) (degrees).</div></blockquote>
+</li>
+<li><strong>order</strong> (<em>int</em>) – Order of interpolation spline to be used. <code class="docutils literal"><span class="pre">order=1</span></code>
+(default) is multi-linear interpolation, <code class="docutils literal"><span class="pre">order=3</span></code> is
+cubic-spline (quite a bit slower, and not necessarily
+better, especially for complicated n-dim
+functions. <code class="docutils literal"><span class="pre">order=1</span></code> is recommended.</li>
+<li><strong>mode</strong> (<em>str</em>) – <code class="docutils literal"><span class="pre">log</span></code> is default, and will take log10(data) first, which
+severely improves the interpolation accuracy if the data
+span many orders of magnitude. This is of course only
+applicable if all entries in <cite>data</cite> are greater than
+0. Any string other that <code class="docutils literal"><span class="pre">log</span></code> will keep <cite>data</cite> as-is.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">NdimInterpolation instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<p>General way to use ndiminterpolation</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># to be written</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="ndiminterpolation.NdimInterpolation.get_coords">
 <code class="descname">get_coords</code><span class="sig-paren">(</span><em>vec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ndiminterpolation.html#NdimInterpolation.get_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ndiminterpolation.NdimInterpolation.get_coords" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">

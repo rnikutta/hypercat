@@ -62,6 +62,39 @@
 <em class="property">class </em><code class="descclassname">bigfileops.</code><code class="descname">CheckListSelector</code><span class="sig-paren">(</span><em>parname</em>, <em>theta</em>, <em>initsize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#CheckListSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.CheckListSelector" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interactively select values from a list.</p>
 <dl class="method">
+<dt id="bigfileops.CheckListSelector.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>parname</em>, <em>theta</em>, <em>initsize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#CheckListSelector.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.CheckListSelector.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parname</strong> (<em>str</em>) – Name of the list in <code class="docutils literal"><span class="pre">theta</span></code>. It we be displayed to the
+user in the selection dialog.</li>
+<li><strong>theta</strong> (<em>1-d array</em>) – Sequence of values. If not an array, will be turned into
+an array. The values in this sequence will be presented to
+the user for interactive selection. Every value will have
+a checkbox.</li>
+<li><strong>initsize</strong> (<em>float | None</em>) – If not None, it is the size (e.g. in GB, or simply in
+counts) associated with the full size of ‘something’,
+pre-selection. This size will be numerically reduced for
+every element removed during the selection. If None, no
+size computation will be performed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><em>Nothing. But after running the interactive selection, see</em></li>
+<li><em>member self.idxes, it contains the selected indices.</em></li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="bigfileops.CheckListSelector.draw_canvas">
 <code class="descname">draw_canvas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#CheckListSelector.draw_canvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.CheckListSelector.draw_canvas" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>

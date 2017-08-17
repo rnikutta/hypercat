@@ -49,7 +49,7 @@
           <div class="body" role="main">
             
   <h1>Source code for utils</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170209&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170731&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;General helper func for hypercat.</span>
@@ -58,6 +58,85 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="k">import</span> <span class="n">name_resolve</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">wcs</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="get_wcs"><a class="viewcode-back" href="../utils.html#utils.get_wcs">[docs]</a><span class="k">def</span> <span class="nf">get_wcs</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">projection</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;RA---TAN&quot;</span><span class="p">,</span><span class="s2">&quot;DEC--TAN&quot;</span><span class="p">)):</span>
+
+    <span class="sd">&quot;&quot;&quot;Resolve coordinates (via Vizier) of ``image.objectname`` and construct a WCS.</span>
+
+<span class="sd">    With the resolved coordinates and with ``image.npix`` an</span>
+<span class="sd">    ``image.pixelscale`` construct a world coordinate system (WCS).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : instance</span>
+<span class="sd">        Instance of :class:`imageops.Image` class. Must have members</span>
+<span class="sd">        ``.objectname``, ``.npix`` and ``.pixelscale``.</span>
+
+<span class="sd">    projection : tuple</span>
+
+<span class="sd">        Tuple of two strings, each being the projection to be used for</span>
+<span class="sd">        the WCS principal axes (usually RA and DEC). Default is</span>
+<span class="sd">        (&quot;RA---TAN&quot;,&quot;DEC--TAN&quot;), corresponding to a gnomonic</span>
+<span class="sd">        projection. The formatting of the strings and the possible</span>
+<span class="sd">        values are described in http://docs.astropy.org/en/stable/wcs/</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    w : instance</span>
+<span class="sd">        Instance of :class:`astropy.wcs.wcs.WCS`. Can be used to plot</span>
+<span class="sd">        image with sky coordinates (see e.g. function</span>
+<span class="sd">        :func:`plotting.plot_with_wcs()`), or to save image to FITS</span>
+<span class="sd">        file with correct WCS in the header (see function</span>
+<span class="sd">        :func:`ioops.save2fits()`).</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Creating a source and a sky image...</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       import hypercat</span>
+<span class="sd">       cube = ... # load (sub-)hypercube</span>
+<span class="sd">       ngc1068 = hypercat.Source(cube,luminosity=&#39;2e45 erg/s&#39;,distance=&#39;14.4 Mpc&#39;,objectname=&#39;ngc1068&#39;,pa=&#39;45 deg&#39;)</span>
+<span class="sd">       vec = (40.,5,10) # parameter vector suitable for ``cube``</span>
+<span class="sd">       sky = ngc1068(vec,total_flux_density=&#39;2500 mJy&#39;) # ``sky`` inherits ``.objectname`` from source instance (here ``ngc1068``)</span>
+
+<span class="sd">    This prints:</span>
+
+<span class="sd">    .. code-block:: text</span>
+
+<span class="sd">       Rotated image (see self.data) by 45.0 deg in direction &#39;NE&#39;.</span>
+<span class="sd">       Coordinates for source &#39;ngc1068&#39; successfully resolved. WCS created.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">name_resolve</span><span class="o">.</span><span class="n">get_icrs_coordinates</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Coordinates for source &#39;</span><span class="si">%s</span><span class="s2">&#39; successfully resolved. WCS created.&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">)</span>
+        
+    <span class="k">except</span> <span class="n">name_resolve</span><span class="o">.</span><span class="n">NameResolveError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Coordinate resolution for source name &#39;</span><span class="si">%s</span><span class="s2">&#39; failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.&quot;&quot;&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="o">.</span><span class="n">objectname</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;deg&#39;</span> <span class="c1">#image.pixelscale.unit.to_string()</span>
+        <span class="n">crpix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">cdelt</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">pixelscale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        
+        <span class="n">w</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">WCS</span><span class="p">(</span><span class="n">naxis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">cunit</span> <span class="o">=</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crpix</span> <span class="o">=</span> <span class="p">(</span><span class="n">crpix</span><span class="p">,</span><span class="n">crpix</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="o">-</span><span class="n">cdelt</span><span class="p">,</span><span class="n">cdelt</span><span class="p">))</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="n">projection</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crval</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">w</span></div>
 
 
 <div class="viewcode-block" id="arrayify"><a class="viewcode-back" href="../utils.html#utils.arrayify">[docs]</a><span class="k">def</span> <span class="nf">arrayify</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>

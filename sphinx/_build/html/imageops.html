@@ -68,6 +68,11 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="imageops.Image.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale=‘1 arcsec’</em>, <em>distance=None</em>, <em>total_flux_density=‘1 Jy’</em>, <em>pa=‘0 deg’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="imageops.Image.getBrightness">
 <code class="descname">getBrightness</code><span class="sig-paren">(</span><em>units=’Jy/arcsec^2’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.getBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.getBrightness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the image brightness in the requested ‘units’
@@ -135,7 +140,7 @@ should be output. Default: ‘Jy’</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>total_flux_density</strong> (<em>str | 'Quantity' instance</em>) – <p>Target total flux (sum of all pixels) in
 <code class="docutils literal"><span class="pre">self.data</span></code>. See docstring of <code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code> for
 the requirements.</p>
-<p>Recognized brightness units: (see <code class="docutils literal"><span class="pre">UNITS_FLUXDENSITY</span></code> in
+<p>Recognized brightness units: (see <code class="docutils literal"><span class="pre">UNITS['FLUXDENSITY']</span></code> in
 <a href="#id1"><span class="problematic" id="id2">:module:`units`</span></a>)</p>
 </td>
 </tr>
@@ -164,6 +169,11 @@ the requirements.</p>
 <code class="descname">I</code><a class="headerlink" href="#imageops.ImageFrame.I" title="Permalink to this definition">¶</a></dt>
 <dd><p>Property alias for <code class="xref py py-func docutils literal"><span class="pre">_getImageT()</span></code></p>
 </dd></dl>
+
+<dl class="method">
+<dt id="imageops.ImageFrame.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale=None</em>, <em>distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="imageops.ImageFrame.changeFOV">
@@ -271,7 +281,7 @@ requirement that <code class="docutils literal"><span class="pre">npix_new</span
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fov</strong> (<em>str</em><em> or </em><em>'Quantity' instance</em>) – <p>Target angular size of the field-of-view. See docstring of
 <code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code> for the requirements.</p>
-<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS_ANGULAR</span></code> in <a class="reference internal" href="#imageops.Image" title="imageops.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
+<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS['ANGULAR']</span></code> in <a class="reference internal" href="#imageops.Image" title="imageops.Image"><code class="xref py py-class docutils literal"><span class="pre">Image</span></code></a>)</p>
 </td>
 </tr>
 </tbody>
@@ -306,8 +316,8 @@ requirement that <code class="docutils literal"><span class="pre">npix_new</span
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>pixelscale</strong> (<em>str</em><em> or </em><em>'Quantity' instance</em>) – <p>Angular or linear scale of one pixel. See docstring of
 <code class="xref py py-func docutils literal"><span class="pre">getValueUnit()</span></code> for the requirements.</p>
-<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS_ANGULAR</span></code> in <a href="#id3"><span class="problematic" id="id4">:module:`units`</span></a>)</p>
-<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS_LINEAR</span></code> in <a href="#id5"><span class="problematic" id="id6">:module:`units`</span></a>)</p>
+<p>Recognized angular units: (see <code class="docutils literal"><span class="pre">UNITS['ANGULAR']</span></code> in <a href="#id3"><span class="problematic" id="id4">:module:`units`</span></a>)</p>
+<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS['LINEAR']</span></code> in <a href="#id5"><span class="problematic" id="id6">:module:`units`</span></a>)</p>
 <p>If linear unit, then it is the linear size of a pixel at
 the distance of the source. Then the <cite>distance</cite> argument
 must be also specified (see below).</p>
@@ -316,7 +326,7 @@ must be also specified (see below).</p>
 then the distance to the source must be not <code class="docutils literal"><span class="pre">None</span></code>, but
 rather an argument akin to ‘pixelscale’ above, i.e. str or
 ‘Quantity’ instance.</p>
-<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS_LINEAR</span></code> in <a href="#id7"><span class="problematic" id="id8">:module:`units`</span></a>)</p>
+<p>Recognized linear units: (see <code class="docutils literal"><span class="pre">UNITS['LINEAR']</span></code> in <a href="#id7"><span class="problematic" id="id8">:module:`units`</span></a>)</p>
 </li>
 </ul>
 </td>

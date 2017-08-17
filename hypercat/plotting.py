@@ -1,4 +1,4 @@
-__version__ = '20170208'   #yyymmdd
+__version__ = '20170816'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
@@ -15,10 +15,41 @@ from numpy import ma
 import pylab as p
 import matplotlib
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-#import astropy
 
 # own
 from utils import *
+
+
+def plot_with_wcs(image):
+
+    """Demonstration function to show plotting with WCS.
+
+    Parameters
+    ----------
+    image : instance
+        Instance of :class:`imageops.Image` class. Must have member
+        ``.wcs`` which is an instance of :class:`astropy.wcs.wcs.WCS`
+
+    Returns
+    -------
+    Nothing.
+
+    Example
+    -------
+    Assuming you have an instance of :class:`imageops.Image`, e.g. ``sky``:
+
+    .. code-block:: python
+
+       import plotting
+       plotting.plot_with_wcs(sky)
+    """
+    
+    fig = p.figure()           
+    ax = fig.add_subplot(111, projection=image.wcs)
+    ax.imshow(image.data.T, origin='lower', cmap=p.cm.viridis)
+    ax.set_xlabel('RA')
+    ax.set_ylabel('Dec')
+    
 
 def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None):
 
@@ -58,6 +89,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     
     # image normalization
     norm = matplotlib.colors.Normalize()  # possibly allow this to be an argument? (e.g. for absolute normalizations)
+#    norm = matplotlib.colors.PowerNorm(1.)  # possibly allow this to be an argument? (e.g. for absolute normalizations)
 
     if cls == 'PSF':
         norm = matplotlib.colors.LogNorm()
@@ -91,6 +123,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
         if cls == 'Image':
             cb.set_label(units)
     else:
+        print "Setting cax.set_visible(False)"
         cax.set_visible(False)    
 
             
@@ -158,6 +191,8 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # figure super title
     fig.suptitle(figtitle)
 
+
+    # TODO: fix this; only check for the adjustment keys in kwargs (i.e. left,right, etc)
     # fig.subplots_adjust() arguments; can be modified via kwargs
     adjustkwargs = {'left':0.15,'right':0.88,'top':0.97,'bottom':0.06,'hspace':0.15,'wspace':0.35}
     for k,v in kwargs.items():

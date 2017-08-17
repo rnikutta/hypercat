@@ -49,7 +49,7 @@
           <div class="body" role="main">
             
   <h1>Source code for units</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170131&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170728&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling units and units strings.</span>
@@ -61,17 +61,22 @@
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
-<span class="c1"># Allowed units, per type; add more as required</span>
-<span class="n">UNITS_ANGULAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">,</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="s1">&#39;milliarcsecond&#39;</span><span class="p">,</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span><span class="s1">&#39;radian&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized angular units, e.g. for pixel scale.</span>
-<span class="n">UNITS_LINEAR</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;cm&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">,</span><span class="s1">&#39;lyr&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;kpc&#39;</span><span class="p">,</span><span class="s1">&#39;Mpc&#39;</span><span class="p">,</span><span class="s1">&#39;Gpc&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized linear units (either for pixel scale, or for source distance, etc.)</span>
-<span class="n">CUNITS</span> <span class="o">=</span> <span class="n">UNITS_ANGULAR</span> <span class="o">+</span> <span class="n">UNITS_LINEAR</span>  <span class="c1">#: Their union.</span>
-<span class="c1"># TODO: implement also per-beam, and per-pixel brightness specifications (and maybe also per-pc^2 etc.)</span>
-<span class="n">UNITS_WAVE</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Angstrom&#39;</span><span class="p">,</span><span class="s1">&#39;nm&#39;</span><span class="p">,</span><span class="s1">&#39;micron&#39;</span><span class="p">,</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
-<span class="n">UNITS_LUMINOSITY</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">,</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="s1">&#39;Lsun&#39;</span><span class="p">,</span><span class="s1">&#39;solLum&#39;</span><span class="p">)</span>
-<span class="n">UNITS_BRIGHTNESS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy/pix&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/pix&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized units for brightness-per-pixel.</span>
-<span class="n">UNITS_FLUXDENSITY</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Jy&#39;</span><span class="p">,</span><span class="s1">&#39;mJy&#39;</span><span class="p">,</span><span class="s1">&#39;MJy&#39;</span><span class="p">,</span><span class="s1">&#39;erg/s/cm^2/Hz&#39;</span><span class="p">,</span><span class="s1">&#39;W/m^2/Hz&#39;</span><span class="p">)</span>  <span class="c1">#: Recognized units for flux denisty</span>
-<span class="c1">#        self.UNITS_BRIGHTNESS_SOLIDANGLE = (&#39;Jy/arcsec^2&#39;,&#39;Jy/mas^2&#39;,&#39;Jy/milliarcsec^2&#39;,&#39;mJy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;mJy/milliarcsec^2&#39;)</span>
+<span class="c1">## Allowed units, per category; add more as required</span>
+<span class="n">UNITS</span> <span class="o">=</span> <span class="p">{</span>\
+         <span class="s1">&#39;ANGULAR&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;arcsec&#39;</span><span class="p">,</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="s1">&#39;milliarcsecond&#39;</span><span class="p">,</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span><span class="s1">&#39;degree&#39;</span><span class="p">,</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span><span class="s1">&#39;radian&#39;</span><span class="p">),</span> <span class="c1">#: Recognized angular units, e.g. for pixel scale.</span>
+         <span class="s1">&#39;LINEAR&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;cm&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;AU&#39;</span><span class="p">,</span><span class="s1">&#39;lyr&#39;</span><span class="p">,</span><span class="s1">&#39;pc&#39;</span><span class="p">,</span><span class="s1">&#39;kpc&#39;</span><span class="p">,</span><span class="s1">&#39;Mpc&#39;</span><span class="p">,</span><span class="s1">&#39;Gpc&#39;</span><span class="p">),</span> <span class="c1">#: Recognized linear units (either for pixel scale, or for source distance, etc.)</span>
+         <span class="s1">&#39;TEMPERATURE&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">,),</span> <span class="c1">#: Recognized units of temperature</span>
+         <span class="s1">&#39;WAVE&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;Angstrom&#39;</span><span class="p">,</span><span class="s1">&#39;nm&#39;</span><span class="p">,</span><span class="s1">&#39;micron&#39;</span><span class="p">,</span><span class="s1">&#39;mm&#39;</span><span class="p">),</span> <span class="c1">#: Recognized units of wavelength</span>
+         <span class="s1">&#39;LUMINOSITY&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">,</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="s1">&#39;Lsun&#39;</span><span class="p">,</span><span class="s1">&#39;solLum&#39;</span><span class="p">),</span> <span class="c1">#: Recognized units of luminosity</span>
+         <span class="s1">&#39;BRIGHTNESS&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;Jy/pix&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/pix&#39;</span><span class="p">),</span> <span class="c1">#: Recognized units of brightness-per-pixel.</span>
+         <span class="s1">&#39;FLUXDENSITY&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="s1">&#39;Jy&#39;</span><span class="p">,</span><span class="s1">&#39;mJy&#39;</span><span class="p">,</span><span class="s1">&#39;MJy&#39;</span><span class="p">,</span><span class="s1">&#39;erg/s/cm^2/Hz&#39;</span><span class="p">,</span><span class="s1">&#39;W/m^2/Hz&#39;</span><span class="p">)</span> <span class="c1">#: Recognized units of flux denisty</span>
+<span class="p">}</span> <span class="c1">#: Dictionary of permitted units.</span>
 
+<span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;CUNITS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;ANGULAR&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LINEAR&#39;</span><span class="p">]</span> <span class="c1"># Union of permitted angular and linear units.</span>
+<span class="c1">## TODO: implement also per-beam, brightness specifications (and maybe also per-pc^2 etc.)</span>
+<span class="c1">##        self.UNITS_BRIGHTNESS_SOLIDANGLE = (&#39;Jy/arcsec^2&#39;,&#39;Jy/mas^2&#39;,&#39;Jy/milliarcsec^2&#39;,&#39;mJy/arcsec^2&#39;,&#39;mJy/mas^2&#39;,&#39;mJy/milliarcsec^2&#39;)</span>
+
+         
 <span class="c1"># compile regex pattern to identify numbers in a string</span>
 <span class="n">numeric_pattern</span> <span class="o">=</span> <span class="s2">r&quot;&quot;&quot;^\s*</span>
 <span class="s2">         [-+]? # optional sign</span>
@@ -83,9 +88,39 @@
 <span class="s2">         )</span>
 <span class="s2">         # followed by optional exponent part if desired</span>
 <span class="s2">         (?: [Ee] [+-]? \d+ ) ?</span>
-<span class="s2">         &quot;&quot;&quot;</span>
+<span class="s2">         &quot;&quot;&quot;</span> <span class="c1">#: Regex pattern to identify numbers in a string.</span>
 <span class="n">rx</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">numeric_pattern</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">)</span>
 
+
+<div class="viewcode-block" id="list_recognized_units"><a class="viewcode-back" href="../units.html#units.list_recognized_units">[docs]</a><span class="k">def</span> <span class="nf">list_recognized_units</span><span class="p">():</span>
+
+    <span class="sd">&quot;&quot;&quot;Print simple table of permitted units per category.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        units.list_recognized_units()</span>
+
+<span class="sd">    Prints</span>
+
+<span class="sd">    .. code-block:: text</span>
+
+<span class="sd">        Category       Permitted units</span>
+<span class="sd">         FLUXDENSITY   (&#39;Jy&#39;, &#39;mJy&#39;, &#39;MJy&#39;, &#39;erg/s/cm^2/Hz&#39;, &#39;W/m^2/Hz&#39;)</span>
+<span class="sd">         TEMPERATURE   (&#39;K&#39;,)</span>
+<span class="sd">          BRIGHTNESS   (&#39;Jy/pix&#39;, &#39;mJy/pix&#39;)</span>
+<span class="sd">          LUMINOSITY   (&#39;erg/s&#39;, &#39;W&#39;, &#39;Lsun&#39;, &#39;solLum&#39;)</span>
+<span class="sd">                WAVE   (&#39;Angstrom&#39;, &#39;nm&#39;, &#39;micron&#39;, &#39;mm&#39;)</span>
+<span class="sd">              CUNITS   (&#39;arcsec&#39;, &#39;mas&#39;, &#39;milliarcsecond&#39;, &#39;deg&#39;, &#39;degree&#39;, &#39;rad&#39;, &#39;radian&#39;, &#39;cm&#39;, &#39;m&#39;, &#39;AU&#39;, &#39;lyr&#39;, &#39;pc&#39;, &#39;kpc&#39;, &#39;Mpc&#39;, &#39;Gpc&#39;)</span>
+<span class="sd">             ANGULAR   (&#39;arcsec&#39;, &#39;mas&#39;, &#39;milliarcsecond&#39;, &#39;deg&#39;, &#39;degree&#39;, &#39;rad&#39;, &#39;radian&#39;)</span>
+<span class="sd">              LINEAR   (&#39;cm&#39;, &#39;m&#39;, &#39;AU&#39;, &#39;lyr&#39;, &#39;pc&#39;, &#39;kpc&#39;, &#39;Mpc&#39;, &#39;Gpc&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="nb">print</span> <span class="s2">&quot;Category       Permitted units&quot;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">UNITS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%12s</span><span class="s2">  &quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span></div>
+    
 
 <div class="viewcode-block" id="getQuantity"><a class="viewcode-back" href="../units.html#units.getQuantity">[docs]</a><span class="k">def</span> <span class="nf">getQuantity</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">):</span>
 
@@ -96,7 +131,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    </span>
 <span class="sd">    quantity : str</span>
-<span class="sd">       E.g. quantity=&#39;1 Jy&#39; would return &lt;Quantity 1.0 Jy&gt;</span>
+<span class="sd">       E.g. ``quantity=&#39;1 Jy&#39;`` would return ``&lt;Quantity 1.0 Jy&gt;``</span>
 
 <span class="sd">    recognized_units : tuple</span>
 <span class="sd">        Tuple of valid units (as strings) for ``quantity``. E.g., for</span>
@@ -106,15 +141,18 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    quantity : instance</span>
-<span class="sd">        Instance of astropy.units.Quantity, i.e. a value with units.</span>
+<span class="sd">        Instance of class :class:`astropy.units.Quantity`, i.e. a value with units.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    getQuantity(&#39;1 m&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
-<span class="sd">      &lt;Quantity 1.0 m&gt;</span>
 
-<span class="sd">    getQuantity(&#39;1 W&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
-<span class="sd">      ValueError: Specified unit &#39;W&#39; is not recognized. Recognized are: m,AU,pc</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        getQuantity(&#39;1 m&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
+<span class="sd">          &lt;Quantity 1.0 m&gt;</span>
+
+<span class="sd">        getQuantity(&#39;1 W&#39;,(&#39;micron&#39;,&#39;m&#39;,&#39;pc&#39;,&#39;AU&#39;))</span>
+<span class="sd">          ValueError: Specified unit &#39;W&#39; is not recognized. Recognized are: m,AU,pc</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     

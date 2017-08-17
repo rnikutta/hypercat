@@ -49,7 +49,7 @@
           <div class="body" role="main">
             
   <h1>Source code for hypercat</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170714&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170816&#39;</span> <span class="c1">#yyyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
@@ -67,8 +67,10 @@
 
 <span class="c1"># 3rd party</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span> <span class="nn">units</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">wcs</span>
 <span class="kn">from</span> <span class="nn">astropy.io</span> <span class="k">import</span> <span class="n">fits</span> <span class="k">as</span> <span class="n">pyfits</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
 
@@ -76,7 +78,6 @@
 <span class="kn">from</span> <span class="nn">loggers</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">ndiminterpolation</span>
 <span class="kn">import</span> <span class="nn">bigfileops</span> <span class="k">as</span> <span class="nn">bfo</span>
-<span class="kn">import</span> <span class="nn">psf</span>
 <span class="kn">from</span> <span class="nn">instruments</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">imageops</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="o">*</span>
@@ -85,7 +86,7 @@
 
 <div class="viewcode-block" id="ModelCube"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube">[docs]</a><span class="k">class</span> <span class="nc">ModelCube</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">hdffile</span><span class="o">=</span><span class="s1">&#39;hypercat_20170109.hdf5&#39;</span><span class="p">,</span>\
+<div class="viewcode-block" id="ModelCube.__init__"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">hdffile</span><span class="o">=</span><span class="s1">&#39;hypercat_20170109.hdf5&#39;</span><span class="p">,</span>\
                  <span class="n">hypercube</span><span class="o">=</span><span class="s1">&#39;imgdata&#39;</span><span class="p">,</span>\
                  <span class="n">subcube_selection</span><span class="o">=</span><span class="s1">&#39;interactive&#39;</span><span class="p">,</span>\
                  <span class="n">subcube_selection_save</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -97,39 +98,48 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        hdffile : str</span>
-<span class="sd">            Path to the model hdf5 file. Default:</span>
-<span class="sd">            `hypercat_20170109.hdf5`</span>
+<span class="sd">            Path to the model hdf5 file. Default: ``&#39;hypercat_20170714.hdf5&#39;``</span>
 
 <span class="sd">        hypercube : str</span>
-<span class="sd">            Name of the hypercube within `hdffile` to use (currently</span>
-<span class="sd">            either ``imgdata`` or ``clddata``). Default&quot; ``imgdata``.</span>
+<span class="sd">            Name of the hypercube within ``hdffile`` to use (currently</span>
+<span class="sd">            either ``&#39;imgdata&#39;`` or ``&#39;clddata&#39;``). Default: ``&#39;imgdata&#39;``.</span>
 
 <span class="sd">        subcube_selection : str | None</span>
+<span class="sd">            ``&#39;interactive&#39;`` or path to a json file containing the</span>
+<span class="sd">            indices to select for every axis in the ``hypercube`` in the</span>
+<span class="sd">            ``hdffile``.</span>
 
-<span class="sd">            &#39;interactive&#39; or the name of a json file containing the</span>
-<span class="sd">            indices to select for every axis in the `hypercube` in the</span>
-<span class="sd">            `hdffile`.</span>
-
-<span class="sd">            If &#39;interactive&#39;, a simple selection dialog will be</span>
-<span class="sd">            launched int the terminal/session, allowing to</span>
+<span class="sd">            If ``&#39;interactive&#39;``, a simple selection dialog will be</span>
+<span class="sd">            launched in the terminal/session, allowing to</span>
 <span class="sd">            select/unselect entries from every axis (one at a</span>
 <span class="sd">            time). Once done, the corresponding list of index lists is</span>
 <span class="sd">            created, and the hyper-slab (sub-cube) loaded from disk to</span>
-<span class="sd">            RAM.</span>
+<span class="sd">            RAM. The nested list of selected indices can be</span>
+<span class="sd">            conveniently stored into a json file for later re-use (see</span>
+<span class="sd">            arg ``subcube_selection_save``).</span>
 
-<span class="sd">            If a json file, it is a file that can be created with</span>
-<span class="sd">            subcube_selection=True, and providing as</span>
-<span class="sd">            subcube_selection_save a file path to the to-be-stored</span>
+<span class="sd">            If ``subcube_selection`` is the path to a json file, it is</span>
+<span class="sd">            a file that can be created with</span>
+<span class="sd">            ``subcube_selection=&#39;interactive&#39;``. Then also provide as</span>
+<span class="sd">            ``subcube_selection_save`` a file path to the to-be-stored</span>
 <span class="sd">            json file.</span>
 
 <span class="sd">        subcube_selection_save : str | None</span>
-<span class="sd">            If not None, it a the path to a json file withe the list</span>
-<span class="sd">            of index lists that select a subcube from the full</span>
-<span class="sd">            &#39;hypercube&#39;.</span>
+<span class="sd">            If not ``None``, it a the path to a json file with the list of</span>
+<span class="sd">            index lists that select a subcube from the full</span>
+<span class="sd">            ``hypercube``. I.e. a json file with selection indices can</span>
+<span class="sd">            be created once, and then the same selection can be</span>
+<span class="sd">            repeated any time by simply loading the json file.</span>
 
 <span class="sd">        omit : tuple</span>
+<span class="sd">            Tuple of parameter names (as strings) to omit from subcube</span>
+<span class="sd">            selection. These axes will be automatically handled.</span>
+<span class="sd">        </span>
+<span class="sd">            .. warning:: </span>
 
-<span class="sd">            Tuple of parameter names (as strings) to omit from subcube selection, and from</span>
+<span class="sd">               This functionality is not fully implemented yet, and is</span>
+<span class="sd">               currently meant for the &#39;x&#39; and &#39;y&#39; axes only. Best not</span>
+<span class="sd">               to touch for now.</span>
 
 <span class="sd">        ndinterpolator : bool</span>
 <span class="sd">            If ``True`` (default), an interpolation object for</span>
@@ -141,7 +151,7 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            # instantiate</span>
-<span class="sd">            M = ModelCube()</span>
+<span class="sd">            cube = ModelCube()  # all defaults</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -156,10 +166,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
 
-        <span class="c1"># for each parameter save its sampling as a member (attach &#39;_&#39; to the name)</span>
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">pn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pn</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-        
         <span class="n">iY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Ymax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">iY</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  <span class="c1"># largest Y, i.e. &#39;FOV&#39; of the images in units of Rd</span>
         <span class="n">iy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
@@ -178,9 +184,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fullcubesize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvoxels</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordsize</span> <span class="c1">#/ 1024.**3</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullcubesize</span>
 
-<span class="c1">#        self.paramnames = (self.group[&#39;paramnames&#39;].value)[select]</span>
-
-<span class="c1"># SELECT A SUB-HYPERCUBE</span>
+        <span class="c1"># SELECT A SUB-HYPERCUBE</span>
         <span class="k">if</span> <span class="n">subcube_selection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
             <span class="k">if</span> <span class="n">subcube_selection</span> <span class="o">==</span> <span class="s1">&#39;interactive&#39;</span><span class="p">:</span>
@@ -195,6 +199,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;idxes&#39;</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytesize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">)</span>
+
+        <span class="c1"># for each parameter save its sampling as a member (attach &#39;_&#39; to the name, to minimize the change of name space collisions)</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">pn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pn</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">theta_full</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
                 
@@ -247,7 +255,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span>
         
         <span class="nb">print</span> <span class="s2">&quot;Inspect loaded hypercube with .print_sampling()</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">()</span></div>
         
 
 <div class="viewcode-block" id="ModelCube.print_sampling"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.print_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">print_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%7.3f</span><span class="s2">&quot;</span><span class="p">):</span>
@@ -269,8 +277,27 @@
 <span class="sd">        -------</span>
 <span class="sd">        .. code-block:: python</span>
 
-<span class="sd">            M.print_sampling(n=6)</span>
+<span class="sd">            cube.print_sampling(n=5)</span>
 
+<span class="sd">        Prints for instance:</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">           -------------------------------------------------------</span>
+<span class="sd">           Parameter  Range                Nvalues  Sampled values</span>
+<span class="sd">           -------------------------------------------------------</span>
+<span class="sd">             sig      [ 15.000 -  15.000]  (  1)    15.000</span>
+<span class="sd">               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573</span>
+<span class="sd">               Y      [ 20.000 -  20.000]  (  1)    20.000</span>
+<span class="sd">               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000</span>
+<span class="sd">               q      [  0.000 -   0.000]  (  1)     0.000</span>
+<span class="sd">              tv      [ 40.000 -  40.000]  (  1)    40.000</span>
+<span class="sd">            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500</span>
+<span class="sd">               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
+<span class="sd">               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
+<span class="sd">           -------------------------------------------------------</span>
+<span class="sd">           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.</span>
+<span class="sd">           Hypercube size: 14.8714 (MB)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">maxstr</span> <span class="o">=</span> <span class="s2">&quot; </span><span class="si">%%% d</span><span class="s2">s &quot;</span> <span class="o">%</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">])</span>  <span class="c1"># longest parameter name</span>
@@ -336,19 +363,19 @@
 
 <span class="sd">            # vector of parameter values; pixel axes are implicit (i.e. don&#39;t specify them)</span>
 <span class="sd">            theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)</span>
-<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            image = cube.get_image(theta)</span>
 <span class="sd">            print image.shape</span>
 <span class="sd">              (441,441)   # (x,y)</span>
 
 <span class="sd">            # multi-wavelength cube</span>
 <span class="sd">            theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values</span>
-<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            image = cube.get_image(theta)</span>
 <span class="sd">            print image.shape</span>
 <span class="sd">              (3,441,441)   # (x,y,lambda)</span>
 <span class="sd">            </span>
 <span class="sd">            # multi-wavelength and multi-viewing angle</span>
 <span class="sd">            theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas</span>
-<span class="sd">            image = M.get_image(theta)</span>
+<span class="sd">            image = cube.get_image(theta)</span>
 <span class="sd">            print image.shape</span>
 <span class="sd">              (4,3,441,441)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -366,7 +393,7 @@
         <span class="n">vec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
         
         <span class="n">vec</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-        
+
         <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
@@ -381,30 +408,51 @@
 
 <div class="viewcode-block" id="Source"><a class="viewcode-back" href="../hypercat.html#hypercat.Source">[docs]</a><span class="k">class</span> <span class="nc">Source</span><span class="p">:</span>
     
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cube</span><span class="p">,</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;1e45 erg/s&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 Mpc&#39;</span><span class="p">,</span><span class="n">tsub</span><span class="o">=</span><span class="mf">1500.</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="s1">&#39;0. deg&#39;</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Source.__init__"><a class="viewcode-back" href="../hypercat.html#hypercat.Source.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cube</span><span class="p">,</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;1e45 erg/s&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 Mpc&#39;</span><span class="p">,</span><span class="n">tsub</span><span class="o">=</span><span class="s1">&#39;1500 K&#39;</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="s1">&#39;0. deg&#39;</span><span class="p">,</span><span class="n">objectname</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
 
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        pa : str | &#39;Quantity&#39; instance</span>
-<span class="sd">            Position angle with respect to North (=0 deg). If not 0,</span>
-<span class="sd">            the image will be rotated by pa (positive values rotate</span>
-<span class="sd">            North-to-East, i.e. anti-clockwise, negative values rotate</span>
-<span class="sd">            North-to-West, i.e. clockwise). Example: ```pa=&#39;42</span>
-<span class="sd">            deg&#39;```.</span>
+        <span class="sd">&quot;&quot;&quot;Abstraction of an astrophysical source (AGN).</span>
 
+<span class="sd">        Takes a hypercube of model images. Instantiates an n-dim</span>
+<span class="sd">        interpolation object. Computes dust sublimation radius and</span>
+<span class="sd">        image pixelscale. Resolves source name with Vizier and</span>
+<span class="sd">        constructs a WCS (optional).</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cube : instance</span>
+<span class="sd">            Instance of ModelCube. Holds the n-dim hypercube of model</span>
+<span class="sd">            images.</span>
+
+<span class="sd">        luminosity : str</span>
+<span class="sd">            AGN bolometric luminosity, e.g. &#39;1e45 erg/s&#39; or &#39;1e12 Lsun&#39;.</span>
+
+<span class="sd">        distance : str</span>
+<span class="sd">            Distance to the source, e.g. &#39;14.4 Mpc&#39;.</span>
+
+<span class="sd">        tsub : str</span>
+<span class="sd">            Dust sublimation temperature. Default is &#39;1500 K&#39;,</span>
+<span class="sd">            appropriate e.g. for astrophysical silicates.</span>
+
+<span class="sd">        pa : str</span>
+<span class="sd">            Position angle with respect to North (=0 deg). Default is</span>
+<span class="sd">            &#39;0. deg&#39;. If not 0, the image will be rotated by pa</span>
+<span class="sd">            (positive values rotate North-to-East,</span>
+<span class="sd">            i.e. anti-clockwise, negative values rotate North-to-West,</span>
+<span class="sd">            i.e. clockwise).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">objectname</span> <span class="o">=</span> <span class="n">objectname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cube</span> <span class="o">=</span> <span class="n">cube</span>  <span class="c1"># instance of ModelCube</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">luminosity</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS_LUMINOSITY</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">CUNITS</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pa</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS_ANGULAR</span><span class="p">)</span>  <span class="c1"># PA of source, in angular unitsfrom N to E</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">luminosity</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LUMINOSITY&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;CUNITS&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pa</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;ANGULAR&#39;</span><span class="p">])</span>  <span class="c1"># PA of source, in angular unitsfrom N to E</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">Rd</span> <span class="o">=</span> <span class="n">get_Rd</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">tsub</span><span class="o">=</span><span class="n">tsub</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;pc&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="n">get_pixelscale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="n">npix</span><span class="o">=</span><span class="n">cube</span><span class="o">.</span><span class="n">eta</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">pix</span>  <span class="c1"># mas (per pixel)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="n">get_pixelscale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="n">npix</span><span class="o">=</span><span class="n">cube</span><span class="o">.</span><span class="n">eta</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">pix</span>  <span class="c1"># mas (per pixel)</span></div>
 
         
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">wave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="s1">&#39;1 Jy&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Source.__call__"><a class="viewcode-back" href="../hypercat.html#hypercat.Source.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">wave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="s1">&#39;1 Jy&#39;</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
 
@@ -416,19 +464,28 @@
         <span class="k">if</span> <span class="n">wave</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">micron</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">wave</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS_WAVE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">wave</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;WAVE&#39;</span><span class="p">])</span>
 
         <span class="c1"># get raw image</span>
         <span class="n">rawimage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
 
         <span class="c1"># instantiatie Image class, with physical units</span>
+        <span class="nb">print</span> <span class="s2">&quot;SOURCE: self.pa before instaniating Image = &quot;</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">pa</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pa</span><span class="p">)</span>
         <span class="n">sky</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">rawimage</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pa</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="n">total_flux_density</span><span class="p">)</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">pa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pa</span>
-        <span class="k">return</span> <span class="n">sky</span></div>
-        
-    
+        <span class="n">sky</span><span class="o">.</span><span class="n">objectname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectname</span>  <span class="c1"># attach source.objectname to the image of the sky</span>
+
+        <span class="n">wcs</span> <span class="o">=</span> <span class="n">get_wcs</span><span class="p">(</span><span class="n">sky</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wcs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sky</span><span class="o">.</span><span class="n">wcs</span> <span class="o">=</span> <span class="n">wcs</span>
+
+        <span class="k">return</span> <span class="n">sky</span></div></div>
+
+
+
 <span class="c1"># HELPER FUNCTIONS</span>
 
 <div class="viewcode-block" id="lum_dist_to_pixelscale"><a class="viewcode-back" href="../hypercat.html#hypercat.lum_dist_to_pixelscale">[docs]</a><span class="k">def</span> <span class="nf">lum_dist_to_pixelscale</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span><span class="n">dist</span><span class="p">,</span><span class="n">cube</span><span class="p">):</span>
@@ -440,21 +497,25 @@
     <span class="k">return</span> <span class="n">angular</span><span class="p">,</span> <span class="n">angular_per_linsize</span><span class="p">,</span> <span class="n">angular_per_pixel</span></div>
     
 
-<div class="viewcode-block" id="get_Rd"><a class="viewcode-back" href="../hypercat.html#hypercat.get_Rd">[docs]</a><span class="k">def</span> <span class="nf">get_Rd</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span><span class="n">tsub</span><span class="o">=</span><span class="mf">1500.</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;pc&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_Rd"><a class="viewcode-back" href="../hypercat.html#hypercat.get_Rd">[docs]</a><span class="k">def</span> <span class="nf">get_Rd</span><span class="p">(</span><span class="n">luminosity</span><span class="o">=</span><span class="s1">&#39;1e45 erg/s&#39;</span><span class="p">,</span><span class="n">tsub</span><span class="o">=</span><span class="s1">&#39;1500 K&#39;</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;pc&#39;</span><span class="p">):</span>
 
-    <span class="sd">&quot;&quot;&quot;Get dust sublimation radius Rd from luminosity of source and dust</span>
-<span class="sd">    sublimation temperature.</span>
+    <span class="sd">&quot;&quot;&quot;Compute the dust sublimation radius :math:`R_d` from luminosity of</span>
+<span class="sd">    source and dust sublimation temperature.</span>
 
-<span class="sd">    Uses Eq. (1) from Nenkova+2008b.</span>
+<span class="sd">    Uses Eq. (1) from Nenkova+2008b: http://adsabs.harvard.edu/abs/2008ApJ...685..160N</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       R_d = 0.4 \\left( \\frac{L}{10^{45}\,{\\rm erg\,s^{-1}}}\\right)^{\\!1/2} \\left( \\frac{1500\,\\rm K}{T_{\\rm sub}}\\right)^{\\!2.6} {\\rm pc}</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    lum : float</span>
-<span class="sd">        AGN bolometric luminosity in erg/s, e.g. 1e45.</span>
+<span class="sd">    luminosity : str</span>
+<span class="sd">        AGN bolometric luminosity, e.g. &#39;1e45 erg/s&#39;.</span>
 
-<span class="sd">    tsub : float</span>
-<span class="sd">        Dust sublimation temperature. Default is 1500K, corresponding</span>
-<span class="sd">        e.g. to astrophysical silicates.</span>
+<span class="sd">    tsub : str</span>
+<span class="sd">        Dust sublimation temperature. Default is &#39;1500 K&#39;,</span>
+<span class="sd">        corresponding e.g. to astrophysical silicates.</span>
 
 <span class="sd">    outunit : str</span>
 <span class="sd">        Desired output units of length. The result will be</span>
@@ -462,12 +523,13 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-
 <span class="sd">    Rd : float</span>
 <span class="sd">        Dust sublimation radius Rd in units `outunit`.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">lum</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">lum</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS_LUMINOSITY</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">lum</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LUMINOSITY&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">tsub</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">tsub</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;TEMPERATURE&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     
     <span class="n">Rd</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lum</span><span class="o">/</span><span class="mi">1</span><span class="n">e45</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1500.</span><span class="o">/</span><span class="n">tsub</span><span class="p">)</span><span class="o">**</span><span class="mf">2.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span>
 
@@ -497,8 +559,8 @@
 <span class="sd">        with.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">linsize</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">UNITS_LINEAR</span><span class="p">)</span>
-    <span class="n">distance</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="n">UNITS_LINEAR</span><span class="p">)</span>
+    <span class="n">linsize</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LINEAR&#39;</span><span class="p">])</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LINEAR&#39;</span><span class="p">])</span>
     
     <span class="n">angular</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">outunit</span><span class="p">)</span>
     <span class="n">angular_per_linsize</span> <span class="o">=</span> <span class="n">angular</span> <span class="o">/</span> <span class="n">linsize</span>  <span class="c1"># e.g. arcsec/pc</span>

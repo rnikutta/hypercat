@@ -102,7 +102,10 @@
     <span class="n">c</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
     <span class="n">matrix</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">],</span>
                       <span class="p">[</span><span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">]])</span>
-    <span class="n">rvec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">vec</span><span class="p">)</span>  <span class="c1"># transposing matrix to make positive angles rotate counter-clockwise, i.e. as is convention in mathematics</span>
+
+    <span class="c1"># transposing matrix to make positive angles rotate</span>
+    <span class="c1"># counter-clockwise, i.e. as is convention in mathematics</span>
+    <span class="n">rvec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">vec</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rvec</span></div>
     
@@ -185,12 +188,76 @@
     <span class="n">g</span> <span class="o">=</span> <span class="n">Gaussian2D</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="n">sx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">)</span>
 
-<span class="c1">#    Z = norm * N.exp( -( (X-x0)**2./(2.*float(sx)**2.) + (Y-y0)**2./(2.*float(sy)**2.)))</span>
-<span class="c1">#    </span>
-<span class="c1">#    if theta != 0.:</span>
-<span class="c1">#        Z = ndimage.rotate(Z,theta,reshape=False)</span>
-        
     <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<span class="c1">#def getImageEigenvectors2D(image,thresh=0.001):</span>
+<span class="c1">#</span>
+<span class="c1">#    &quot;&quot;&quot;Compute eigenvectors of image covariance matrix.</span>
+<span class="c1">#</span>
+<span class="c1">#    Parameters</span>
+<span class="c1">#    ----------</span>
+<span class="c1">#    image : 2-d array</span>
+<span class="c1">#        Image.</span>
+<span class="c1">#</span>
+<span class="c1">#    thresh : float</span>
+<span class="c1">#        Pixels as dim as ``&#39;thresh`` (fraction) of peak pixel</span>
+<span class="c1">#        brightness will be considered. Default 0.001 (= 0.1 %).</span>
+<span class="c1">#</span>
+<span class="c1">#    &quot;&quot;&quot;</span>
+<span class="c1">#    </span>
+<span class="c1">#    xind, yind = N.argwhere(image&gt;thresh*image.max()).T</span>
+<span class="c1">#    coords = N.vstack((xind,yind))</span>
+<span class="c1">#    cov = N.cov(coords)</span>
+<span class="c1">#    evals, evecs = N.linalg.eig(cov)</span>
+<span class="c1">#    idmax = N.argmax(evals)</span>
+<span class="c1">#    evec1 = evecs[idmax]</span>
+<span class="c1">#</span>
+<span class="c1">#    return evals, evecs</span>
+
+
+<div class="viewcode-block" id="getImageEigenvectors"><a class="viewcode-back" href="../morphology.html#morphology.getImageEigenvectors">[docs]</a><span class="k">def</span> <span class="nf">getImageEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">thresh</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span><span class="n">sortdescending</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Compute eigenvectors of image covariance matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : 2-d array</span>
+<span class="sd">        Image.</span>
+
+<span class="sd">    thresh : float</span>
+<span class="sd">        Pixels as dim as ``&#39;thresh`` (fraction) of peak pixel</span>
+<span class="sd">        brightness will be considered. Default 0.001 (= 0.1 %).</span>
+
+<span class="sd">    sortdescending : bool</span>
+<span class="sd">        If True (the default), returns the eigenvalues and</span>
+<span class="sd">        eigentvectors sorted by the eigenvalues in descending order</span>
+<span class="sd">        (i.e. the first eigenvector is the largest). If False, keeps</span>
+<span class="sd">        the original order.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    evals : array</span>
+<span class="sd">        1-d array of eigenvalues vor each axis in ``image``.</span>
+
+<span class="sd">    evecs : aray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">idxes</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">image</span><span class="o">&gt;</span><span class="n">thresh</span><span class="o">*</span><span class="n">image</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">idxes</span><span class="p">)</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sortdescending</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">idxsort</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">eigenvalues</span><span class="p">[</span><span class="n">idxsort</span><span class="p">]</span>
+        <span class="n">eigenvectors</span> <span class="o">=</span> <span class="n">eigenvectors</span><span class="p">[</span><span class="n">idxsort</span><span class="p">]</span>
+        
+<span class="c1">#    idmax = N.argmax(evals)</span>
+<span class="c1">#    evec1 = evecs[idmax]</span>
+
+    <span class="k">return</span> <span class="n">eigenvalues</span><span class="p">,</span> <span class="n">eigenvectors</span></div>
 
 
 <div class="viewcode-block" id="imageToEigenvectors"><a class="viewcode-back" href="../morphology.html#morphology.imageToEigenvectors">[docs]</a><span class="k">def</span> <span class="nf">imageToEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
@@ -625,11 +692,71 @@
     <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span></div>
     
+
+<div class="viewcode-block" id="findEmissionCentroid"><a class="viewcode-back" href="../morphology.html#morphology.findEmissionCentroid">[docs]</a><span class="k">def</span> <span class="nf">findEmissionCentroid</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Return (fractional) pixel coordinates of the emission centroid in ``image``.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : 2-d array</span>
+<span class="sd">        2-d image.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x0, y0 : float</span>
+<span class="sd">        Fractional pixel coordinates of the emission centroid in</span>
+<span class="sd">        ``image``</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span></div>
+
+    
+<div class="viewcode-block" id="findEmissionPA"><a class="viewcode-back" href="../morphology.html#morphology.findEmissionPA">[docs]</a><span class="k">def</span> <span class="nf">findEmissionPA</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Find position angle of dominant emission feature via cov. matrix analysis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : 2-d array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pa : float</span>
+<span class="sd">        Postion angle (PA) of the dominant emission feature in</span>
+<span class="sd">        ``image``, measured in degrees counter-clockwise from North</span>
+<span class="sd">        (i.e. from the positive y-axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="c1">#    x0,y0 = ndimage.center_of_mass(image)</span>
+    <span class="n">npix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+<span class="c1">#    p.imshow(image.T,origin=&#39;lower&#39;,interpolation=&#39;none&#39;)</span>
+    <span class="n">evec1</span><span class="p">,</span><span class="n">x_</span><span class="p">,</span><span class="n">y_</span><span class="p">,</span><span class="n">sig2</span> <span class="o">=</span> <span class="n">imageToEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">measured</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">evec1</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span></div>
+<span class="c1">#        p.axvline(cpix,c=&#39;w&#39;,lw=1)</span>
+<span class="c1">#        scale = 20</span>
+<span class="c1">#        m = N.tan(N.radians(measured-90.))</span>
+<span class="c1">#        b = y0-m*x0</span>
+<span class="c1">#        xl = 0.</span>
+<span class="c1">#        yl = m*xl+b</span>
+<span class="c1">#        xr = npix</span>
+<span class="c1">#        yr = m*xr+b</span>
+<span class="c1">#        p.plot((xl,xr),(yl,yr),ls=&#39;-&#39;,lw=1,c=&#39;b&#39;)</span>
+<span class="c1">#        p.xlim(0,npix-1)</span>
+<span class="c1">#        p.ylim(0,npix-1)</span>
+<span class="c1">#        p.title(&#39;measured PA = %.2f, with x-axis = %.2f&#39; % (measured,measured-90.))</span>
+<span class="c1">#        p.gca().get_xaxis().set_visible(False)</span>
+<span class="c1">#        p.gca().get_yaxis().set_visible(False)</span>
+<span class="c1">#        p.waitforbuttonpress()</span>
+<span class="c1">#        p.draw()</span>
 
 
-
-<div class="viewcode-block" id="findOrientation"><a class="viewcode-back" href="../morphology.html#morphology.findOrientation">[docs]</a><span class="k">def</span> <span class="nf">findOrientation</span><span class="p">(</span><span class="n">I</span><span class="p">):</span>
+<div class="viewcode-block" id="findOrientation_loop"><a class="viewcode-back" href="../morphology.html#morphology.findOrientation_loop">[docs]</a><span class="k">def</span> <span class="nf">findOrientation_loop</span><span class="p">(</span><span class="n">I</span><span class="p">):</span>
 
     <span class="n">ey</span> <span class="o">=</span> <span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">angles</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">181</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>

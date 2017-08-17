@@ -63,8 +63,47 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="morphology.findOrientation">
-<code class="descclassname">morphology.</code><code class="descname">findOrientation</code><span class="sig-paren">(</span><em>I</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findOrientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findOrientation" title="Permalink to this definition">¶</a></dt>
+<dt id="morphology.findEmissionCentroid">
+<code class="descclassname">morphology.</code><code class="descname">findEmissionCentroid</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findEmissionCentroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findEmissionCentroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return (fractional) pixel coordinates of the emission centroid in <code class="docutils literal"><span class="pre">image</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>img</strong> (<em>2-d array</em>) – 2-d image.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x0, y0</strong> – Fractional pixel coordinates of the emission centroid in
+<code class="docutils literal"><span class="pre">image</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.findEmissionPA">
+<code class="descclassname">morphology.</code><code class="descname">findEmissionPA</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findEmissionPA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findEmissionPA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find position angle of dominant emission feature via cov. matrix analysis.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>2-d array</em>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>pa</strong> – Postion angle (PA) of the dominant emission feature in
+<code class="docutils literal"><span class="pre">image</span></code>, measured in degrees counter-clockwise from North
+(i.e. from the positive y-axis.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.findOrientation_loop">
+<code class="descclassname">morphology.</code><code class="descname">findOrientation_loop</code><span class="sig-paren">(</span><em>I</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findOrientation_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findOrientation_loop" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -104,6 +143,36 @@ description of <code class="docutils literal"><span class="pre">pa</span></code>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.getImageEigenvectors">
+<code class="descclassname">morphology.</code><code class="descname">getImageEigenvectors</code><span class="sig-paren">(</span><em>image</em>, <em>thresh=0.001</em>, <em>sortdescending=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getImageEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getImageEigenvectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute eigenvectors of image covariance matrix.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>image</strong> (<em>2-d array</em>) – Image.</li>
+<li><strong>thresh</strong> (<em>float</em>) – Pixels as dim as <code class="docutils literal"><span class="pre">'thresh</span></code> (fraction) of peak pixel
+brightness will be considered. Default 0.001 (= 0.1 %).</li>
+<li><strong>sortdescending</strong> (<em>bool</em>) – If True (the default), returns the eigenvalues and
+eigentvectors sorted by the eigenvalues in descending order
+(i.e. the first eigenvector is the largest). If False, keeps
+the original order.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>evals</strong> (<em>array</em>) – 1-d array of eigenvalues vor each axis in <code class="docutils literal"><span class="pre">image</span></code>.</li>
+<li><strong>evecs</strong> (<em>aray</em>)</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
