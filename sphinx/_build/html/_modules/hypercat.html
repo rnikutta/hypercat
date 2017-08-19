@@ -49,7 +49,7 @@
           <div class="body" role="main">
             
   <h1>Source code for hypercat</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170816&#39;</span> <span class="c1">#yyyymmdd</span>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170818&#39;</span> <span class="c1">#yyyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
@@ -478,6 +478,19 @@
         <span class="n">sky</span><span class="o">.</span><span class="n">pa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pa</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">objectname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectname</span>  <span class="c1"># attach source.objectname to the image of the sky</span>
 
+        <span class="c1"># find all values of parameters used for creating this image (including the squeezed axes)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">vals</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">size</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">paramnames</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">omit</span><span class="p">]</span>
+        <span class="n">vals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">sky</span><span class="o">.</span><span class="n">theta</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">e</span><span class="p">,</span><span class="n">vals</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">paramnames</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">omit</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">sky</span><span class="p">,</span><span class="n">attr</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+        
+        <span class="c1"># construct WCS if possible</span>
         <span class="n">wcs</span> <span class="o">=</span> <span class="n">get_wcs</span><span class="p">(</span><span class="n">sky</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">wcs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sky</span><span class="o">.</span><span class="n">wcs</span> <span class="o">=</span> <span class="n">wcs</span>

@@ -1,4 +1,4 @@
-__version__ = '20170816' #yyyymmdd
+__version__ = '20170818' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -427,6 +427,19 @@ class Source:
         sky.pa = self.pa
         sky.objectname = self.objectname  # attach source.objectname to the image of the sky
 
+        # find all values of parameters used for creating this image (including the squeezed axes)
+        vals = copy(self.cube.theta)
+        for j,e in enumerate(vals):
+            if e.size == 1:
+                vals[j] = e[0]
+
+        idx = [j for j,e in enumerate(self.cube.theta) if e.size>1 and self.cube.paramnames[j] not in self.cube.omit]
+        vals[idx] = sky.theta
+        pairs = [(e,vals[j]) for j,e in enumerate(self.cube.paramnames) if e not in self.cube.omit]
+        for attr,val in pairs:
+            setattr(sky,attr+'_',val)
+        
+        # construct WCS if possible
         wcs = get_wcs(sky)
         if wcs is not None:
             sky.wcs = wcs

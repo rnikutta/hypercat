@@ -51,7 +51,7 @@
   <h1>Source code for ioops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170816&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170818&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling I/O.</span>
@@ -65,7 +65,7 @@
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">wcs</span>
 <span class="kn">from</span> <span class="nn">astropy.coordinates</span> <span class="k">import</span> <span class="n">name_resolve</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-
+<span class="kn">import</span> <span class="nn">datetime</span>
 
 <div class="viewcode-block" id="save2fits"><a class="viewcode-back" href="../ioops.html#ioops.save2fits">[docs]</a><span class="k">def</span> <span class="nf">save2fits</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">usewcs</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
@@ -162,18 +162,42 @@
         <span class="n">header</span><span class="p">[</span><span class="s1">&#39;BZERO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.00000</span><span class="p">,</span> <span class="s1">&#39;Zero offset&#39;</span><span class="p">)</span>
         <span class="n">header</span><span class="p">[</span><span class="s1">&#39;BUNIT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="s1">&#39;Unit of image data&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;objectname&#39;</span><span class="p">):</span>
-            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;OBJECT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">objectname</span><span class="p">,</span> <span class="s1">&#39;target name&#39;</span><span class="p">)</span>
+        <span class="c1"># helper func for simple attributes</span>
+        <span class="k">def</span> <span class="nf">add2header</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="n">attr</span><span class="p">,</span><span class="n">comment</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">keyword</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="n">attr</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">keyword</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">keyword</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;telescope&#39;</span><span class="p">):</span>
-            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;TELESCOP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">telescope</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    
+                <span class="n">keyword</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%-8s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">keyword</span><span class="o">.</span><span class="n">upper</span><span class="p">()[:(</span><span class="mi">8</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">))]</span><span class="o">+</span><span class="n">suffix</span><span class="p">))</span> <span class="c1">#(&quot;%-8s&quot; % keyword.upper())[:8]</span>
+                <span class="n">header</span><span class="p">[</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="n">attr</span><span class="p">),</span><span class="n">comment</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;instrument&#39;</span><span class="p">):</span>
-            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;INSTRUME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">instrument</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="c1"># use helper func to put attrs in header</span>
+        <span class="n">add2header</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;objectname&#39;</span><span class="p">,</span><span class="s1">&#39;target name&#39;</span><span class="p">,</span><span class="s1">&#39;OBJECT&#39;</span><span class="p">)</span>
+        <span class="n">add2header</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;telescope&#39;</span><span class="p">,</span><span class="s1">&#39;telescope/facility&#39;</span><span class="p">)</span>
+        <span class="n">add2header</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;instrument&#39;</span><span class="p">,</span><span class="s1">&#39;instrument&#39;</span><span class="p">)</span>
 
-<span class="c1">#TODO    header[&#39;DATE&#39;] = (image_.data.unit.to_string(), &#39;Creation UTC (CCCC-MM-DD) date of FITS header&#39;)</span>
+        <span class="c1"># store all model parameter values</span>
+        <span class="c1"># enforce last valid non-whitespace char to be &#39;_&#39; to avoid name-space collisions</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">image_</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+            <span class="n">add2header</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;model parameter value&#39;</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+
+        <span class="c1"># slightly more complex attrs</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;pa&#39;</span><span class="p">):</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;PA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;position angle (</span><span class="si">%s</span><span class="s1"> from N)&#39;</span> <span class="o">%</span> <span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
             
-        <span class="c1"># encapsulate image date in new ImageHDU and append</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;wave&#39;</span><span class="p">):</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;wave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;wavelength (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+
+        <span class="c1"># Add HDU creation timestamp.</span>
+        <span class="c1"># Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf</span>
+        <span class="c1">#   section 4.4.2.1 &quot;General descriptive keywords, DATE keyword&quot;</span>
+        <span class="n">header</span><span class="p">[</span><span class="s1">&#39;DATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">),</span> <span class="s1">&#39;HDU creation time (UTC)&#39;</span><span class="p">)</span>
+
+        <span class="c1"># encapsulate image data in new ImageHDU and append</span>
         <span class="n">dhdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">ImageHDU</span><span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">)</span>
         <span class="n">fout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dhdu</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data saved as new ImageHDU.&quot;</span><span class="p">)</span>

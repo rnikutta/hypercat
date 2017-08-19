@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170816'   #yyymmdd
+__version__ = '20170818'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -14,7 +14,7 @@ import astropy.io.fits as fits
 from astropy import wcs
 from astropy.coordinates import name_resolve
 import logging
-
+import datetime
 
 def save2fits(image,fitsfile,usewcs=True):
 
@@ -111,18 +111,42 @@ def save2fits(image,fitsfile,usewcs=True):
         header['BZERO'] = (0.00000, 'Zero offset')
         header['BUNIT'] = (image_.data.unit.to_string(), 'Unit of image data')
 
-        if hasattr(image_,'objectname'):
-            header['OBJECT'] = (image_.objectname, 'target name')
+        # helper func for simple attributes
+        def add2header(obj,attr,comment='',keyword=None,suffix=''):
+            if hasattr(obj,attr):
+                if keyword is None:
+                    keyword = attr.upper()
 
-        if hasattr(image_,'telescope'):
-            header['TELESCOP'] = (image_.telescope, '')
+                if keyword.endswith('_'):
+                    keyword = keyword[:-1]
+                    
+                keyword = ("%-8s" % (keyword.upper()[:(8-len(suffix))]+suffix)) #("%-8s" % keyword.upper())[:8]
+                header[keyword] = (getattr(obj,attr),comment)
 
-        if hasattr(image_,'instrument'):
-            header['INSTRUME'] = (image_.instrument, '')
+        # use helper func to put attrs in header
+        add2header(image_,'objectname','target name','OBJECT')
+        add2header(image_,'telescope','telescope/facility')
+        add2header(image_,'instrument','instrument')
 
-#TODO    header['DATE'] = (image_.data.unit.to_string(), 'Creation UTC (CCCC-MM-DD) date of FITS header')
+        # store all model parameter values
+        # enforce last valid non-whitespace char to be '_' to avoid name-space collisions
+        pairs = [(k,v) for k,v in image_.__dict__.items() if k.endswith('_')]
+        for k,v in pairs:
+            add2header(image_,k,'model parameter value',suffix='_')
+
+        # slightly more complex attrs
+        if hasattr(image_,'pa'):
+            header['PA'] = (image_.pa.value, 'position angle (%s from N)' % image_.pa.unit.to_string())
             
-        # encapsulate image date in new ImageHDU and append
+        if hasattr(image_,'wave'):
+            header['wave'] = (image_.wave.value, 'wavelength (%s)' % image_.wave.unit.to_string())
+
+        # Add HDU creation timestamp.
+        # Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf
+        #   section 4.4.2.1 "General descriptive keywords, DATE keyword"
+        header['DATE'] = (datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"), 'HDU creation time (UTC)')
+
+        # encapsulate image data in new ImageHDU and append
         dhdu = fits.ImageHDU(image_.data.value.T,header=header)
         fout.append(dhdu)
         logging.info("Data saved as new ImageHDU.")
