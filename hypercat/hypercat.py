@@ -1,4 +1,4 @@
-__version__ = '20170818' #yyyymmdd
+__version__ = '20170828' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -15,6 +15,7 @@ from operator import itemgetter
 from copy import copy
 
 # 3rd party
+import numpy
 import numpy as N
 import numpy as np
 from astropy import units as u
@@ -149,6 +150,9 @@ class ModelCube:
                 self.theta = [self.theta[j][self.idxes[j]] for j in xrange(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
 
+        if not isinstance(self.theta,numpy.ndarray):
+            self.theta = np.array(self.theta)
+            
         # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
         for j,pn in enumerate(self.paramnames):
             setattr(self,pn+'_',self.theta[j])
@@ -419,8 +423,8 @@ class Source:
         rawimage = self.cube.get_image(theta)
 
         # instantiatie Image class, with physical units
-        print "SOURCE: self.pa before instaniating Image = "
-        print self.pa, type(self.pa)
+#        print "SOURCE: self.pa before instaniating Image = "
+#        print self.pa, type(self.pa)
         sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density)
         sky.theta = self.theta
         sky.wave = self.wave

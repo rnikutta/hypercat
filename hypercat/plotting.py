@@ -1,4 +1,4 @@
-__version__ = '20170816'   #yyymmdd
+__version__ = '20170828'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
@@ -51,7 +51,7 @@ def plot_with_wcs(image):
     ax.set_ylabel('Dec')
     
 
-def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None):
+def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None,interpolation='bicubic'):
 
     # what kind of animal is 'image'?
     cls = None
@@ -98,7 +98,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     divider = make_axes_locatable(ax)
 
     # plot image
-    im = ax.imshow(data,origin='lower',extent=extent,interpolation='none',cmap=cmap,norm=norm)
+    im = ax.imshow(data,origin='lower',extent=extent,interpolation=interpolation,cmap=cmap,norm=norm)
 
     # plot contours, if requested
     if contours is not None:
@@ -133,7 +133,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               units='',\
               titles='',\
               contours=None,
-              interpolation='none',cmap=p.cm.viridis,figtitle='',\
+              interpolation='bicubic',cmap=p.cm.viridis,figtitle='',\
               **kwargs):
 
     # IMAGES ARRAY
@@ -174,7 +174,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
             img = images[iy,ix]
             ax = axes[iy,ix]
             if img is not None:
-                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix])
+                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation)
             else:
                 ax.set_visible(False)
 
