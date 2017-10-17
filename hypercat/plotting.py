@@ -15,6 +15,7 @@ from numpy import ma
 import pylab as p
 import matplotlib
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from astropy import units as u
 
 # own
 from utils import *
@@ -44,12 +45,29 @@ def plot_with_wcs(image):
        plotting.plot_with_wcs(sky)
     """
     
-    fig = p.figure()           
+    
+    fig = p.figure(figsize=(6.5,6))
+#    fig = p.figure()
     ax = fig.add_subplot(111, projection=image.wcs)
+    xc = ax.coords[0]
+    yc = ax.coords[1]
     ax.imshow(image.data.T, origin='lower', cmap=p.cm.viridis)
     ax.set_xlabel('RA')
     ax.set_ylabel('Dec')
+    xc.set_ticks(spacing=100.*u.mas)
+    yc.set_ticks(spacing=100.*u.mas)
+
+    fig.subplots_adjust(left=0.25,right=0.98,top=0.98,bottom=0.07)
     
+#    ax.tick_params(
+#    axis='both',          # changes apply to the x-axis
+#    which='major',      # both major and minor ticks are affected
+#    bottom='on',      # ticks along the bottom edge are off
+#    top='off',         # ticks along the top edge are off
+#    left='on',         # ticks along the top edge are off
+#    right='off'         # ticks along the top edge are off
+#    )
+#    p.show()
 
 def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None,interpolation='bicubic'):
 
@@ -161,6 +179,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
 #    p.rcParams['pdf.use14corefonts'] = True
 #    p.rcParams['text.usetex'] = True
 
+#    figsize = (panelsize*nx,panelsize*ny)
     figsize = (panelsize*nx,panelsize*ny)
     fig, axes = p.subplots(ny,nx,sharex=True,sharey=True,figsize=figsize)
     axes = N.atleast_2d(axes)

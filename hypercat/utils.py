@@ -66,7 +66,7 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
 
     try:
         coords = name_resolve.get_icrs_coordinates(image.objectname)
-        logging.info("Coordinates for source '%s' successfully resolved. WCS created." % image.objectname)
+        logging.info("Coordinates for source '%s' resolved. WCS created." % image.objectname)
         
     except name_resolve.NameResolveError as e:
         msg = """Coordinate resolution for source name '%s' failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.""" % image.objectname

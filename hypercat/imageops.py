@@ -7,12 +7,12 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 """
 
 import logging
-import numpy as N
+import numpy as np
 from scipy import ndimage
 from units import *
 import astropy
 from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
-
+from copy import copy
 
 class ImageFrame:
 
@@ -29,6 +29,7 @@ class ImageFrame:
         self.data_raw = image  # keep original array
 #        self.data = image   # will rescale this array in setBrightness()
         self.data = image * u.Quantity(1)   # will rescale this array in setBrightness()
+        print "At init: self.data.value.std() =", self.data.value.std()
         
 
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
@@ -84,7 +85,7 @@ class ImageFrame:
                 logging.error("Must provide a value for 'distance' argument. Current value is: "+str(distance))
                 raise
 
-            self.pixelscale = N.arctan2(self.pixelscale,self.distance).to('arcsec')
+            self.pixelscale = np.arctan2(self.pixelscale,self.distance).to('arcsec')
             
 
         self.__computePixelarea()
@@ -227,7 +228,7 @@ class ImageFrame:
         """
 
         FOV = getQuantity(fov,UNITS['ANGULAR'])
-        self.pixelscale = FOV / N.float(self.npix)
+        self.pixelscale = FOV / np.float(self.npix)
         self.__computePixelarea()
         self.__computeFOV()
 
@@ -297,7 +298,7 @@ class ImageFrame:
 class Image(ImageFrame):
 
     def __init__(self,image,pixelscale='1 arcsec',distance=None,\
-                 total_flux_density='1 Jy',pa='0 deg'):
+                 total_flux_density='1 Jy',pa='0 deg',snr=None,brightness_units='Jy/mas^2'):
 
         ImageFrame.__init__(self,image,pixelscale=pixelscale,distance=distance)
 
@@ -361,6 +362,11 @@ class Image(ImageFrame):
         
         if total_flux_density is not None:
             self.setBrightness(total_flux_density)
+
+        # TEST
+        if brightness_units is not None:
+            self.data = self.getBrightness(brightness_units)
+        # TEST
             
 
         if not isinstance(pa,astropy.units.quantity.Quantity):
@@ -368,7 +374,16 @@ class Image(ImageFrame):
 
 #        if pa.to('deg') != 0.:
         self.rotate(pa)
-            
+
+        # add noise
+        if snr is not None:
+            print "Before add_noise:: self.data.value.std() =", self.data.value.std()
+
+            noisy_image, noise_pattern = add_noise(copy(self.data.value),snr)
+            self.data = noisy_image * self.data.unit
+            print "After add_noise:: self.data.value.std() =", self.data.value.std()
+        
+            print "SNR_meas = %.2f" % measure_snr(noisy_image, noise_pattern)
 
     def setBrightness(self,total_flux_density='1 Jy'):
         
@@ -480,6 +495,41 @@ class Image(ImageFrame):
 
 
 # HIGH-LEVEL HELPERS
+
+def add_noise(image,snr):
+
+    """Add Gaussian noise to ``image`` such that SNR is ``snr``."""
+
+    print "In add_noise: image.std() =", image.std()
+
+    
+    # compute noise pattern with correct amplitude distribution
+    mu = 0.0
+#    sigma = np.mean(image) / float(snr)
+    sigma = np.max(image) / float(snr)
+    noise_pattern = np.random.normal(mu,sigma,size=image.shape)
+
+    # normalize
+    noisy_image = image + noise_pattern
+    noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)  # E
+#R    noisy_image = noisy_image * (image.max()/noisy_image.max()) # R, TEST
+    
+#    noisy_image = noisy_image * (image.mean()/noisy_image.mean()) # R, TEST
+    
+    return noisy_image, noise_pattern
+
+
+def measure_snr(noisy_image,noise_pattern):
+
+    """Measure the effective SNR = mean(signal) / std(noise)"""
+    
+#    snr = np.mean(noisy_image) / np.std(noise_pattern)
+    snr = np.max(noisy_image) / np.std(noise_pattern)
+#    snr = np.mean(noisy_image) / np.std(noisy_image)
+    
+    return snr
+
+
 def rotateImage(image,angle,direction='NE'):
 
     """Rotate an image around its central pixel by `angle` degrees.
@@ -615,24 +665,24 @@ def checkImage(image,returnsize=True,enforce2d=True):
     .. code:: python
 
         # all tests pass, returns nothing
-        image = N.ones(11,11)
+        image = np.ones(11,11)
         check(image,returnsize=False)
 
         # fails with Exception if image not square
-        image = N.ones(11,10)
+        image = np.ones(11,10)
         check(image,returnsize=False)
           ...
           ValueError: 'image' must be square (nx=ny)
 
         # fails with Exception if size not odd
-        image = N.ones(10,10)
+        image = np.ones(10,10)
         check(image,returnsize=False)
           'image' size in pixels (nx) must be odd and integer, but is nx =  10
           ...
           ValueError: x is not odd.
 
         # fails with Exception if image not 2D
-        image = N.ones(11,11,3)
+        image = np.ones(11,11,3)
         check(image,returnsize=False)
           ...
           ValueError: 'image' must be 2D.
@@ -701,7 +751,7 @@ def computeIntCorrections(npix,factor):
     
     checkOdd(npix)
     newnpix = npix*factor
-    newnpix = N.int((2*N.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
+    newnpix = np.int((2*np.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor

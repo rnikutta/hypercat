@@ -405,7 +405,7 @@ class Source:
         self.pixelscale = get_pixelscale(self.Rd,self.distance,outunit='mas',npix=cube.eta)[2]*u.pix  # mas (per pixel)
 
         
-    def __call__(self,theta,wave=None,total_flux_density='1 Jy'):
+    def __call__(self,theta,wave=None,total_flux_density='1 Jy',snr=None,brightness_units='Jy/arcsec^2'):
 
         self.theta = theta
 
@@ -421,11 +421,15 @@ class Source:
 
         # get raw image
         rawimage = self.cube.get_image(theta)
+#        co = (rawimage < 0.)
+#        rawimage[co] = 0. #*rawimage #.unit
+
 
         # instantiatie Image class, with physical units
 #        print "SOURCE: self.pa before instaniating Image = "
 #        print self.pa, type(self.pa)
-        sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density)
+        sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density,snr=snr,brightness_units=brightness_units)
+
         sky.theta = self.theta
         sky.wave = self.wave
         sky.pa = self.pa

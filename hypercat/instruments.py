@@ -3,6 +3,7 @@ import psf
 from units import *
 from astropy.coordinates import name_resolve
 from utils import *
+from imageops import add_noise, measure_snr
 
 __version__ = '20170814' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
@@ -34,7 +35,8 @@ class Instrument:
         self.instrument = instrument
         self.type = self.__class__.__name__
 
-    def observe(self,sky):
+#    def observe(self,sky,snr=None):
+    def observe(self,sky,**kwargs):
 
         """'Observe' the sky with an instrument, i.e. return an image of the
            sky processed by the instrument (e.g. PSF applied etc.).
@@ -55,7 +57,7 @@ class Instrument:
 
         """
         
-        observation = self.__call__(sky)
+        observation = self.__call__(sky,**kwargs)
 
         return observation
 
@@ -144,7 +146,8 @@ class Telescope(Instrument):
 #        self.name = name
         
 
-    def __call__(self,sky):  # __call__ is invoked by Instrument.observe()
+#    def __call__(self,sky):  # __call__ is invoked by Instrument.observe()
+    def __call__(self,sky,snr=None):  # __call__ is invoked by Instrument.observe()
         
         # do all the deeds a single-dish observation does
         image = copy(sky)
@@ -162,6 +165,15 @@ class Telescope(Instrument):
         if self.pixelscale_detector is not None:
             image.resample(self.pixelscale_detector)
             # TODO: also resample self.psf image?
+
+        # TEST
+        if snr is not None:
+            "In Telescope.__call__(): adding noise"
+            noisy_image, noise_pattern = add_noise(image.data.value,snr)
+            print "Measured SNR = ", measure_snr(noisy_image, noise_pattern)
+            image.data = noisy_image * image.data.unit
+        # END TEST
+
 
         if PSF.FOV != image.FOV:
             PSF.changeFOV(str(image.FOV))
