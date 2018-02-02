@@ -1,5 +1,6 @@
 from copy import copy
 import numpy as N
+import numpy as np
 from scipy import ndimage, integrate
 import scipy.signal as signal
 
@@ -10,6 +11,27 @@ import math
 
 from astropy.modeling.functional_models import Gaussian2D
 
+def gini(arr):
+    """Compute Gini index of array `arr`.
+    """
+
+    arr = arr.flatten()
+    n = arr.size
+    idx = np.arange(1,n+1)
+    eps = 1.e-10
+
+    min_ = np.min(arr)
+    if min_ < 0.:
+        arr -= min_
+
+    arr = arr + eps
+    arr = np.sort(arr)
+
+    print(n,idx,min_,eps,arr)
+    G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
+
+    return G
+    
 
 def rotateVector(vec,deg=90.):
 

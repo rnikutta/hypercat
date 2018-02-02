@@ -511,8 +511,8 @@ def add_noise(image,snr):
 
     # normalize
     noisy_image = image + noise_pattern
-    noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)  # E
-#R    noisy_image = noisy_image * (image.max()/noisy_image.max()) # R, TEST
+#E    noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)  # E
+    noisy_image = noisy_image * (image.max()/noisy_image.max()) # R, TEST
     
 #    noisy_image = noisy_image * (image.mean()/noisy_image.mean()) # R, TEST
     
