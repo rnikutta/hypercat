@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """N-dimensional interpolation on data hypercubes.
 """
 
@@ -103,13 +105,13 @@ class NdimInterpolation:
         if shape_ == data.shape:
             self.data_hypercube = data
         else:
-            raise Exception, "'theta' not compatible with the shape of 'data'."
+            raise Exception("'theta' not compatible with the shape of 'data'.")
 
         # interpolation orders
         if order in (1,3):
             self.order = order
         else:
-            raise Exception, "Interpolation spline order not supported! Must be 1 (linear) or 3 (cubic)."
+            raise Exception("Interpolation spline order not supported! Must be 1 (linear) or 3 (cubic).")
 
         # interpolate in log10 space?
         self.mode = mode
@@ -119,7 +121,7 @@ class NdimInterpolation:
             try:
                 self.data_hypercube = N.log10(self.data_hypercube)
             except RuntimeWarning:
-                raise Exception, "For mode='log' all entries in 'data' must be > 0."
+                raise Exception("For mode='log' all entries in 'data' must be > 0.")
 
         # take log10 of 'theta' ('x' values)
         if self.mode == 'loglog':
@@ -135,9 +137,9 @@ class NdimInterpolation:
             self.ips.append(interpolate.interp1d(t,N.linspace(0.,float(t.size-1.),t.size)))
 
         if self.order == 3:
-            print "Evaluating cubic spline coefficients for subsequent use, please wait..."
+            print("Evaluating cubic spline coefficients for subsequent use, please wait...")
             self.coeffs = ndimage.spline_filter(self.data_hypercube,order=3)
-            print "Done."
+            print("Done.")
 
 
     def get_coords(self,vec):
@@ -221,7 +223,8 @@ class NdimInterpolation:
         columns = coords_real.T.tolist()  # transpose
 
         # convert physical coordinate values to (fractional) pixel-space
-        coords_pix = N.array([ self.ips[j](columns[j]) for j in xrange(len(columns)) ])
+#Py2        coords_pix = N.array([ self.ips[j](columns[j]) for j in xrange(len(columns)) ])
+        coords_pix = N.array([ self.ips[j](columns[j]) for j in range(len(columns)) ])
         
         return coords_pix, shape_
 

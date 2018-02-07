@@ -1,4 +1,6 @@
-__version__ = '20170726'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20180202'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -29,7 +31,7 @@ class ImageFrame:
         self.data_raw = image  # keep original array
 #        self.data = image   # will rescale this array in setBrightness()
         self.data = image * u.Quantity(1)   # will rescale this array in setBrightness()
-        print "At init: self.data.value.std() =", self.data.value.std()
+        print("At init: self.data.value.std() =", self.data.value.std())
         
 
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
@@ -65,12 +67,12 @@ class ImageFrame:
         .. code-block:: python
 
             I = Image(raw_image,pixelscale='0.2 arsec')  # definition of an 'Image' instance
-            print I.pixelscale; print I.pixelarea
+            print(I.pixelscale); print(I.pixelarea)
               0.2 arcsec
               0.04 arcsec2 / pix
 
             I.setPixelscale(pixelscale='1 AU',distance='1 pc')
-            print I.pixelscale, I.pixelarea
+            print(I.pixelscale); print(I.pixelarea)
               1.0 arcsec
               1.0 arcsec2 / pix
 
@@ -138,25 +140,25 @@ class ImageFrame:
             # `Image` instance
             I = hypercat.Image(img,pixelscale='1 AU',distance='1 pc',peak_pixel_brightness='1.0 mJy/pix')
 
-            print ", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())])
+            print(", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())]))
               221, 1.0 arcsec, 1.0 arcsec2 / pix, 221.0 arcsec, 1.0 mJy / pix, 1.0 mJy / arcsec2
-            print I.getTotalFluxDensity()
+            print(I.getTotalFluxDensity())
               5.35844 Jy  # total flux density
 
             # new instance, upsampled 2x
             I = hypercat.Image(img,pixelscale='1 AU',distance='1 pc',peak_pixel_brightness='1.0 mJy/pix')
             I.resample(2.0)
-            print ", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())])
+            print(", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())]))
               443, 0.49887 arcsec, 0.24887 arcsec2 / pix, 221.0 arcsec, 0.26328 mJy / pix, 1.05787 mJy / arcsec2
-            print I.getTotaFluxDensity()
+            print(I.getTotaFluxDensity())
               5.38289 Jy  # total flux density preserved; difference due to interpolation errors
 
             # new instance, downsampled 0.5x
             I = hypercat.Image(img,pixelscale='1 AU',distance='1 pc',peak_pixel_brightness='1.0 mJy/pix')
             I.resample(0.5)
-            print ", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())])
+            print(", ".join([str(e) for e in (I.npix,I.pixelscale,I.pixelarea,I.FOV,I.data.max(),I.getBrightness('mJy/arcsec^2').max())]))
               111, 1.99099099 arcsec, 3.96405 arcsec2 / pix, 221.0 arcsec, 3.92935 mJy / pix, 0.99125 mJy / arcsec2
-            print I.getTotalFluxDensity()
+            print(I.getTotalFluxDensity())
               5.30354 Jy  # still preserved
 
         """
@@ -170,7 +172,8 @@ class ImageFrame:
         
         self.setPixelscale(pixelscale=self.pixelscale/newfactor)
         if newfactor != resamplingfactor:
-            logging.warning("The requested resampling to pixel scale (%g %s) was slightly adjusted due to discretization (now %g %s). This is to preserve sizes on the sky." % (newpixelscale.value,newpixelscale.unit,self.pixelscale.value,self.pixelscale.unit))
+            logging.warning("The requested resampling to pixel scale ({:g} {:s}) was slightly adjusted due to discretization (now {:g} {:s}). This is to preserve sizes on the sky.".format(\
+                            newpixelscale.value,newpixelscale.unit,self.pixelscale.value,self.pixelscale.unit))
             
 
     def rotate(self,angle,direction='NE',returnimage=False):
@@ -185,7 +188,8 @@ class ImageFrame:
 #        self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
 #        self.data = rotateImage(self.data.value,angle=angle.to('deg').value,direction=direction) * self.data.unit
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
-        logging.info("Rotated image (see self.data) by %s in direction '%s'." % (str(angle),direction))
+#        logging.info("Rotated image (see self.data) by %s in direction '%s'." % (str(angle),direction))
+        logging.info("Rotated image (see self.data) by {:s} in direction '{:s}'.".format(str(angle),direction))
 
         if returnimage:
             return self.data
@@ -264,7 +268,8 @@ class ImageFrame:
         FOV = getQuantity(fov,UNITS['ANGULAR'])
         factor = (FOV/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
-        cpix = self.npix/2
+#        cpix = self.npix/2
+        cpix = self.npix//2
 
         def get_newimage(image):
             return nddata.extract_array(image,(newsize_int,newsize_int),(cpix,cpix),fill_value=0.)
@@ -346,14 +351,14 @@ class Image(ImageFrame):
 
             # init `Image` instance using angular pixel scale
             I = Image(image,pixelscale='30 mas',total_flux_density='500 mJy')
-            print I.pixelscale; print I.data.max(); print I.getTotalFluxDensity()
+            print(I.pixelscale); print(I.data.max()); print(I.getTotalFluxDensity())
               30.0 mas
               0.525156676769 mJy / pix
               0.49999995972 Jy
 
             # init using linear pixel scale and source distance
             I = Image(image,pixelscale='1 AU',distance='1 pc',peak_pixel_brightness='3.0 mJy/pix')
-            print I.pixelscale; print I.distance; print I.data.max()
+            print(I.pixelscale); print(I.distance); print(I.data.max())
               1.0 arcsec
               1.0 pc
               3.0 mJy / pix
@@ -363,10 +368,10 @@ class Image(ImageFrame):
         if total_flux_density is not None:
             self.setBrightness(total_flux_density)
 
-        # TEST
-        if brightness_units is not None:
-            self.data = self.getBrightness(brightness_units)
-        # TEST
+#        # TEST
+#        if brightness_units is not None:
+#            self.data = self.getBrightness(brightness_units)
+#        # TEST
             
 
         if not isinstance(pa,astropy.units.quantity.Quantity):
@@ -377,13 +382,13 @@ class Image(ImageFrame):
 
         # add noise
         if snr is not None:
-            print "Before add_noise:: self.data.value.std() =", self.data.value.std()
+            print("Before add_noise:: self.data.value.std() =", self.data.value.std())
 
             noisy_image, noise_pattern = add_noise(copy(self.data.value),snr)
             self.data = noisy_image * self.data.unit
-            print "After add_noise:: self.data.value.std() =", self.data.value.std()
+            print("After add_noise:: self.data.value.std() =", self.data.value.std())
         
-            print "SNR_meas = %.2f" % measure_snr(noisy_image, noise_pattern)
+            print("SNR_meas = {:.2f}".format(measure_snr(noisy_image, noise_pattern)))
 
     def setBrightness(self,total_flux_density='1 Jy'):
         
@@ -406,12 +411,12 @@ class Image(ImageFrame):
         --------
         .. code-block:: python
 
-            print I.data.max(); print I.getTotalFluxDensity()
+            print(I.data.max()); print(I.getTotalFluxDensity())
             0.000383368023904 Jy / pix
             1.00000080509 Jy
 
             I.setBrightness('2 Jy')
-            print I.data.max(); print I.getTotalFluxDensity()
+            print(I.data.max()); print(I.getTotalFluxDensity())
             0.000766735291108 Jy / pix
             1.99999992838 Jy
         """
@@ -439,7 +444,7 @@ class Image(ImageFrame):
         -------
         .. code-block:: python
 
-             print I.pixelscale; print I.data.max(); print I.getBrightness('Jy/arcsec^2')
+             print(I.pixelscale); print(I.data.max()); print(I.getBrightness('Jy/arcsec^2'))
                1.0 arcsec
                3.0 mJy / pix
                0.003 Jy / arcsec2
@@ -481,7 +486,7 @@ class Image(ImageFrame):
         .. code:: python
 
             total = I.getTotalFluxDensity()
-            print total; print total.to('mJy')  # can be easily converted to other units
+            print(total); print(total.to('mJy'))  # can be easily converted to other units
               0.0050459482673 Jy
               5.0459482673 mJy
 
@@ -500,7 +505,7 @@ def add_noise(image,snr):
 
     """Add Gaussian noise to ``image`` such that SNR is ``snr``."""
 
-    print "In add_noise: image.std() =", image.std()
+    print("In add_noise: image.std() =", image.std())
 
     
     # compute noise pattern with correct amplitude distribution
@@ -751,7 +756,8 @@ def computeIntCorrections(npix,factor):
     
     checkOdd(npix)
     newnpix = npix*factor
-    newnpix = np.int((2*np.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
+#    newnpix = np.int((2*np.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
+    newnpix = np.int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor

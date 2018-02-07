@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from copy import copy
 import psf
 from units import *
@@ -5,7 +7,7 @@ from astropy.coordinates import name_resolve
 from utils import *
 from imageops import add_noise, measure_snr
 
-__version__ = '20170814' #yyyymmdd
+__version__ = '20180202' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -170,7 +172,7 @@ class Telescope(Instrument):
         if snr is not None:
             "In Telescope.__call__(): adding noise"
             noisy_image, noise_pattern = add_noise(image.data.value,snr)
-            print "Measured SNR = ", measure_snr(noisy_image, noise_pattern)
+            print("Measured SNR = ", measure_snr(noisy_image, noise_pattern))
             image.data = noisy_image * image.data.unit
         # END TEST
 

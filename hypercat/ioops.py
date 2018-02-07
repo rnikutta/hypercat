@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170818'   #yyymmdd
+__version__ = '20180202'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -81,9 +81,9 @@ def save2fits(image,fitsfile,usewcs=True):
 
     try:
         phdu = fout[0].header
-        logging.info("Existing FITS file '%s' opened." % fitsfile)
+        logging.info("Existing FITS file '{:s}' opened.".format(fitsfile))
     except IndexError:
-        logging.info("New FITS file '%s' created." % fitsfile)
+        logging.info("New FITS file '{:s}' created.".format(fitsfile))
         phdu = fits.PrimaryHDU()
         fout.append(phdu)
         logging.info("New (empty) primary HDU written.")
@@ -120,7 +120,8 @@ def save2fits(image,fitsfile,usewcs=True):
                 if keyword.endswith('_'):
                     keyword = keyword[:-1]
                     
-                keyword = ("%-8s" % (keyword.upper()[:(8-len(suffix))]+suffix)) #("%-8s" % keyword.upper())[:8]
+#Py2                keyword = ("%-8s" % (keyword.upper()[:(8-len(suffix))]+suffix)) #("%-8s" % keyword.upper())[:8]
+                keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
                 header[keyword] = (getattr(obj,attr),comment)
 
         # use helper func to put attrs in header
@@ -136,10 +137,10 @@ def save2fits(image,fitsfile,usewcs=True):
 
         # slightly more complex attrs
         if hasattr(image_,'pa'):
-            header['PA'] = (image_.pa.value, 'position angle (%s from N)' % image_.pa.unit.to_string())
+            header['PA'] = (image_.pa.value, 'position angle ({:s} from N)'.format(image_.pa.unit.to_string()))
             
         if hasattr(image_,'wave'):
-            header['wave'] = (image_.wave.value, 'wavelength (%s)' % image_.wave.unit.to_string())
+            header['wave'] = (image_.wave.value, 'wavelength ({:s})'.format(image_.wave.unit.to_string()))
 
         # Add HDU creation timestamp.
         # Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf

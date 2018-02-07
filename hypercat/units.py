@@ -1,4 +1,6 @@
-__version__ = '20170728'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling units and units strings.
@@ -66,9 +68,10 @@ def list_recognized_units():
               LINEAR   ('cm', 'm', 'AU', 'lyr', 'pc', 'kpc', 'Mpc', 'Gpc')
     """
     
-    print "Category       Permitted units"
+    print("Category       Permitted units")
     for k,v in UNITS.items():
-        print "%12s  " % k, v
+#        print("%12s  " % k, v)
+        print("{:12s}".format(k_),v)
     
 
 def getQuantity(quantity,recognized_units):
@@ -164,7 +167,7 @@ def getValueUnit(quantity,recognized_units):
         value = ''
 
     if unit not in recognized_units:
-        raise ValueError("Specified unit '%s' is not recognized. Recognized are: %s" % (unit,','.join(recognized_units)))
+        raise ValueError("Specified unit '{:s}' is not recognized. Recognized are: {:s}".format(unit,','.join(recognized_units)))
 
     unit = u.Unit(unit)
 

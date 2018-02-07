@@ -1,4 +1,6 @@
-__version__ = '20170828'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
@@ -100,7 +102,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
         axunit = 'pixel'
 
     else:
-        raise AttributeError, "Don't know how to plot 'image'. Must be either instance of class 'Image', or 'PSF, or a 2d array."
+        raise AttributeError("Don't know how to plot 'image'. Must be either instance of class 'Image', or 'PSF, or a 2d array.")
 
     # transpose here once for all future plotting in this function
     data = data.T
@@ -131,8 +133,10 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     # set title, labels
     if title is not None:
         ax.set_title(title)
-    ax.set_xlabel('offset (%s)' % axunit)
-    ax.set_ylabel('offset (%s)' % axunit)
+#Py2    ax.set_xlabel('offset (%s)' % axunit)
+#Py2    ax.set_ylabel('offset (%s)' % axunit)
+    ax.set_xlabel('offset ({:s})'.format(axunit))
+    ax.set_ylabel('offset ({:s})'.format(axunit))
 
     # make colorbar; set invisible if no colorbar requested
     cax = divider.append_axes('right', size='5%', pad=0.05)
@@ -141,7 +145,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
         if cls == 'Image':
             cb.set_label(units)
     else:
-        print "Setting cax.set_visible(False)"
+        print("Setting cax.set_visible(False)")
         cax.set_visible(False)    
 
             
@@ -170,7 +174,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # setup
     fontsize = 10
     p.rcParams['axes.labelsize'] = fontsize
-    p.rcParams['text.fontsize'] =  fontsize
+    p.rcParams['font.size'] =  fontsize
     p.rcParams['xtick.labelsize'] = fontsize-2
     p.rcParams['ytick.labelsize'] = fontsize-2
     p.rcParams['font.family'] = 'serif' # 'sans-serif'
@@ -187,9 +191,10 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
         axes = axes.T
     
     # generate panels
-    for iy in xrange(ny):
-        for ix in xrange(nx):
-            print "Plotting panel (%d,%d)" % (iy,ix)
+    for iy in range(ny):
+        for ix in range(nx):
+#            print("Plotting panel (%d,%d)" % (iy,ix))
+            print("Plotting panel ({:d},{:d})".format(iy,ix))
             img = images[iy,ix]
             ax = axes[iy,ix]
             if img is not None:

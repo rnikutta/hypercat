@@ -1,4 +1,4 @@
-__version__ = '20180129'   #yyymmdd
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the real PSF of 30-m telescopes.
@@ -49,7 +49,8 @@ def fft_pxscale(ima,wave):
     #wavelength of the desires psf. This is a input of the user, wavelength in microns
     lam = wave*1E-6                 #in meters
     #re-orginizing the 1D FFT to match with the grid.
-    roll=np.floor(gridsize/2).astype("int")
+#Py2    roll=np.floor(gridsize/2).astype("int")
+    roll=np.floor(gridsize//2).astype("int")
     freq = np.fft.fftshift(fft_freq)
     ##
     ## pxscale -> fftscale
@@ -93,8 +94,8 @@ def psf_real(telescope='TMT',wavelength=2.2):
         pxscale = fft_pxscale(TMT_pupil_fits,wavelength) #in mas
         psf = np.abs(np.fft.fftshift(np.fft.fft2(TMT_pupil)))
         
-        print 'The PSF of TMT was estimated using the pupil image of the TMT'
-        print 'with a pixelscale of ',pxscale,' mas per pixel'
+        print('The PSF of TMT was estimated using the pupil image of the TMT')
+        print('with a pixelscale of ',pxscale,' mas per pixel')
         
         
     if telescope == 'EELT':
@@ -107,8 +108,8 @@ def psf_real(telescope='TMT',wavelength=2.2):
         pxscale = eelt_psf[0].header[13+n_wave]
         psf     = eelt_psf[0].data[n_wave][0]
 
-        print 'At this time HyperCAT has the PSFs of E-ELT at 2.2, 3.8, 8.65, 11.63, 12.3, 17.8 microns'
-        print 'The closest PSF to the ',wavelength,' microns is ',wave,' microns with a '
-        print 'pixelscale of ',pxscale,' mas per pixel'
+        print('At this time HyperCAT has the PSFs of E-ELT at 2.2, 3.8, 8.65, 11.63, 12.3, 17.8 microns')
+        print('The closest PSF to the ',wavelength,' microns is ',wave,' microns with a ')
+        print('pixelscale of ',pxscale,' mas per pixel')
 
     return pxscale, psf

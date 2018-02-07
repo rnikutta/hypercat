@@ -1,4 +1,6 @@
-__version__ = '20170123'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling global logging.
@@ -12,19 +14,18 @@ import sys
 # Custom formatter for logger
 class LogFormatter(logging.Formatter):
 
-    def __init__(self, fmt="%(levelno)s: %(msg)s"):
-        logging.Formatter.__init__(self, fmt)
+    def __init__(self):
+        logging.Formatter.__init__(self)
 
     def format(self, record):
-
         # Replace the original format with one customized by logging level
         if record.levelno == logging.INFO:
-            self._fmt = '%(message)s'
+            s = '{:s}'.format(record.msg)
         else:
-            self._fmt = '%(levelname)s: %(message)s'
+            s = '[{:s}]: {:s}'.format(record.levelname,record.msg)
 
         # return formatted msg
-        return logging.Formatter.format(self, record)
+        return s
 
 # set up logger
 hdlr = logging.StreamHandler(sys.stdout)

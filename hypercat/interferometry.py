@@ -1,4 +1,6 @@
-__version__ = '20170721'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20170202'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.
@@ -144,14 +146,15 @@ def fft_pxscale(ima):
     lam = ima.wave.value*1E-6                 #in m
     #lam = ima.wavelength
     #re-orginizing the 1D FFT to match with the grid.
-    roll=np.floor(gridsize/2).astype("int")
+#Py2    roll=np.floor(gridsize/2).astype("int")
+    roll=np.floor(gridsize//2).astype("int")
     freq = np.fft.fftshift(fft_freq)
     ##
     ## pxscale -> fftscale
     fftscale=np.diff(freq)[0]           ## cycles / mas per pixel in FFT image
     mas2rad=np.deg2rad(1./3600000.)     ## mas per rad
     fftscale = fftscale/mas2rad * lam   ## meters baseline per px in FFT image at a given wavelength
-    print "Pixel scale in FFT image is: ", fftscale, " m (Baseline) per pixel"
+    print("Pixel scale in FFT image is: ", fftscale, " m (Baseline) per pixel")
     
     return fftscale
 
@@ -192,8 +195,8 @@ def correlatedflux(ima_fft,u,v):
     
     x  = np.arange(ima_fft.shape[0])
     ip = ndiminterpolation.NdimInterpolation(ima_fft,[x,x])
-    uu = u + ima_fft.shape[0]/2
-    vv = v + ima_fft.shape[0]/2
+    uu = u + ima_fft.shape[0]//2
+    vv = v + ima_fft.shape[0]//2
     corrflux = ip(np.dstack((uu,vv)))
 
     BL = np.sqrt(u**2+v**2)
@@ -205,8 +208,8 @@ def correlatedflux(ima_fft,u,v):
 
 def ima_ifft(ima_fft,u,v):
     
-    uu = u.astype(int) + ima_fft.shape[0]/2
-    vv = v.astype(int) + ima_fft.shape[0]/2
+    uu = u.astype(int) + ima_fft.shape[0]//2
+    vv = v.astype(int) + ima_fft.shape[0]//2
     
     a = np.zeros((len(ima_fft),len(ima_fft)),dtype=np.complex_)
     for ii in range(len(uu)):

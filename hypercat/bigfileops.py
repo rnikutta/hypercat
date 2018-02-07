@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170714'   #yyymmdd
+__version__ = '20180202'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling large hypercubes in hdf5 files.
@@ -180,13 +180,13 @@ def memmap_hdf5_dataset(hdf5file,dsetpath):
         
         # We ensure we have a non-compressed contiguous array.
         if ds.chunks is not None:
-            raise ValueError("mem-mapping only works for non-chunked hdf5 dastasets. Datset '%s' appears to have chunks." % dsetpath)
+            raise ValueError("mem-mapping only works for non-chunked hdf5 dastasets. Datset '{:s}' appears to have chunks.".format(dsetpath))
         
         if ds.compression is not None:
-            raise ValueError("mem-mapping only works for non-compressed hdf5 dastasets. Datset '%s' appears to have compression ON." % dsetpath)
+            raise ValueError("mem-mapping only works for non-compressed hdf5 dastasets. Datset '{:s}' appears to have compression ON.".format(dsetpath))
         
         if offset <= 0:
-            raise ValueError("Invalid offset found for dataset '%s'. Offset must be an integer > 0" % dsetpath)
+            raise ValueError("Invalid offset found for dataset '{:s}'. Offset must be an integer > 0".format(dsetpath))
         
         dtype = ds.dtype
         shape = ds.shape
@@ -413,7 +413,7 @@ class CheckListSelector:
         self.HEADER = urwid.AttrWrap(
                       urwid.Text("Use the keyboard arrows to move between checkboxes.\n" +\
                                  "Hit SPACE to select/deselect. Hit ENTER when done.\n\n" +\
-                                 "Select values for parameter %s" % parname),
+                                 "Select values for parameter {:s}".format(parname)),
                       'header')
 
         strings = [str(e) for e in self.theta]
@@ -458,12 +458,12 @@ class CheckListSelector:
         self.idxes = N.arange(self.theta.size)[self.bidxes].tolist()
         nselected = N.argwhere(self.bidxes).size
 
-        text = "Selected %d/%d." % (nselected,self.bidxes.size)
+        text = "Selected {:d}/{:d}.".format(nselected,self.bidxes.size)
         
         if self.initsize is not None:
             self.currentsize = self.initsize * nselected / float(self.bidxes.size)
             prefix, suffix = get_bytes_human(self.currentsize)
-            text += " (Total size: %.2f %s)" % (prefix,suffix)
+            text += " (Total size: {:.2f} {:s})".format(prefix,suffix)
             
         if nselected == 0:
             text += " Select at least one value."
@@ -488,7 +488,7 @@ def storejson(jsonfile,d):
     with open(jsonfile,'w') as f:
         json.dump(d,f)
 
-    logging.info("Saved objects in file %s." % jsonfile)
+    logging.info("Saved objects in file {:s}.".format(jsonfile))
     
 
 def loadjson(jsonfile):
@@ -506,7 +506,7 @@ def loadjson(jsonfile):
         Dictionary of the content stored in the json file.
     """
     
-    logging.info("Loading objects from file %s." % jsonfile)
+    logging.info("Loading objects from file {:s}.".format(jsonfile))
 
     with open(jsonfile,'r') as f:
         d = json.load(f)

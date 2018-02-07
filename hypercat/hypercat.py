@@ -1,4 +1,6 @@
-__version__ = '20170828' #yyyymmdd
+from __future__ import print_function
+
+__version__ = '20180202' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -9,7 +11,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 # IMPORTS
 # std lib
 import os
-import logging
+#import logging
 from collections import OrderedDict
 from operator import itemgetter
 from copy import copy
@@ -105,15 +107,19 @@ class ModelCube:
 
         """
 
+        
+        
         self.omit = omit
 
-        logging.info("Opening HDF5 file: %s " % hdffile)
+        logging.info("Opening HDF5 file: {:s} ".format(hdffile))
+        
         self.h = h5py.File(hdffile,'r')
         self.group = self.h[hypercube]
         self.groupname = hypercube
         
         logging.info("Loading sampling parameters.")
-        self.paramnames = self.group['paramnames'].value.tolist()
+#        self.paramnames = self.group['paramnames'].value.tolist()
+        self.paramnames = [e.decode() for e in self.group['paramnames']]
         self.theta = self.group['theta'].value
 
         iY = self.paramnames.index('Y')
@@ -123,7 +129,7 @@ class ModelCube:
         self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
         self.eta = self.npix_per_Rd  # alias
         
-        self.idxes = [xrange(len(t)) for t in self.theta]
+        self.idxes = [range(len(t)) for t in self.theta]
         logging.info("Closing HDF5 file.")
         self.h.close()
        
@@ -147,7 +153,7 @@ class ModelCube:
             else:
                 d = bfo.loadjson(subcube_selection)
                 self.idxes = d['idxes']
-                self.theta = [self.theta[j][self.idxes[j]] for j in xrange(len(self.theta))]
+                self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
 
         if not isinstance(self.theta,numpy.ndarray):
@@ -162,11 +168,12 @@ class ModelCube:
         prefix, suffix = bfo.get_bytes_human(self.subcubesize)
             
         if self.subcubesize != self.fullcubesize:
-            hypercubestr = 'hyperslab [shape: (%s)] from' % seq2str([len(_) for _ in self.theta])
+#            hypercubestr = 'hyperslab [shape: (%s)] from' % seq2str([len(_) for _ in self.theta])
+            hypercubestr = 'hyperslab [shape: ({:s})] from'.format(seq2str([len(_) for _ in self.theta]))
         else:
             hypercubestr = ''
             
-        logging.info("Loading %s hypercube '%s' [shape: (%s)] to RAM (%.2f %s required) ..." % (hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
+        logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
         dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
         logging.info("Done.")
@@ -207,62 +214,105 @@ class ModelCube:
 
         logging.info("Done.")
         
-        print "Inspect loaded hypercube with .print_sampling()\n"
+        print("Inspect loaded hypercube with .print_sampling()\n")
         self.print_sampling()
         
 
+#good    def print_sampling(self,n=11,fmt="%7.3f"):
+#good
+#good        """Print a summary table of the parameters and sampled values in the
+#good        hypercube.
+#good
+#good        Parameters
+#good        ----------
+#good        n : int
+#good            The first `n` sampled elements of every parameter will be
+#good            printed. If the list is shorter than `n`, all of it will
+#good            be printed. Default: 11.
+#good
+#good        fmt : str
+#good            Format string to use for a single value. Default: '%7.3f'
+#good
+#good        Example
+#good        -------
+#good        .. code-block:: python
+#good
+#good            cube.print_sampling(n=5)
+#good
+#good        Prints for instance:
+#good
+#good        .. code-block:: text
+#good
+#good           -------------------------------------------------------
+#good           Parameter  Range                Nvalues  Sampled values
+#good           -------------------------------------------------------
+#good             sig      [ 15.000 -  15.000]  (  1)    15.000
+#good               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
+#good               Y      [ 20.000 -  20.000]  (  1)    20.000
+#good               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
+#good               q      [  0.000 -   0.000]  (  1)     0.000
+#good              tv      [ 40.000 -  40.000]  (  1)    40.000
+#good            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
+#good               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+#good               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+#good           -------------------------------------------------------
+#good           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
+#good           Hypercube size: 14.8714 (MB)
+#good        """
+#good
+#good        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+#good        maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality
+#good
+#good        header = "Parameter  Range                Nvalues  Sampled values"
+#good        _len = len(header)
+#good        rule = "-"*_len
+#good        print(rule)
+#good        print(header)
+#good        print(rule)
+#good        
+#good        for p,v in zip(self.paramnames,self.theta):
+#good
+#good            srange = "[%s" % fmt % v[0] + " - %s]" % fmt % v[-1]  # range string
+#good            m = min(n,v.size)  # print n elements or all if number of elements smaller than n
+#good
+#good            vals = ["%s" % fmt % val for val in v[:m]]
+#good            svals = ",".join(vals)  # all values to be printed, as a single string
+#good            if v.size > n:
+#good                svals += ', ...'  # continuation indicator, if any
+#good
+#good            # bring everything together
+#good            parstr = maxstr % p
+#good            asterisk = " "
+#good            if (p not in self.omit) and (len(vals) != 1):
+#good                parstr = "\033[1m" + parstr
+#good                asterisk = "*"
+#good                svals = svals  + "\033[0m"
+#good                
+#good            print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
+#good            
+#good        print(rule)
+#good        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+#good
+#good        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+#good        print("Hypercube size: %g (%s)" % (prefix, suffix))
+#good
+#good    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
+                     
+    
     def print_sampling(self,n=11,fmt="%7.3f"):
 
-        """Print a summary table of the parameters and sampled values in the
-        hypercube.
 
-        Parameters
-        ----------
-        n : int
-            The first `n` sampled elements of every parameter will be
-            printed. If the list is shorter than `n`, all of it will
-            be printed. Default: 11.
-
-        fmt : str
-            Format string to use for a single value. Default: '%7.3f'
-
-        Example
-        -------
-        .. code-block:: python
-
-            cube.print_sampling(n=5)
-
-        Prints for instance:
-
-        .. code-block:: text
-
-           -------------------------------------------------------
-           Parameter  Range                Nvalues  Sampled values
-           -------------------------------------------------------
-             sig      [ 15.000 -  15.000]  (  1)    15.000
-               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
-               Y      [ 20.000 -  20.000]  (  1)    20.000
-               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
-               q      [  0.000 -   0.000]  (  1)     0.000
-              tv      [ 40.000 -  40.000]  (  1)    40.000
-            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
-               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
-               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
-           -------------------------------------------------------
-           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
-           Hypercube size: 14.8714 (MB)
-        """
-
-        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+#        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+        maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
         maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality
 
         header = "Parameter  Range                Nvalues  Sampled values"
         _len = len(header)
         rule = "-"*_len
-        print rule
-        print header
-        print rule
-        
+        print(rule)
+        print(header)
+        print(rule)
+
         for p,v in zip(self.paramnames,self.theta):
 
             srange = "[%s" % fmt % v[0] + " - %s]" % fmt % v[-1]  # range string
@@ -274,22 +324,25 @@ class ModelCube:
                 svals += ', ...'  # continuation indicator, if any
 
             # bring everything together
-            parstr = maxstr % p
+#            parstr = maxstr % p
+            parstr = '%%%ds' % maxlen % p
+#Py3            parstr = "{{:>{:d}s}}".format(maxlen).format(p)
             asterisk = " "
             if (p not in self.omit) and (len(vals) != 1):
                 parstr = "\033[1m" + parstr
                 asterisk = "*"
                 svals = svals  + "\033[0m"
                 
-            print parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals
+            print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
             
-        print rule
-        print "Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable."
+        print(rule)
+        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
 
         prefix, suffix = bfo.get_bytes_human(self.subcubesize)
-        print "Hypercube size: %g (%s)" % (prefix, suffix)
+        print("Hypercube size: %g (%s)" % (prefix, suffix))
 
     parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
+                     
     
     def get_image(self,vector,full=True):
 
@@ -616,7 +669,7 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
 
     """
 
-    logging.info("Opening FITS file: %s " % fitsfile)
+    logging.info("Opening FITS file: {:s} ".format(fitsfile))
 
     hdulist = pyfits.open(fitsfile,mode='update',save_backup=save_backup)
 
@@ -624,17 +677,18 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
     
     for hduname in hdus:
         
-        logging.info("Accessing HDU: %s" % hduname)
+        logging.info("Accessing HDU: {:s}".format(hduname))
         try:
             hdu = hdulist[hduname]
         except KeyError:
-            logging.warning("HDU '%s' in file %s not found. Skipping this HDU." % (hduname,fitsfile))
+            logging.warning("HDU '{:s}' in file {:s} not found. Skipping this HDU.".format(hduname,fitsfile))
             continue
         
         shape = list(hdu.shape)
         ny, nx = shape[-2:]
-        if nx != (ny/2 + 1):   # caution: integer division
-            logging.warning("HDU '%s' in file %s doesn't seem to contain a half-sized array (dims = (%s). Skipping this HDU." % (hduname, fitsfile, ','.join([str(s) for s in shape])))
+#        if nx != (ny/2 + 1):   # caution: integer division
+        if nx != (ny//2 + 1):   # caution: integer division
+            logging.warning("HDU '{:s}' in file {:s} doesn't seem to contain a half-sized array (dims = ({:s}). Skipping this HDU.".format(hduname, fitsfile, ','.join([str(s) for s in shape])))
             continue
         else:
             shape[-1] = 2*nx-1
@@ -648,7 +702,7 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
 
     logging.info('Flushing and closing fits file.')
     hdulist.close()
-    print
+    print()
             
 
 def mirror_all_fitsfiles(d,suffix='.fits',hdus=('IMGDATA','CLDDATA')):
@@ -673,10 +727,10 @@ def mirror_all_fitsfiles(d,suffix='.fits',hdus=('IMGDATA','CLDDATA')):
     files = get_clean_file_list(d,suffix='.fits')
     nfiles = len(files)
     
-    logging.info("Found %d '%s'-files in directory %s" % (nfiles,suffix,d))
+    logging.info("Found {:d} '{:s}'-files in directory {:s}".format(nfiles,suffix,d))
     
     for j,f in enumerate(files):
-        logging.info("Working on file %s [%d/%d]" % (f,j+1,nfiles))
+        logging.info("Working on file {:s} [{:d}/{:d}]".format(f,j+1,nfiles))
         mirror_fitsfile(f,hdus=hdus)
     
     logging.info("All files mirrored.")

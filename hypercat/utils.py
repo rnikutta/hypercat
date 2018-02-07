@@ -1,4 +1,6 @@
-__version__ = '20170731'   #yyymmdd
+from __future__ import print_function
+
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -66,16 +68,17 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
 
     try:
         coords = name_resolve.get_icrs_coordinates(image.objectname)
-        logging.info("Coordinates for source '%s' resolved. WCS created." % image.objectname)
+        logging.info("Coordinates for source '{:s}' resolved. WCS created.".format(image.objectname))
         
     except name_resolve.NameResolveError as e:
-        msg = """Coordinate resolution for source name '%s' failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.""" % image.objectname
+        msg = """Coordinate resolution for source name '{:s}' failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.""".format(image.objectname)
         logging.warn(msg)
         return None
     
     else:
         unit = 'deg' #image.pixelscale.unit.to_string()
-        crpix = image.npix/2 + 1
+#        crpix = image.npix/2 + 1
+        crpix = image.npix//2 + 1
         cdelt = image.pixelscale.to(unit).value
         
         w = wcs.WCS(naxis=2)
@@ -156,7 +159,23 @@ def arrayify(arg,n=None,shape=None,direction='x'):
 
     lili = (list,tuple)  # list-like
 
+#    if not isinstance(arg,lili):
+#        print(type(arg))
+#        if isinstance(n,int):
+#            seq = [arg]*n
+#        elif shape is not None:
+#            seq = [arg]*N.prod(shape)
+#        else:
+#            seq = N.empty((1,1),dtype=object)
+#            seq[0,0] = arg
+#    else:
+#        n = len(arg)
+#        seq = arg
+#
+
+        
     if not isinstance(arg,lili):
+        print(type(arg))
         if isinstance(n,int):
             seq = [arg]*n
         elif shape is not None:
@@ -168,7 +187,12 @@ def arrayify(arg,n=None,shape=None,direction='x'):
         n = len(arg)
         seq = arg
 
+
+    print("n = ", n)
+    print("seq = ", seq)
+    
     if isinstance(shape,lili) and len(shape)==2:
+        print("shape = ",shape)
         seq2d = N.empty(shape,dtype=object)
         idx = min(n,seq2d.size)
         seq2d.ravel()[:idx] = seq[:idx]
