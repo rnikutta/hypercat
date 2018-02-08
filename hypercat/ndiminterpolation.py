@@ -4,7 +4,7 @@ from __future__ import print_function
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20170410'  #yyyymmdd
+__version__ = '20180207' #yyyymmdd
 
 #TODO: update doc strings
 
@@ -94,7 +94,7 @@ class NdimInterpolation:
 
         """
 
-        self.theta = copy(theta)   # list of lists of parameter values, unique, in correct order
+        self.theta = copy(theta) # list of lists of parameter values, unique, in correct order
 
         if not isinstance(self.theta,(list,tuple)):
             self.theta = [self.theta]
@@ -132,7 +132,7 @@ class NdimInterpolation:
                     raise # Exception
 
         # set up n 1-d linear interpolators for all n parameters in theta
-        self.ips = []   # list of 1-d interpolator objects
+        self.ips = [] # list of 1-d interpolator objects
         for t in self.theta:
             self.ips.append(interpolate.interp1d(t,N.linspace(0.,float(t.size-1.),t.size)))
 
@@ -215,15 +215,14 @@ class NdimInterpolation:
 
         vectup = [e if isinstance(e,tuple) else (e,) for e in vec] # make tuple of vectors
 
-        shape_ = [len(e) for e in vectup]  # tuple shape
+        shape_ = [len(e) for e in vectup] # tuple shape
 
         # create a fleshed-out mesh of (multi-dim) locations to interpolate `data` at
         coords_real = N.array([e for e in itertools.product(*vectup)])
         
-        columns = coords_real.T.tolist()  # transpose
+        columns = coords_real.T.tolist() # transpose
 
         # convert physical coordinate values to (fractional) pixel-space
-#Py2        coords_pix = N.array([ self.ips[j](columns[j]) for j in xrange(len(columns)) ])
         coords_pix = N.array([ self.ips[j](columns[j]) for j in range(len(columns)) ])
         
         return coords_pix, shape_
@@ -238,7 +237,7 @@ class NdimInterpolation:
             if isinstance(v,(list,tuple)):
                 vec[j] = tuple(v)
             elif isinstance(v,N.ndarray):
-                vec[j] = tuple(v.squeeze())  # to allow for 1-d arrays embedded in higher-dims
+                vec[j] = tuple(v.squeeze()) # to allow for 1-d arrays embedded in higher-dims
             else:
                 vec[j] = v
                 
@@ -266,7 +265,7 @@ class NdimInterpolation:
 #        elif self.order == 3:
 #            aux = ndimage.map_coordinates(self.coeffs,self.get_coords(vector,pivots=pivots),order=3,prefilter=False)
 
-        aux = aux.squeeze()  # remove superflous length-one dimensions from result array
+        aux = aux.squeeze() # remove superflous length-one dimensions from result array
 
         if self.mode in  ('log','loglog'):
             aux = 10.**aux

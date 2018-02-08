@@ -133,8 +133,6 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     # set title, labels
     if title is not None:
         ax.set_title(title)
-#Py2    ax.set_xlabel('offset (%s)' % axunit)
-#Py2    ax.set_ylabel('offset (%s)' % axunit)
     ax.set_xlabel('offset ({:s})'.format(axunit))
     ax.set_ylabel('offset ({:s})'.format(axunit))
 
@@ -193,7 +191,6 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # generate panels
     for iy in range(ny):
         for ix in range(nx):
-#            print("Plotting panel (%d,%d)" % (iy,ix))
             print("Plotting panel ({:d},{:d})".format(iy,ix))
             img = images[iy,ix]
             ax = axes[iy,ix]

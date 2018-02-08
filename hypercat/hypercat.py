@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180202' #yyyymmdd
+__version__ = '20180207' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -168,7 +168,6 @@ class ModelCube:
         prefix, suffix = bfo.get_bytes_human(self.subcubesize)
             
         if self.subcubesize != self.fullcubesize:
-#            hypercubestr = 'hyperslab [shape: (%s)] from' % seq2str([len(_) for _ in self.theta])
             hypercubestr = 'hyperslab [shape: ({:s})] from'.format(seq2str([len(_) for _ in self.theta]))
         else:
             hypercubestr = ''
@@ -214,7 +213,7 @@ class ModelCube:
 
         logging.info("Done.")
         
-        print("Inspect loaded hypercube with .print_sampling()\n")
+        print("Inspect the loaded hypercube with .print_sampling()\n")
         self.print_sampling()
         
 
@@ -370,19 +369,19 @@ class ModelCube:
             # vector of parameter values; pixel axes are implicit (i.e. don't specify them)
             theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)
             image = cube.get_image(theta)
-            print image.shape
+            print(image.shape)
               (441,441)   # (x,y)
 
             # multi-wavelength cube
             theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values
             image = cube.get_image(theta)
-            print image.shape
+            print(image.shape)
               (3,441,441)   # (x,y,lambda)
             
             # multi-wavelength and multi-viewing angle
             theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas
             image = cube.get_image(theta)
-            print image.shape
+            print(image.shape)
               (4,3,441,441)
         """
         
@@ -479,8 +478,8 @@ class Source:
 
 
         # instantiatie Image class, with physical units
-#        print "SOURCE: self.pa before instaniating Image = "
-#        print self.pa, type(self.pa)
+#        print("SOURCE: self.pa before instaniating Image = ")
+#        print(self.pa, type(self.pa))
         sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density,snr=snr,brightness_units=brightness_units)
 
         sky.theta = self.theta

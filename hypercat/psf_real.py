@@ -1,6 +1,6 @@
 __version__ = '20180207'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
-
+g
 """Utilities for handling the real PSF of 30-m telescopes.
     
     .. automodule:: interferometry
@@ -49,7 +49,6 @@ def fft_pxscale(ima,wave):
     #wavelength of the desires psf. This is a input of the user, wavelength in microns
     lam = wave*1E-6                 #in meters
     #re-orginizing the 1D FFT to match with the grid.
-#Py2    roll=np.floor(gridsize/2).astype("int")
     roll=np.floor(gridsize//2).astype("int")
     freq = np.fft.fftshift(fft_freq)
     ##
@@ -57,7 +56,7 @@ def fft_pxscale(ima,wave):
     fftscale=np.diff(freq)[0]           ## cycles / mas per pixel in FFT image
     mas2rad=np.deg2rad(1./3600000.)     ## mas per rad
     fftscale = fftscale/mas2rad * lam   ## meters baseline per px in FFT image at a given wavelength
-    #print "Pixel scale in PSF image is: ", fftscale, " mas per pixel"
+    #print("Pixel scale in PSF image is: ", fftscale, " mas per pixel")
     
     return fftscale
 

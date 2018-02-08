@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170202'   #yyymmdd
+__version__ = '20170207'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.
@@ -146,7 +146,6 @@ def fft_pxscale(ima):
     lam = ima.wave.value*1E-6                 #in m
     #lam = ima.wavelength
     #re-orginizing the 1D FFT to match with the grid.
-#Py2    roll=np.floor(gridsize/2).astype("int")
     roll=np.floor(gridsize//2).astype("int")
     freq = np.fft.fftshift(fft_freq)
     ##

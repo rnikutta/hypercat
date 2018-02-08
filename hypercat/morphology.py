@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
-__version__ = '20180202' # yyyymmdd
+__version__ = '20180207' # yyyymmdd
 
 from copy import copy
 import numpy as N
@@ -61,7 +61,7 @@ def rotateVector(vec,deg=90.):
 
     .. code-block:: python
 
-       vec = N.array([0.,1.])  # unit vector along postive y-axis
+       vec = N.array([0.,1.]) # unit vector along postive y-axis
        rotateVector(vec,deg=90.)
          array([ -1., 0.])
 
@@ -154,8 +154,7 @@ def whichside(a,b,verbose=False):
 #    return Z
 
 def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.,norm=None):
-    
-#    x = N.arange(npix) - npix/2
+
     x = N.arange(npix) - npix//2
     X, Y = N.meshgrid(x,x,indexing='ij')
 
@@ -242,7 +241,7 @@ def imageToEigenvectors(image):
     thresh = 0.001 # pixels as dim as this (in percent) of peak pixel brightness will be considered
 #    y, x = N.argwhere(image>thresh*image.max()).T
     xind, yind = N.argwhere(image>thresh*image.max()).T
-#    print "x.sum(), y.sum() = ", x.sum(), y.sum()
+#    print("x.sum(), y.sum() = ", x.sum(), y.sum())
 #    y, x = N.nonzero(image)
     x = xind - xind.mean()
     y = yind - yind.mean()
@@ -301,13 +300,13 @@ def getUnitVector(axis=1,ndim=2):
     .. code-block:: python
 
        getUnitVector(axis=0,ndim=2)
-         array([ 1.,  0.])  # 2-d unit vector along x-axis
+         array([ 1.,  0.]) # 2-d unit vector along x-axis
 
        getUnitVector(1,2)
-         array([ 0.,  1.])  # 2-d unit vector along y-axis
+         array([ 0.,  1.]) # 2-d unit vector along y-axis
 
        getUnitVector(1,5)
-         array([ 0.,  1.,  0.,  0.,  0.])  # 5-d unit vector along 2nd axis
+         array([ 0.,  1.,  0.,  0.,  0.]) # 5-d unit vector along 2nd axis
 
     """
     
@@ -420,7 +419,6 @@ def get_power(image,m,r=1.):
 
 def get_wavelet(npix,a):
     print(a)
-#    x = N.arange(-npix/2,1+npix/2,1)
     x = N.arange(-npix//2,1+npix//2,1)
     print(x)
     X, Y = N.meshgrid(x,x)
@@ -430,8 +428,6 @@ def get_wavelet(npix,a):
 
 def get_wavelet_elliptical_mexh(npix,a,b):
     print(a,b)
-#    xa = N.arange(-npix/2+1,1+npix/2,1)
-#    xb = N.arange(-npix/2+1,1+npix/2,1)
     xa = N.arange(-npix//2+1,1+npix//2,1)
     xb = N.arange(-npix//2+1,1+npix//2,1)
     X,Y = N.meshgrid(xa,xb)
@@ -441,10 +437,8 @@ def get_wavelet_elliptical_mexh(npix,a,b):
 #def get_wavelet_elliptical_mexh_vuong(npix,s=10.,sigma=1.,a=0,b=0):
 #def get_wavelet_elliptical_mexh_vuong(npix,s=5.,sigma=2.):
 def get_wavelet_elliptical_mexh_vuong(npix,sx=5.,sy=5.):
-#    print a, b
+#    print(a,b)
     sigma = sx/float(sy)
-#    xa = N.arange(-npix/2+1,1+npix/2,1)
-#    xb = N.arange(-npix/2+1,1+npix/2,1)
     xa = N.arange(-npix//2+1,1+npix//2,1)
     xb = N.arange(-npix//2+1,1+npix//2,1)
     X,Y = N.meshgrid(xa,xb)
@@ -460,7 +454,6 @@ def get_wavelet_elliptical_mexh_vuong(npix,sx=5.,sy=5.):
 
 def get_wavelet_elliptical_mexh_vuong_fast(npix,sx=5.,sy=5.):
 #    sigma = sx/float(sy)
-#    x_ = N.arange(-npix/2+1,1+npix/2,1)
     x_ = N.arange(-npix//2+1,1+npix//2,1)
     X, Y = N.meshgrid(x_,x_,indexing='ij')
     AUX = (X**2./sx**2. + Y**2./sy**2.)
@@ -471,7 +464,6 @@ def get_wavelet_elliptical_mexh_vuong_fast(npix,sx=5.,sy=5.):
 
 
 def get_wavelet_elliptical_mexh_gaillot(npix,sx=5.,sigma=1.):
-#    x_ = N.arange(-npix/2+1,1+npix/2,1)
     x_ = N.arange(-npix//2+1,1+npix//2,1)
     X, Y = N.meshgrid(x_,x_)
     AUX = (X**2. + (sigma*Y)**2.) / sx**2.
@@ -479,7 +471,6 @@ def get_wavelet_elliptical_mexh_gaillot(npix,sx=5.,sigma=1.):
     return g
 
 def get_wavelet_elliptical_mexh_gaillot_full(npix,x0=0,y0=0,sx=5.,sigma=1.):
-#    x_ = N.arange(-npix/2+1,1+npix/2,1)
     x_ = N.arange(-npix//2+1,1+npix//2,1)
     X, Y = N.meshgrid(x_,x_)
     AUX = ((X-x0)**2. + sigma**2*(Y-y0)**2.) / sx**2.
@@ -503,7 +494,6 @@ def plot():
     ax3.cla()
     ax3.imshow(conv.T,origin='lower',interpolation='none',cmap=cmap)
     ax3.contour(conv.T,5,linestyles='-',colors='w')
-#    ax3.plot((npix/2-133/2,npix/2+133/2),(npix/2+133,npix/2+133),ls='-',lw=3,c='w')
     ax3.plot((npix//2-133/2,npix//2+133/2),(npix//2+133,npix//2+133),ls='-',lw=3,c='w')
     ax4.cla()
     ax4.semilogx(a,results,'b.-',ms=5)
@@ -565,7 +555,6 @@ def fluxdensity_i_wave(cube):
 
 
 def get_wavelet(npix,a):
-#    x = N.arange(-npix/2,1+npix/2,1)
     x = N.arange(-npix//2,1+npix//2,1)
     X,Y = N.meshgrid(x,x)
     g = (2.-(X**2+Y**2)/a**2)*N.exp(-(X**2+Y**2)/(2.*a**2))
@@ -658,7 +647,6 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
     print([img.sum() for img in images])
     
     fig = p.figure(figsize=(6,6))
-#    for j in xrange(0,3):
     for j in range(0,len(images)):
         ax = fig.add_subplot(3,3,j+1)
         ax.imshow(images[j].T,origin='lower')
@@ -667,7 +655,6 @@ def plot_symmetric1(loadfile='symmetric1.npz'):
         ax = fig.add_subplot(3,3,j+1+3)
         ax.imshow(wavelets[j].T,origin='lower')
         
-#    for j in xrange(3,6):
     for j in range(0,len(images)):
         ax = fig.add_subplot(3,3,j+1+6)
 #        C = convomaxvals[j-3]
@@ -723,7 +710,6 @@ def findEmissionPA(image):
 
 #    x0,y0 = ndimage.center_of_mass(image)
     npix = image.shape[0]
-#    cpix = npix/2
     cpix = npix//2
 #    p.imshow(image.T,origin='lower',interpolation='none')
     evec1,x_,y_,sig2 = imageToEigenvectors(image)
@@ -758,7 +744,6 @@ def findOrientation_loop(I):
         #x0,y0 = N.unravel_index(N.argmax(image),image.shape)
         x0,y0 = ndimage.center_of_mass(image)
         npix = image.shape[0]
-#        cpix = npix/2
         cpix = npix//2
         p.imshow(image.T,origin='lower',interpolation='none')
         #p.scatter(x0,y0,marker='x',s=25,c='b')

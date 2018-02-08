@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180202'   #yyymmdd
+__version__ = '20180207' #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -120,7 +120,6 @@ def save2fits(image,fitsfile,usewcs=True):
                 if keyword.endswith('_'):
                     keyword = keyword[:-1]
                     
-#Py2                keyword = ("%-8s" % (keyword.upper()[:(8-len(suffix))]+suffix)) #("%-8s" % keyword.upper())[:8]
                 keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
                 header[keyword] = (getattr(obj,attr),comment)
 
@@ -242,16 +241,16 @@ class FitsFile:
 
            ff = FitsFile('oiftisfile.fits')
 
-           ff.get('naxis',4,'value')   # return value of key 'naxis' from hdu=4
+           ff.get('naxis',4,'value') # return value of key 'naxis' from hdu=4
              2
 
-           ff.get('naxis',4,)   # 'value' is the default
+           ff.get('naxis',4,) # 'value' is the default
              2
 
-           ff.get('naxis',4,'comment')  # return only the corresponding comment
+           ff.get('naxis',4,'comment') # return only the corresponding comment
              'Binary table'
 
-           ff.get('naxis',4,'card')    # return the entire card = (key,value,comment) as a tuple
+           ff.get('naxis',4,'card') # return the entire card = (key,value,comment) as a tuple
              ('NAXIS', 2, 'Binary table')
 
         """
@@ -295,9 +294,9 @@ class FitsFile:
 
            ff = FitsFile('..examples/Circinus_Burtscher_2013.oifits')
 
-           ff.getdata(hdu=4)  # return all hdu.data
+           ff.getdata(hdu=4) # return all hdu.data
 
-           ff.getdata(4,'vcoord')  # Get v-coordinates (from u,v plane)
+           ff.getdata(4,'vcoord') # Get v-coordinates (from u,v plane)
               array([-41.04285049,   1.51398432,  13.22854233,  35.11543655,
                       30.22608757,   1.65713799, -31.00023651, -40.52364731,
                       42.68415833,  33.51140594,  15.40285206,   3.22378659,
@@ -306,7 +305,7 @@ class FitsFile:
                       -8.03857231,  -8.59758091,  15.26423931,  13.05595779,
                       10.33599758,   6.71977472,   0.81495309,  -2.18943191])
 
-           ff.getdata(2,'raep0'), ff.getdata(2,'decep0')  # get RA & DEC
+           ff.getdata(2,'raep0'), ff.getdata(2,'decep0') # get RA & DEC
               (array([ 213.292174]), array([-65.33936]))
         """
 

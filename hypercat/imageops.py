@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180202'   #yyymmdd
+__version__ = '20180207'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -66,15 +66,15 @@ class ImageFrame:
         --------
         .. code-block:: python
 
-            I = Image(raw_image,pixelscale='0.2 arsec')  # definition of an 'Image' instance
+            I = hypercat.Image(raw_image,pixelscale='0.2 arcsec')  # definition of an 'Image' instance
             print(I.pixelscale); print(I.pixelarea)
               0.2 arcsec
-              0.04 arcsec2 / pix
+              0.04 arcsec2
 
             I.setPixelscale(pixelscale='1 AU',distance='1 pc')
             print(I.pixelscale); print(I.pixelarea)
               1.0 arcsec
-              1.0 arcsec2 / pix
+              1.0 arcsec2
 
         """
 
@@ -188,7 +188,6 @@ class ImageFrame:
 #        self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
 #        self.data = rotateImage(self.data.value,angle=angle.to('deg').value,direction=direction) * self.data.unit
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
-#        logging.info("Rotated image (see self.data) by %s in direction '%s'." % (str(angle),direction))
         logging.info("Rotated image (see self.data) by {:s} in direction '{:s}'.".format(str(angle),direction))
 
         if returnimage:
@@ -268,7 +267,6 @@ class ImageFrame:
         FOV = getQuantity(fov,UNITS['ANGULAR'])
         factor = (FOV/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
-#        cpix = self.npix/2
         cpix = self.npix//2
 
         def get_newimage(image):
@@ -375,7 +373,7 @@ class Image(ImageFrame):
             
 
         if not isinstance(pa,astropy.units.quantity.Quantity):
-            pa = units.getQuantity(pa,recognized_units=UNITS['ANGULAR'])
+            pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])
 
 #        if pa.to('deg') != 0.:
         self.rotate(pa)
@@ -756,7 +754,6 @@ def computeIntCorrections(npix,factor):
     
     checkOdd(npix)
     newnpix = npix*factor
-#    newnpix = np.int((2*np.floor(newnpix/2)+1))  # rounded up or down to the nearest odd integer
     newnpix = np.int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 

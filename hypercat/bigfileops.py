@@ -318,13 +318,13 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
        paramnames = ['a','b','c']
        t,i,cs = getIndexLists(theta,paramnames)
        # ...make interactive selections on the screen...
-       print theta
+       print(theta)
          [[0, 1, 2, 3], [11.0, 12, 13, 14, 15], [0.1, 0.4, 0.6]]
-       print i
+       print(i)
          [[1, 2, 3], [0, 1, 4], [0, 1, 2]]
-       print t 
+       print(t )
          [array([1, 2, 3]), array([ 11.,  12.,  15.]), array([ 0.1,  0.4,  0.6])]
-       print cs
+       print(cs)
          108.0  # currentsize; before selections it was 60 elements x 4 bytes 240 bytes
 
     """
@@ -567,11 +567,11 @@ def get_bytes_human(nbytes):
     .. code:: python
 
         prefix, suffix = get_bytes_human(1023)
-        print prefix, suffix
+        print(prefix,suffix)
         1023.0 bytes
 
         prefix, suffix = get_bytes_human(1024)
-        print prefix, suffix
+        print(prefix,suffix)
         1.0 KB
 
     """
@@ -595,4 +595,3 @@ def get_bytes_human(nbytes):
     suffix = suffixes[order]
     
     return sig*prefix, suffix
-

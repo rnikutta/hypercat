@@ -70,7 +70,6 @@ def list_recognized_units():
     
     print("Category       Permitted units")
     for k,v in UNITS.items():
-#        print("%12s  " % k, v)
         print("{:12s}".format(k_),v)
     
 

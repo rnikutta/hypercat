@@ -77,7 +77,6 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
     
     else:
         unit = 'deg' #image.pixelscale.unit.to_string()
-#        crpix = image.npix/2 + 1
         crpix = image.npix//2 + 1
         cdelt = image.pixelscale.to(unit).value
         

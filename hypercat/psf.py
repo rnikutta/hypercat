@@ -216,7 +216,6 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
     aI = N.exp(-sigma_p**2.)
 
 #    a2D = models.AiryDisk2D(amplitude=aI,x_0=npix/2,y_0=npix/2,radius=radius)
-#Py2    a2D = AiryDisk2D(amplitude=aI,x_0=npix/2,y_0=npix/2,radius=radius)
     a2D = AiryDisk2D(amplitude=aI,x_0=npix//2,y_0=npix//2,radius=radius)
     a2D = a2D(x,y) # evaluate the 2D Airy disk
 
@@ -233,7 +232,6 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
     gI = (1-aI) / (1. + (diameter/rho_o)**2)            
 
 #    g2D = models.Gaussian2D(amplitude=gI,x_mean=npix/2,y_mean=npix/2,x_stddev=rad_H,y_stddev=rad_H,theta=0.)
-#Py2    g2D = Gaussian2D(amplitude=gI,x_mean=npix/2,y_mean=npix/2,x_stddev=rad_H,y_stddev=rad_H,theta=0.)
     g2D = Gaussian2D(amplitude=gI,x_mean=npix//2,y_mean=npix//2,x_stddev=rad_H,y_stddev=rad_H,theta=0.)
     g2D = g2D(x,y) # evaluate the 2D Gaussian
 
@@ -339,8 +337,8 @@ def get_normalization(r_0='0.15 m',wave='0.5 micron'):
 #    ### Final PSF
 #    psf = a2D + g2D
 #
-##    print 'Telescope Diameter [m]=', diameter
-##    print 'Angular Resolution ["] =',radius*pixelscale
-##    print 'Angular resolution [px] =',radius
+##    print('Telescope Diameter [m]=', diameter)
+##    print('Angular Resolution ["] =',radius*pixelscale)
+##    print('Angular resolution [px] =',radius)
 #
 #    return psf
