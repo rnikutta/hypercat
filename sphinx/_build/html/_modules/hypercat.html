@@ -48,7 +48,7 @@
   <h1>Source code for hypercat</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span> <span class="c1">#yyyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180216&#39;</span> <span class="c1">#yyyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
@@ -65,10 +65,7 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
 
 <span class="c1"># 3rd party</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="c1">#from numpy import ma</span>
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span> <span class="nn">units</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">wcs</span>
@@ -184,7 +181,7 @@
        
         <span class="c1"># compute total byte size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fullcubeshape</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nvoxels</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullcubeshape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nvoxels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullcubeshape</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wordsize</span> <span class="o">=</span> <span class="mf">4.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fullcubesize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvoxels</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wordsize</span> <span class="c1">#/ 1024.**3</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullcubesize</span>
@@ -205,7 +202,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytesize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
             
         <span class="c1"># for each parameter save its sampling as a member (attach &#39;_&#39; to the name, to minimize the change of name space collisions)</span>
@@ -235,7 +232,7 @@
 
 <span class="c1">#squeezed        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames</span>
 <span class="c1">#squeezed        logging.info(&quot;Squeezing all dim-1 axes...&quot;)</span>
-<span class="c1">#squeezed        sel = N.argwhere([len(t)&gt;1 for t in self.idxes]).flatten().tolist()</span>
+<span class="c1">#squeezed        sel = np.argwhere([len(t)&gt;1 for t in self.idxes]).flatten().tolist()</span>
 <span class="c1">#squeezed        self.theta = itemgetter(*sel)(self.theta)</span>
 <span class="c1">#squeezed        self.paramnames = itemgetter(*sel)(self.paramnames)</span>
 <span class="c1">#squeezed        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one</span>
@@ -249,7 +246,7 @@
             
         <span class="c1"># find axes with dim=1, squeeze subcube, remove the corresponding paramnames</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Squeezing all dim-1 axes...&quot;</span><span class="p">)</span>
-        <span class="n">sel</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">sel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">theta_sel</span> <span class="o">=</span> <span class="n">itemgetter</span><span class="p">(</span><span class="o">*</span><span class="n">sel</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
 <span class="c1">#        self.paramnames = itemgetter(*sel)(self.paramnames)</span>
 <span class="c1">#        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one</span>
@@ -309,7 +306,7 @@
 <span class="c1">#good        &quot;&quot;&quot;</span>
 <span class="c1">#good</span>
 <span class="c1">#good        maxstr = &quot; %%% ds &quot; % max([len(p) for p in self.paramnames])  # longest parameter name</span>
-<span class="c1">#good        maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality</span>
+<span class="c1">#good        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality</span>
 <span class="c1">#good</span>
 <span class="c1">#good        header = &quot;Parameter  Range                Nvalues  Sampled values&quot;</span>
 <span class="c1">#good        _len = len(header)</span>
@@ -352,7 +349,7 @@
 
 <span class="c1">#        maxstr = &quot; %%% ds &quot; % max([len(p) for p in self.paramnames])  # longest parameter name</span>
         <span class="n">maxlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">])</span>  <span class="c1"># length of longest parameter name</span>
-        <span class="n">maxn</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">])</span>  <span class="c1"># largest parameter cardinality</span>
+        <span class="n">maxn</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">])</span>  <span class="c1"># largest parameter cardinality</span>
 
         <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;Parameter  Range                Nvalues  Sampled values&quot;</span>
         <span class="n">_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
@@ -438,7 +435,7 @@
 
         <span class="c1"># sub-vectors can be arrays or lists; convert to tuples</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
                 <span class="n">vec</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
                 <span class="n">vec</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
@@ -524,7 +521,6 @@
         <span class="n">rawimage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
         <span class="n">co</span> <span class="o">=</span> <span class="p">(</span><span class="n">rawimage</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">)</span>
         <span class="n">rawimage</span><span class="p">[</span><span class="n">co</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c1">#*rawimage #.unit</span>
-<span class="c1">##        rawimage = ma.array(rawimage, mask=(rawimage&lt;=0.))</span>
 
         <span class="c1"># instantiatie Image class, with physical units</span>
 <span class="c1">#        print(&quot;SOURCE: self.pa before instaniating Image = &quot;)</span>
@@ -602,7 +598,7 @@
     <span class="n">lum</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LUMINOSITY&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="n">tsub</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">tsub</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;TEMPERATURE&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     
-    <span class="n">Rd</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lum</span><span class="o">/</span><span class="mf">1e45</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1500.</span><span class="o">/</span><span class="n">tsub</span><span class="p">)</span><span class="o">**</span><span class="mf">2.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span>
+    <span class="n">Rd</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lum</span><span class="o">/</span><span class="mf">1e45</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1500.</span><span class="o">/</span><span class="n">tsub</span><span class="p">)</span><span class="o">**</span><span class="mf">2.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span>
 
     <span class="k">return</span> <span class="n">Rd</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">outunit</span><span class="p">)</span></div>
 
@@ -633,7 +629,7 @@
     <span class="n">linsize</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LINEAR&#39;</span><span class="p">])</span>
     <span class="n">distance</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LINEAR&#39;</span><span class="p">])</span>
     
-    <span class="n">angular</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">outunit</span><span class="p">)</span>
+    <span class="n">angular</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">linsize</span><span class="p">,</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">outunit</span><span class="p">)</span>
     <span class="n">angular_per_linsize</span> <span class="o">=</span> <span class="n">angular</span> <span class="o">/</span> <span class="n">linsize</span>  <span class="c1"># e.g. arcsec/pc</span>
     <span class="n">angular_per_pixel</span> <span class="o">=</span> <span class="n">angular</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">pix</span><span class="p">)</span>  <span class="c1"># e.g. arcsec/pixel</span>
     
@@ -680,9 +676,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">header</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">)</span>
-    <span class="n">wave</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;LAMB&#39;</span><span class="p">)])</span>  <span class="c1"># in micron</span>
+    <span class="n">wave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;LAMB&#39;</span><span class="p">)])</span>  <span class="c1"># in micron</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">)</span>  <span class="c1"># uses first HDU by default</span>
-    <span class="n">sed</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">header</span><span class="p">[</span><span class="s1">&#39;CDELT1&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>   <span class="c1"># \int I(x,y) dx dy</span>
+    <span class="n">sed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">header</span><span class="p">[</span><span class="s1">&#39;CDELT1&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>   <span class="c1"># \int I(x,y) dx dy</span>
 
     <span class="k">return</span> <span class="n">wave</span><span class="p">,</span> <span class="n">sed</span></div>
 
@@ -743,7 +739,7 @@
         
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Mirroring half-cube.&quot;</span><span class="p">)</span>
         <span class="n">aux</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># x-flipped half-cube</span>
-        <span class="n">newdata</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">N</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">newdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">newdata</span><span class="p">[</span><span class="o">...</span><span class="p">,:</span><span class="n">nx</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
         <span class="n">newdata</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">hdu</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
         <span class="n">hdu</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">newdata</span>

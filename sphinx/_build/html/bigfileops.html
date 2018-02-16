@@ -129,7 +129,7 @@ sub-list in <code class="docutils literal"><span class="pre">theta</span></code>
 <li><strong>initsize</strong> (<em>float | None</em>) – If not Note, it is the size (e.g. in GB, or simply in counts)
 of the pre-selection full cube. This size will be numerically
 reduced for every element removed during the selection. If
-None, the size will be computed as N.prod(shape) * wordsize,
+None, the size will be computed as np.prod(shape) * wordsize,
 where <code class="docutils literal"><span class="pre">shape</span></code> are all lengths of all sub-lists in
 <cite>‘theta`</cite>. For <code class="docutils literal"><span class="pre">wordsize</span></code> see below.</li>
 <li><strong>wordsize</strong> (<em>int</em>) – The size in bytes of a single number. Will be used to compute
@@ -261,7 +261,7 @@ performed.</li>
 </table>
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">N</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
   <span class="n">array</span><span class="p">([[[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span>  <span class="mi">4</span><span class="p">],</span>
           <span class="p">[</span> <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">9</span><span class="p">],</span>
           <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span>

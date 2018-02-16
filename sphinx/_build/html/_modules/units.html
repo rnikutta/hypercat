@@ -48,7 +48,7 @@
   <h1>Source code for units</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180216&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling units and units strings.</span>
@@ -56,7 +56,7 @@
 <span class="sd">.. automodule:: units</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">import</span> <span class="nn">re</span>
 
@@ -209,7 +209,7 @@
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;quantity&#39; is neither string nor instance of &#39;Quantity&#39;.&quot;</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 

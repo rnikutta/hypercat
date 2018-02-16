@@ -48,7 +48,7 @@
   <h1>Source code for bigfileops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180202&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180216&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling large hypercubes in hdf5 files.</span>
@@ -67,7 +67,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">urwid</span><span class="o">,</span> <span class="nn">urwid.curses_display</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
 
 
@@ -131,8 +131,8 @@
 
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="ow">in</span> <span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">N</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isragged</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-            <span class="n">dflt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="n">N</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">isragged</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">dflt</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">))</span>
             <span class="n">ds</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dflt</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;j, v, type(v) = &quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
@@ -179,7 +179,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">ragged</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ragged</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">])</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">ragged</span></div>
 
@@ -240,7 +240,7 @@
         <span class="n">shape</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="c1"># provide memory-mapped array object (this does not occupy RAM until the array (or part of it) is explicitly read</span>
-    <span class="n">dsmemmap</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">hdf5file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">dsmemmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">hdf5file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">dsmemmap</span></div>
 
@@ -274,7 +274,7 @@
 <span class="sd">    .. code-block:: python</span>
 
 <span class="sd">       import numpy as N</span>
-<span class="sd">       A = N.arange(3*4*5).reshape((3,4,5))</span>
+<span class="sd">       A = np.arange(3*4*5).reshape((3,4,5))</span>
 <span class="sd">         array([[[ 0,  1,  2,  3,  4],</span>
 <span class="sd">                 [ 5,  6,  7,  8,  9],</span>
 <span class="sd">                 [10, 11, 12, 13, 14],</span>
@@ -299,7 +299,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">mesh</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="o">*</span><span class="n">idxlist</span><span class="p">)</span>
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="o">*</span><span class="n">idxlist</span><span class="p">)</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">dset</span><span class="p">[</span><span class="n">mesh</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">arr</span></div>
@@ -328,7 +328,7 @@
 <span class="sd">        If not Note, it is the size (e.g. in GB, or simply in counts)</span>
 <span class="sd">        of the pre-selection full cube. This size will be numerically</span>
 <span class="sd">        reduced for every element removed during the selection. If</span>
-<span class="sd">        None, the size will be computed as N.prod(shape) * wordsize,</span>
+<span class="sd">        None, the size will be computed as np.prod(shape) * wordsize,</span>
 <span class="sd">        where ``shape`` are all lengths of all sub-lists in</span>
 <span class="sd">        `&#39;theta``. For ``wordsize`` see below.</span>
 
@@ -380,8 +380,8 @@
     <span class="k">if</span> <span class="n">initsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">currentsize</span> <span class="o">=</span> <span class="n">initsize</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">shape_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">theta</span><span class="p">])</span>
-        <span class="n">currentsize</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape_</span><span class="p">)</span> <span class="o">*</span> <span class="n">wordsize</span>
+        <span class="n">shape_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">theta</span><span class="p">])</span>
+        <span class="n">currentsize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape_</span><span class="p">)</span> <span class="o">*</span> <span class="n">wordsize</span>
     
     <span class="c1"># select a sub-hypercube</span>
     <span class="n">t</span> <span class="o">=</span> <span class="p">[]</span>
@@ -438,8 +438,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">parname</span> <span class="o">=</span> <span class="n">parname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initsize</span> <span class="o">=</span> <span class="n">initsize</span>
@@ -465,7 +465,7 @@
                       <span class="s1">&#39;header&#39;</span><span class="p">)</span>
 
         <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
-        <span class="n">len_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">]))</span>
+        <span class="n">len_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cells</span> <span class="o">=</span> <span class="p">[</span><span class="n">urwid</span><span class="o">.</span><span class="n">AttrWrap</span><span class="p">(</span><span class="n">urwid</span><span class="o">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="n">state</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span><span class="s1">&#39;buttn&#39;</span><span class="p">,</span><span class="s1">&#39;buttnf&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">urwid</span><span class="o">.</span><span class="n">Padding</span><span class="p">(</span> <span class="n">urwid</span><span class="o">.</span><span class="n">GridFlow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">,</span><span class="mi">4</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">len_</span><span class="p">),</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;left&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;fixed left&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;fixed right&#39;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="p">)</span>
@@ -502,9 +502,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">draw_screen</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CheckListSelector.update_footer"><a class="viewcode-back" href="../bigfileops.html#bigfileops.CheckListSelector.update_footer">[docs]</a>    <span class="k">def</span> <span class="nf">update_footer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">size</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">nselected</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">size</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">nselected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
 
         <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Selected </span><span class="si">{:d}</span><span class="s2">/</span><span class="si">{:d}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nselected</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         
@@ -584,7 +584,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">shape_</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">lol</span><span class="p">]</span>
-    <span class="n">bytesize</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape_</span><span class="p">)</span> <span class="o">*</span> <span class="n">wordsize</span>
+    <span class="n">bytesize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape_</span><span class="p">)</span> <span class="o">*</span> <span class="n">wordsize</span>
 
     <span class="k">return</span> <span class="n">bytesize</span></div>
 
