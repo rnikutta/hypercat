@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>utils module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="units module" href="units.html" /> 
@@ -55,72 +52,48 @@
 <span id="utils-module"></span><h1>utils module<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="utils.arrayify">
-<code class="descclassname">utils.</code><code class="descname">arrayify</code><span class="sig-paren">(</span><em>arg</em>, <em>n=None</em>, <em>shape=None</em>, <em>direction=’x’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#arrayify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.arrayify" title="Permalink to this definition">¶</a></dt>
-<dd><p>Repeat ‘arg’ ‘n’ times, put that sequence in array with shape ‘shape’.</p>
-<p>If arg is already a list-like sequence, ignore n.
-If ‘shape’ is a 2-tuple, reshape sequence to an array with shape ‘shape’.
-If len(sequence)&gt;array.size, only put the first array.size elements of sequence into the array,
-If len(sequence)&lt;=array.size, pad the remaining elements in array with None.</p>
+<code class="descclassname">utils.</code><code class="descname">arrayify</code><span class="sig-paren">(</span><em>seq</em>, <em>shape=None</em>, <em>fill=False</em>, <em>direction='x'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#arrayify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.arrayify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arrange elements of sequence <cite>seq</cite> into an array of shape <cite>shape</cite>.</p>
+<dl class="docutils">
+<dt>Definitions:</dt>
+<dd><ul class="first last simple">
+<li><cite>seq</cite> is input sequence of elements</li>
+<li><cite>arr</cite> is output array</li>
+<li><code class="docutils literal"><span class="pre">ne</span> <span class="pre">=</span> <span class="pre">len(seq)</span></code> # number of elements in input sequence</li>
+<li><code class="docutils literal"><span class="pre">na</span> <span class="pre">=</span> <span class="pre">np.prod(shape)</span></code> # number of elements in output array</li>
+</ul>
+</dd>
+<dt>Behavior:</dt>
+<dd><ul class="first last simple">
+<li>If <cite>seq</cite> is just a single element, then <code class="docutils literal"><span class="pre">arr.shape</span></code> is (1,1).</li>
+<li>If <code class="docutils literal"><span class="pre">ne&gt;=na</span></code>, <code class="docutils literal"><span class="pre">arr[:ne]</span> <span class="pre">=</span> <span class="pre">seq[:]</span></code>, i.a. any extra elements from <cite>seq</cite> will be truncated</li>
+<li>If <code class="docutils literal"><span class="pre">ne&lt;na</span></code>, then <code class="docutils literal"><span class="pre">arr[ne:]</span> <span class="pre">=</span> <span class="pre">None</span></code>, i.e. the extra elements in <cite>arr</cite> will be set to <code class="docutils literal"><span class="pre">None</span></code></li>
+<li>If <code class="docutils literal"><span class="pre">ne==1</span></code> and <code class="docutils literal"><span class="pre">fill==True</span></code>, then <code class="docutils literal"><span class="pre">arr[:]</span> <span class="pre">=</span> <span class="pre">seq</span></code>, i.e. all elements of <cite>arr</cite> will be set to the value of <cite>seq</cite></li>
+</ul>
+</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>arg</strong> (<em>singlet</em><em>, or </em><em>list-like sequence</em>) – If not list or tuple, arg is a single-element object (can be
-anything) and will be repeated either n times, or
-N.prod(shape) times.</li>
-<li><strong>n</strong> (<em>int|None</em>) – </li>
-<li><strong>shape</strong> (<em>2-tuple|None</em>) – </li>
-<li><strong>direction</strong> (<em>str</em>) – If ‘x’ (default), elements in resulting 2d array are counted
-along rows first, then columns. If ‘y’, the other way round.</li>
+<li><strong>seq</strong> (<em>tuple</em><em> or </em><em>list</em><em> or </em><em>single element</em>) – Sequence of elements to be arranged in an array. If single
+element, it will be turned into a len-1 sequence.</li>
+<li><strong>shape</strong> (<em>tuple</em><em> or </em><em>None</em>) – 2-tuple giving the shape of the output array. If <code class="docutils literal"><span class="pre">None</span></code>
+(default), the array will have shape (1,ne).</li>
+<li><strong>fill</strong> (<em>bool</em>) – If <code class="docutils literal"><span class="pre">True</span></code> and <code class="docutils literal"><span class="pre">ne==1</span></code> and <code class="docutils literal"><span class="pre">na&gt;ne</span></code>, the entire output
+array will be filled with the value of <cite>seq</cite>.</li>
+<li><strong>direction</strong> (<em>str</em>) – If <code class="docutils literal"><span class="pre">'x'</span></code> (default), transpose the output array.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># generate 1d sequence</span>
-<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]</span>
-
-<span class="c1"># and reshape to 2d</span>
-<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
-           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-
-<span class="c1"># embed sequence in larger 2d array (pad tail with None)</span>
-<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
-           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span>   <span class="bp">None</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-
-<span class="c1"># place sequence in smaller 2d array (only use first elements)</span>
-<span class="n">arrayify</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">],</span>
-           <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;foo&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-
-<span class="c1"># provide a list-like sequence (no effect)</span>
-<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">]</span>
-
-<span class="c1"># provide a list-like sequence, and n (no effect, n ignored)</span>
-<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-<span class="o">--&gt;</span> <span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">]</span>
-
-<span class="c1"># provide a list-like sequence, and embed in larger array</span>
-<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="s1">&#39;baz&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">],</span>
-           <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-
-<span class="c1"># provide a list-like sequence, and embed in smaller array</span>
-<span class="n">arrayify</span><span class="p">([</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="s1">&#39;baz&#39;</span><span class="p">],</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-<span class="o">--&gt;</span> <span class="n">array</span><span class="p">([[</span><span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="function">
 <dt id="utils.get_wcs">
-<code class="descclassname">utils.</code><code class="descname">get_wcs</code><span class="sig-paren">(</span><em>image</em>, <em>projection=(‘RA—TAN’</em>, <em>’DEC–TAN’)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#get_wcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.get_wcs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">utils.</code><code class="descname">get_wcs</code><span class="sig-paren">(</span><em>image</em>, <em>projection=('RA---TAN'</em>, <em>'DEC--TAN')</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#get_wcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.get_wcs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resolve coordinates (via Vizier) of <code class="docutils literal"><span class="pre">image.objectname</span></code> and construct a WCS.</p>
 <p>With the resolved coordinates and with <code class="docutils literal"><span class="pre">image.npix</span></code> an
 <code class="docutils literal"><span class="pre">image.pixelscale</span></code> construct a world coordinate system (WCS).</p>
@@ -221,7 +194,7 @@ central columns of elements. See ‘Returns’ section.</li>
 
 <dl class="function">
 <dt id="utils.seq2str">
-<code class="descclassname">utils.</code><code class="descname">seq2str</code><span class="sig-paren">(</span><em>seq</em>, <em>jstr=’</em>, <em>’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#seq2str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.seq2str" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">utils.</code><code class="descname">seq2str</code><span class="sig-paren">(</span><em>seq</em>, <em>jstr='</em>, <em>'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#seq2str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.seq2str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Join a sequence <code class="docutils literal"><span class="pre">seq</span></code> of string-ifiable elements with a string
 <code class="docutils literal"><span class="pre">jstr</span></code>.</p>
 <p class="rubric">Example</p>
@@ -283,7 +256,7 @@ central columns of elements. See ‘Returns’ section.</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

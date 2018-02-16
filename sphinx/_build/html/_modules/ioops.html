@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>ioops &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -51,7 +48,7 @@
   <h1>Source code for ioops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170818&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span> <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling I/O.</span>
@@ -132,9 +129,9 @@
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">phdu</span> <span class="o">=</span> <span class="n">fout</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Existing FITS file &#39;</span><span class="si">%s</span><span class="s2">&#39; opened.&quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Existing FITS file &#39;</span><span class="si">{:s}</span><span class="s2">&#39; opened.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New FITS file &#39;</span><span class="si">%s</span><span class="s2">&#39; created.&quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New FITS file &#39;</span><span class="si">{:s}</span><span class="s2">&#39; created.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">))</span>
         <span class="n">phdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">()</span>
         <span class="n">fout</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phdu</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New (empty) primary HDU written.&quot;</span><span class="p">)</span>
@@ -152,7 +149,7 @@
 
         <span class="c1"># add type of image to header</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">imgtype</span> <span class="o">=</span> <span class="n">image_</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="n">imgtype</span> <span class="o">=</span> <span class="n">image_</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
             <span class="n">header</span><span class="p">[</span><span class="s1">&#39;IMGTYPE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgtype</span><span class="p">,</span> <span class="s1">&#39;Content of image&#39;</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span>
@@ -171,7 +168,7 @@
                 <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
                     <span class="n">keyword</span> <span class="o">=</span> <span class="n">keyword</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                     
-                <span class="n">keyword</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%-8s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">keyword</span><span class="o">.</span><span class="n">upper</span><span class="p">()[:(</span><span class="mi">8</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">))]</span><span class="o">+</span><span class="n">suffix</span><span class="p">))</span> <span class="c1">#(&quot;%-8s&quot; % keyword.upper())[:8]</span>
+                <span class="n">keyword</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{:&lt;8s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">keyword</span><span class="o">.</span><span class="n">upper</span><span class="p">()[:(</span><span class="mi">8</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">))]</span><span class="o">+</span><span class="n">suffix</span><span class="p">)</span>
                 <span class="n">header</span><span class="p">[</span><span class="n">keyword</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="n">attr</span><span class="p">),</span><span class="n">comment</span><span class="p">)</span>
 
         <span class="c1"># use helper func to put attrs in header</span>
@@ -181,16 +178,16 @@
 
         <span class="c1"># store all model parameter values</span>
         <span class="c1"># enforce last valid non-whitespace char to be &#39;_&#39; to avoid name-space collisions</span>
-        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">image_</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">image_</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
             <span class="n">add2header</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="s1">&#39;model parameter value&#39;</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
 
         <span class="c1"># slightly more complex attrs</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;pa&#39;</span><span class="p">):</span>
-            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;PA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;position angle (</span><span class="si">%s</span><span class="s1"> from N)&#39;</span> <span class="o">%</span> <span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;PA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;position angle (</span><span class="si">{:s}</span><span class="s1"> from N)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">pa</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">()))</span>
             
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image_</span><span class="p">,</span><span class="s1">&#39;wave&#39;</span><span class="p">):</span>
-            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;wave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;wavelength (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+            <span class="n">header</span><span class="p">[</span><span class="s1">&#39;wave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;wavelength (</span><span class="si">{:s}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image_</span><span class="o">.</span><span class="n">wave</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">to_string</span><span class="p">()))</span>
 
         <span class="c1"># Add HDU creation timestamp.</span>
         <span class="c1"># Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf</span>
@@ -292,16 +289,16 @@
 
 <span class="sd">           ff = FitsFile(&#39;oiftisfile.fits&#39;)</span>
 
-<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;value&#39;)   # return value of key &#39;naxis&#39; from hdu=4</span>
+<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;value&#39;) # return value of key &#39;naxis&#39; from hdu=4</span>
 <span class="sd">             2</span>
 
-<span class="sd">           ff.get(&#39;naxis&#39;,4,)   # &#39;value&#39; is the default</span>
+<span class="sd">           ff.get(&#39;naxis&#39;,4,) # &#39;value&#39; is the default</span>
 <span class="sd">             2</span>
 
-<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;comment&#39;)  # return only the corresponding comment</span>
+<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;comment&#39;) # return only the corresponding comment</span>
 <span class="sd">             &#39;Binary table&#39;</span>
 
-<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;card&#39;)    # return the entire card = (key,value,comment) as a tuple</span>
+<span class="sd">           ff.get(&#39;naxis&#39;,4,&#39;card&#39;) # return the entire card = (key,value,comment) as a tuple</span>
 <span class="sd">             (&#39;NAXIS&#39;, 2, &#39;Binary table&#39;)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -345,9 +342,9 @@
 
 <span class="sd">           ff = FitsFile(&#39;..examples/Circinus_Burtscher_2013.oifits&#39;)</span>
 
-<span class="sd">           ff.getdata(hdu=4)  # return all hdu.data</span>
+<span class="sd">           ff.getdata(hdu=4) # return all hdu.data</span>
 
-<span class="sd">           ff.getdata(4,&#39;vcoord&#39;)  # Get v-coordinates (from u,v plane)</span>
+<span class="sd">           ff.getdata(4,&#39;vcoord&#39;) # Get v-coordinates (from u,v plane)</span>
 <span class="sd">              array([-41.04285049,   1.51398432,  13.22854233,  35.11543655,</span>
 <span class="sd">                      30.22608757,   1.65713799, -31.00023651, -40.52364731,</span>
 <span class="sd">                      42.68415833,  33.51140594,  15.40285206,   3.22378659,</span>
@@ -356,7 +353,7 @@
 <span class="sd">                      -8.03857231,  -8.59758091,  15.26423931,  13.05595779,</span>
 <span class="sd">                      10.33599758,   6.71977472,   0.81495309,  -2.18943191])</span>
 
-<span class="sd">           ff.getdata(2,&#39;raep0&#39;), ff.getdata(2,&#39;decep0&#39;)  # get RA &amp; DEC</span>
+<span class="sd">           ff.getdata(2,&#39;raep0&#39;), ff.getdata(2,&#39;decep0&#39;) # get RA &amp; DEC</span>
 <span class="sd">              (array([ 213.292174]), array([-65.33936]))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -405,7 +402,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

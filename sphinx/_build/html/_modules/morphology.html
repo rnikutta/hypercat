@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>morphology &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,8 +46,14 @@
           <div class="body" role="main">
             
   <h1>Source code for morphology</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span> <span class="c1"># yyyymmdd</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span><span class="p">,</span> <span class="n">integrate</span>
 <span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">signal</span>
 
@@ -61,6 +64,27 @@
 
 <span class="kn">from</span> <span class="nn">astropy.modeling.functional_models</span> <span class="k">import</span> <span class="n">Gaussian2D</span>
 
+<div class="viewcode-block" id="gini"><a class="viewcode-back" href="../morphology.html#morphology.gini">[docs]</a><span class="k">def</span> <span class="nf">gini</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Gini index of array `arr`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mf">1.e-10</span>
+
+    <span class="n">min_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">min_</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">-=</span> <span class="n">min_</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span> <span class="o">+</span> <span class="n">eps</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">idx</span><span class="p">,</span><span class="n">min_</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">idx</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">arr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">G</span></div>
+    
 
 <div class="viewcode-block" id="rotateVector"><a class="viewcode-back" href="../morphology.html#morphology.rotateVector">[docs]</a><span class="k">def</span> <span class="nf">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">90.</span><span class="p">):</span>
 
@@ -85,7 +109,7 @@
 
 <span class="sd">    .. code-block:: python</span>
 
-<span class="sd">       vec = N.array([0.,1.])  # unit vector along postive y-axis</span>
+<span class="sd">       vec = N.array([0.,1.]) # unit vector along postive y-axis</span>
 <span class="sd">       rotateVector(vec,deg=90.)</span>
 <span class="sd">         array([ -1., 0.])</span>
 
@@ -155,11 +179,11 @@
 
     <span class="k">if</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s2">&quot;b to the right of a&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;b to the right of a&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">sig</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s2">&quot;b to the left of a&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;b to the left of a&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s2">&quot;b parallel/antiparallel to a&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;b parallel/antiparallel to a&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">sig</span></div>
 
@@ -178,8 +202,8 @@
 <span class="c1">#    return Z</span>
 
 <div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../morphology.html#morphology.gaussian">[docs]</a><span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">101</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span> <span class="o">-</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npix</span><span class="p">)</span> <span class="o">-</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -265,24 +289,24 @@
     <span class="n">thresh</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="c1"># pixels as dim as this (in percent) of peak pixel brightness will be considered</span>
 <span class="c1">#    y, x = N.argwhere(image&gt;thresh*image.max()).T</span>
     <span class="n">xind</span><span class="p">,</span> <span class="n">yind</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">image</span><span class="o">&gt;</span><span class="n">thresh</span><span class="o">*</span><span class="n">image</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">T</span>
-<span class="c1">#    print &quot;x.sum(), y.sum() = &quot;, x.sum(), y.sum()</span>
+<span class="c1">#    print(&quot;x.sum(), y.sum() = &quot;, x.sum(), y.sum())</span>
 <span class="c1">#    y, x = N.nonzero(image)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">xind</span> <span class="o">-</span> <span class="n">xind</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">yind</span> <span class="o">-</span> <span class="n">yind</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">))</span>
     <span class="n">cov</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot;evals = &quot;</span><span class="p">,</span> <span class="n">evals</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;evals = &quot;</span><span class="p">,</span> <span class="n">evals</span><span class="p">)</span>
 <span class="c1">#    idmax = N.argmin(evals)</span>
     <span class="n">idmax</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">evals</span><span class="p">)</span>
     <span class="n">evec1</span> <span class="o">=</span> <span class="n">evecs</span><span class="p">[</span><span class="n">idmax</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="s2">&quot;evec1 = &quot;</span><span class="p">,</span> <span class="n">evec1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;evec1 = &quot;</span><span class="p">,</span> <span class="n">evec1</span><span class="p">)</span>
 
 <span class="c1">#    sig = whichside(evec1,N.array([0.,1.]))</span>
     <span class="n">sig</span> <span class="o">=</span> <span class="n">whichside</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]),</span><span class="n">evec1</span><span class="p">)</span>
     <span class="n">sig2</span> <span class="o">=</span> <span class="n">whichside</span><span class="p">(</span><span class="n">evec1</span><span class="p">,</span><span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">]))</span>
 <span class="c1">#    sig = whichside(evec1,N.array([1.,0.]))</span>
-    <span class="nb">print</span> <span class="s2">&quot;sig = &quot;</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">sig2</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sig = &quot;</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">sig2</span><span class="p">)</span>
     
 <span class="c1">#    if sig == -1.:</span>
 <span class="c1">##        evec1[0] = -evec1[0]</span>
@@ -324,13 +348,13 @@
 <span class="sd">    .. code-block:: python</span>
 
 <span class="sd">       getUnitVector(axis=0,ndim=2)</span>
-<span class="sd">         array([ 1.,  0.])  # 2-d unit vector along x-axis</span>
+<span class="sd">         array([ 1.,  0.]) # 2-d unit vector along x-axis</span>
 
 <span class="sd">       getUnitVector(1,2)</span>
-<span class="sd">         array([ 0.,  1.])  # 2-d unit vector along y-axis</span>
+<span class="sd">         array([ 0.,  1.]) # 2-d unit vector along y-axis</span>
 
 <span class="sd">       getUnitVector(1,5)</span>
-<span class="sd">         array([ 0.,  1.,  0.,  0.,  0.])  # 5-d unit vector along 2nd axis</span>
+<span class="sd">         array([ 0.,  1.,  0.,  0.,  0.]) # 5-d unit vector along 2nd axis</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     
@@ -420,7 +444,7 @@
         <span class="k">return</span> <span class="n">res</span>
 
     
-    <span class="n">res</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">dblquad</span><span class="p">(</span><span class="n">getI</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="mf">0.</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="n">epsabs</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">03</span><span class="p">,</span> <span class="n">epsrel</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">03</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">dblquad</span><span class="p">(</span><span class="n">getI</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="mf">0.</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span><span class="n">epsabs</span><span class="o">=</span><span class="mf">1e-03</span><span class="p">,</span> <span class="n">epsrel</span><span class="o">=</span><span class="mf">1e-03</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c1">#    integrate.dblquad(func, -pi/2, pi/2, lambda x:-pi/2, lambda x:pi/2)[0]</span>
 
 <span class="c1">#    return ip, theta</span>
@@ -442,18 +466,18 @@
 
 
 <span class="k">def</span> <span class="nf">get_wavelet</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
-    <span class="nb">print</span> <span class="n">a</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="n">x</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
     <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mf">2.</span><span class="o">+</span><span class="n">Y</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mf">2.</span><span class="o">+</span><span class="n">Y</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">g</span>
 
 
 <div class="viewcode-block" id="get_wavelet_elliptical_mexh"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet_elliptical_mexh">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet_elliptical_mexh</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
-    <span class="nb">print</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span>
-    <span class="n">xa</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">xb</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">xa</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xb</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xa</span><span class="p">,</span><span class="n">xb</span><span class="p">)</span>
     <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mi">3</span><span class="o">*</span><span class="n">b</span><span class="o">**</span><span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">a</span><span class="o">/</span><span class="n">b</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="p">(</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">b</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">g</span></div>
@@ -461,10 +485,10 @@
 <span class="c1">#def get_wavelet_elliptical_mexh_vuong(npix,s=10.,sigma=1.,a=0,b=0):</span>
 <span class="c1">#def get_wavelet_elliptical_mexh_vuong(npix,s=5.,sigma=2.):</span>
 <div class="viewcode-block" id="get_wavelet_elliptical_mexh_vuong"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet_elliptical_mexh_vuong">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet_elliptical_mexh_vuong</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
-<span class="c1">#    print a, b</span>
+<span class="c1">#    print(a,b)</span>
     <span class="n">sigma</span> <span class="o">=</span> <span class="n">sx</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
-    <span class="n">xa</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">xb</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xa</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xb</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xa</span><span class="p">,</span><span class="n">xb</span><span class="p">)</span>
 
 <span class="c1">#    g = (1./(2*N.pi*a**3*b**3)) * (a**2+b**2-(X**2/(a/b)**2)-(Y**2/(b/a)**2)) * N.exp(-0.5*((X**2/a**2)+(Y**2/b**2)))</span>
@@ -478,7 +502,7 @@
 
 <div class="viewcode-block" id="get_wavelet_elliptical_mexh_vuong_fast"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet_elliptical_mexh_vuong_fast">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet_elliptical_mexh_vuong_fast</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sy</span><span class="o">=</span><span class="mf">5.</span><span class="p">):</span>
 <span class="c1">#    sigma = sx/float(sy)</span>
-    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span><span class="n">x_</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
     <span class="n">AUX</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="n">sx</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">Y</span><span class="o">**</span><span class="mf">2.</span><span class="o">/</span><span class="n">sy</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
 <span class="c1">#    K = sigma**2./(16*N.pi**3.)</span>
@@ -488,14 +512,14 @@
 
 
 <div class="viewcode-block" id="get_wavelet_elliptical_mexh_gaillot"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet_elliptical_mexh_gaillot">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet_elliptical_mexh_gaillot</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
-    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span><span class="n">x_</span><span class="p">)</span>
     <span class="n">AUX</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="p">(</span><span class="n">sigma</span><span class="o">*</span><span class="n">Y</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">/</span> <span class="n">sx</span><span class="o">**</span><span class="mf">2.</span>
     <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">AUX</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">AUX</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">g</span></div>
 
 <div class="viewcode-block" id="get_wavelet_elliptical_mexh_gaillot_full"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet_elliptical_mexh_gaillot_full">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet_elliptical_mexh_gaillot_full</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">sx</span><span class="o">=</span><span class="mf">5.</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
-    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x_</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span><span class="n">x_</span><span class="p">)</span>
     <span class="n">AUX</span> <span class="o">=</span> <span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">/</span> <span class="n">sx</span><span class="o">**</span><span class="mf">2.</span>
     <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">AUX</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="n">AUX</span><span class="p">)</span>
@@ -508,7 +532,8 @@
     <span class="n">IMG</span> <span class="o">=</span> <span class="n">img</span>
     <span class="n">npix</span><span class="o">=</span><span class="n">IMG</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">wavelet</span> <span class="o">=</span> <span class="n">get_wavelet</span><span class="p">(</span><span class="n">IMG</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">a_</span><span class="p">)</span>
-    <span class="n">conv</span> <span class="o">=</span> <span class="n">convolve_fft</span><span class="p">(</span><span class="n">IMG</span><span class="p">,</span><span class="n">wavelet</span><span class="o">/</span><span class="n">a_</span><span class="p">)</span>
+<span class="c1">#    conv = convolve_fft(IMG,wavelet/a_)</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">convolve_fft</span><span class="p">(</span><span class="n">IMG</span><span class="p">,</span><span class="n">wavelet</span><span class="o">//</span><span class="n">a_</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">IMG</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">IMG</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -517,13 +542,14 @@
     <span class="n">ax3</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
     <span class="n">ax3</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
     <span class="n">ax3</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
-    <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="mi">133</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="o">/</span><span class="mi">2</span><span class="p">),(</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="p">,</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="p">),</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="mi">133</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="o">/</span><span class="mi">2</span><span class="p">),(</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="p">,</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="o">+</span><span class="mi">133</span><span class="p">),</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">ax4</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
     <span class="n">ax4</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">results</span><span class="p">,</span><span class="s1">&#39;b.-&#39;</span><span class="p">,</span><span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
     <span class="n">ax4</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">a_</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="work"><a class="viewcode-back" href="../morphology.html#morphology.work">[docs]</a><span class="k">def</span> <span class="nf">work</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+<span class="c1">#    return convolve_fft(img,get_wavelet(img.shape[0],a)/a).mean()/a</span>
     <span class="k">return</span> <span class="n">convolve_fft</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">get_wavelet</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">/</span><span class="n">a</span></div>
 
     
@@ -553,9 +579,9 @@
     <span class="n">angles</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">waves</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">iw</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">waves</span><span class="p">):</span>
-        <span class="nb">print</span> <span class="n">w</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ia</span><span class="p">,</span><span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
-            <span class="nb">print</span> <span class="n">a</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">w</span><span class="p">))</span>
             <span class="n">ratio</span> <span class="o">=</span> <span class="n">img</span><span class="p">[:,</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">img</span><span class="p">[:,:</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">res</span><span class="p">[</span><span class="n">iw</span><span class="p">,</span><span class="n">ia</span><span class="p">]</span> <span class="o">=</span> <span class="n">ratio</span></div>
@@ -566,9 +592,9 @@
     <span class="n">angles</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">90</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">waves</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="n">angles</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">iw</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">waves</span><span class="p">):</span>
-        <span class="nb">print</span> <span class="n">w</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ia</span><span class="p">,</span><span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">angles</span><span class="p">):</span>
-            <span class="nb">print</span> <span class="n">a</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">a0</span><span class="p">)</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">((</span><span class="n">a</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">w</span><span class="p">))</span>
             <span class="n">aux</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">res</span><span class="p">[</span><span class="n">iw</span><span class="p">,</span><span class="n">ia</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span>
@@ -577,7 +603,7 @@
 
 
 <div class="viewcode-block" id="get_wavelet"><a class="viewcode-back" href="../morphology.html#morphology.get_wavelet">[docs]</a><span class="k">def</span> <span class="nf">get_wavelet</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
     <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">Y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">g</span></div>
@@ -608,10 +634,10 @@
 <div class="viewcode-block" id="symmetric1"><a class="viewcode-back" href="../morphology.html#morphology.symmetric1">[docs]</a><span class="k">def</span> <span class="nf">symmetric1</span><span class="p">(</span><span class="n">npix</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span><span class="n">savefile</span><span class="o">=</span><span class="s1">&#39;symmertric1.npz&#39;</span><span class="p">):</span>
 
     <span class="n">x</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="n">npix</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 <span class="c1">#    x = N.arange(npix)</span>
 
-    <span class="nb">print</span> <span class="s2">&quot;Computing images&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computing images&quot;</span><span class="p">)</span>
 
 <span class="c1">#    G0  = gaussian2d_circular(npix,5.,0.,0.,0.) # symmetric Gaussian, nx=ny=10</span>
     
@@ -636,23 +662,23 @@
 <span class="c1">#    images = [G0,G,G1]</span>
 <span class="c1">#    images = [G0]</span>
 
-    <span class="nb">print</span> <span class="s2">&quot;Computing convolutions&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computing convolutions&quot;</span><span class="p">)</span>
     <span class="n">convomaxvals</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)))</span>
     <span class="k">for</span> <span class="n">jimg</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
         <span class="n">wl</span> <span class="o">=</span> <span class="n">wavelets</span><span class="p">[</span><span class="n">jimg</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">jx</span><span class="p">,</span> <span class="n">x_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">jx</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span> <span class="n">x_</span>
+            <span class="k">if</span> <span class="n">jx</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">x_</span><span class="p">)</span>
 <span class="c1">#        wl = get_wavelet(npix,x_)</span>
             <span class="n">C</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">wl</span><span class="o">/</span><span class="n">x_</span><span class="p">)</span> <span class="c1">#/ float(x_)</span>
 <span class="c1">#            C = signal.convolve2d(img,wl/float(x_))</span>
             <span class="n">convomaxvals</span><span class="p">[</span><span class="n">jx</span><span class="p">,</span><span class="n">jimg</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">x_</span>
     
     <span class="k">if</span> <span class="n">savefile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot;Storing results in file &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">savefile</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Storing results in file &#39;</span><span class="si">{:s}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">savefile</span><span class="p">))</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <span class="c1">#            N.savez(savefile,G=G,Gh=Gh,Gv=Gv)</span>
             <span class="n">N</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">savefile</span><span class="p">,</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span><span class="n">wavelets</span><span class="o">=</span><span class="n">wavelets</span><span class="p">,</span><span class="n">convomaxvals</span><span class="o">=</span><span class="n">convomaxvals</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;Done.&quot;</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span></div>
 
     
 <div class="viewcode-block" id="plot_symmetric1"><a class="viewcode-back" href="../morphology.html#morphology.plot_symmetric1">[docs]</a><span class="k">def</span> <span class="nf">plot_symmetric1</span><span class="p">(</span><span class="n">loadfile</span><span class="o">=</span><span class="s1">&#39;symmetric1.npz&#39;</span><span class="p">):</span>
@@ -660,26 +686,24 @@
     <span class="n">data</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">loadfile</span><span class="p">)</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
     <span class="n">images</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;images&#39;</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="s2">&quot;len(images) = &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;len(images) = &quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">))</span>
     <span class="n">wavelets</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;wavelets&#39;</span><span class="p">]</span>
     <span class="n">convomaxvals</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;convomaxvals&#39;</span><span class="p">]</span>
 
-    <span class="nb">print</span> <span class="s2">&quot;images max vals = &quot;</span>
-    <span class="nb">print</span> <span class="p">[</span><span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="p">[</span><span class="n">img</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;images max vals = &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">([</span><span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">([</span><span class="n">img</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">])</span>
     
     <span class="n">fig</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-<span class="c1">#    for j in xrange(0,3):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">wavelets</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
         
-<span class="c1">#    for j in xrange(3,6):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)):</span>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">6</span><span class="p">)</span>
 <span class="c1">#        C = convomaxvals[j-3]</span>
         <span class="n">C</span> <span class="o">=</span> <span class="n">convomaxvals</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span>
@@ -687,7 +711,7 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="s1">&#39;b-&#39;</span><span class="p">)</span>
         <span class="n">xmax</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">N</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">C</span><span class="p">)]</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">xmax</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;xmax = </span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">xmax</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;xmax = </span><span class="si">{:g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xmax</span><span class="p">))</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span></div>
@@ -734,7 +758,7 @@
 
 <span class="c1">#    x0,y0 = ndimage.center_of_mass(image)</span>
     <span class="n">npix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
 <span class="c1">#    p.imshow(image.T,origin=&#39;lower&#39;,interpolation=&#39;none&#39;)</span>
     <span class="n">evec1</span><span class="p">,</span><span class="n">x_</span><span class="p">,</span><span class="n">y_</span><span class="p">,</span><span class="n">sig2</span> <span class="o">=</span> <span class="n">imageToEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
     <span class="n">measured</span> <span class="o">=</span> <span class="n">getAngle</span><span class="p">(</span><span class="n">evec1</span><span class="p">,</span><span class="n">ey</span><span class="p">)</span></div>
@@ -762,13 +786,13 @@
     <span class="n">angles</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">181</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="n">angles</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="n">angle</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">I</span><span class="p">,</span><span class="n">angle</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="c1">#x0,y0 = N.unravel_index(N.argmax(image),image.shape)</span>
         <span class="n">x0</span><span class="p">,</span><span class="n">y0</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">center_of_mass</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="n">npix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
         <span class="n">p</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
         <span class="c1">#p.scatter(x0,y0,marker=&#39;x&#39;,s=25,c=&#39;b&#39;)</span>
         <span class="n">evec1</span><span class="p">,</span><span class="n">x_</span><span class="p">,</span><span class="n">y_</span><span class="p">,</span><span class="n">sig2</span> <span class="o">=</span> <span class="n">imageToEigenvectors</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -785,12 +809,12 @@
         <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">xl</span><span class="p">,</span><span class="n">xr</span><span class="p">),(</span><span class="n">yl</span><span class="p">,</span><span class="n">yr</span><span class="p">),</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;measured PA = </span><span class="si">%.2f</span><span class="s1">, with x-axis = </span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">measured</span><span class="p">,</span><span class="n">measured</span><span class="o">-</span><span class="mf">90.</span><span class="p">))</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;measured PA = </span><span class="si">{:.2f}</span><span class="s1">, with x-axis = </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">measured</span><span class="p">,</span><span class="n">measured</span><span class="o">-</span><span class="mf">90.</span><span class="p">))</span>
         <span class="n">p</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">waitforbuttonpress</span><span class="p">()</span>
         <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-        <span class="nb">print</span></div>
+        <span class="nb">print</span><span class="p">()</span></div>
 </pre></div>
 
           </div>
@@ -827,7 +851,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

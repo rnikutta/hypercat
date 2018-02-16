@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>units &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,7 +46,9 @@
           <div class="body" role="main">
             
   <h1>Source code for units</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170728&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling units and units strings.</span>
@@ -78,7 +77,7 @@
 
          
 <span class="c1"># compile regex pattern to identify numbers in a string</span>
-<span class="n">numeric_pattern</span> <span class="o">=</span> <span class="s2">r&quot;&quot;&quot;^\s*</span>
+<span class="n">numeric_pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;^\s*</span>
 <span class="s2">         [-+]? # optional sign</span>
 <span class="s2">         \s*</span>
 <span class="s2">         (?:</span>
@@ -117,9 +116,9 @@
 <span class="sd">              LINEAR   (&#39;cm&#39;, &#39;m&#39;, &#39;AU&#39;, &#39;lyr&#39;, &#39;pc&#39;, &#39;kpc&#39;, &#39;Mpc&#39;, &#39;Gpc&#39;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="nb">print</span> <span class="s2">&quot;Category       Permitted units&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Category       Permitted units&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">UNITS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">%12s</span><span class="s2">  &quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:12s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k_</span><span class="p">),</span><span class="n">v</span><span class="p">)</span></div>
     
 
 <div class="viewcode-block" id="getQuantity"><a class="viewcode-back" href="../units.html#units.getQuantity">[docs]</a><span class="k">def</span> <span class="nf">getQuantity</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">recognized_units</span><span class="p">):</span>
@@ -215,7 +214,7 @@
         <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 
     <span class="k">if</span> <span class="n">unit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">recognized_units</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specified unit &#39;</span><span class="si">%s</span><span class="s2">&#39; is not recognized. Recognized are: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recognized_units</span><span class="p">)))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specified unit &#39;</span><span class="si">{:s}</span><span class="s2">&#39; is not recognized. Recognized are: </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">recognized_units</span><span class="p">)))</span>
 
     <span class="n">unit</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
 
@@ -256,7 +255,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

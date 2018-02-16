@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>ioops module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="loggers module" href="loggers.html" />
@@ -59,11 +56,12 @@
 <span id="ioops-module"></span><h1>ioops module<a class="headerlink" href="#module-ioops" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="ioops.FitsFile">
-<em class="property">class </em><code class="descclassname">ioops.</code><code class="descname">FitsFile</code><span class="sig-paren">(</span><em>f</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience class to read (OI)FITS files.</p>
+<em class="property">class </em><code class="descclassname">ioops.</code><code class="descname">FitsFile</code><span class="sig-paren">(</span><em>f</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Convenience class to read (OI)FITS files.</p>
 <dl class="method">
 <dt id="ioops.FitsFile.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>f</em>, <em>mode=’r’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>f</em>, <em>mode='r'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Init.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -77,7 +75,7 @@
 
 <dl class="method">
 <dt id="ioops.FitsFile.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>hdu=0</em>, <em>what=’value’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>hdu=0</em>, <em>what='value'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ioops.html#FitsFile.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ioops.FitsFile.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get either a card, value, or comment, from the header of hdu.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -105,16 +103,16 @@ matches <code class="docutils literal"><span class="pre">keyword</span></code>.<
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">FitsFile</span><span class="p">(</span><span class="s1">&#39;oiftisfile.fits&#39;</span><span class="p">)</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>   <span class="c1"># return value of key &#39;naxis&#39; from hdu=4</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">)</span> <span class="c1"># return value of key &#39;naxis&#39; from hdu=4</span>
   <span class="mi">2</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,)</span>   <span class="c1"># &#39;value&#39; is the default</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,)</span> <span class="c1"># &#39;value&#39; is the default</span>
   <span class="mi">2</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span>  <span class="c1"># return only the corresponding comment</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;comment&#39;</span><span class="p">)</span> <span class="c1"># return only the corresponding comment</span>
   <span class="s1">&#39;Binary table&#39;</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;card&#39;</span><span class="p">)</span>    <span class="c1"># return the entire card = (key,value,comment) as a tuple</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;naxis&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;card&#39;</span><span class="p">)</span> <span class="c1"># return the entire card = (key,value,comment) as a tuple</span>
   <span class="p">(</span><span class="s1">&#39;NAXIS&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Binary table&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -140,9 +138,9 @@ record named by <code class="docutils literal"><span class="pre">field</span></c
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ff</span> <span class="o">=</span> <span class="n">FitsFile</span><span class="p">(</span><span class="s1">&#39;..examples/Circinus_Burtscher_2013.oifits&#39;</span><span class="p">)</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">hdu</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># return all hdu.data</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">hdu</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># return all hdu.data</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;vcoord&#39;</span><span class="p">)</span>  <span class="c1"># Get v-coordinates (from u,v plane)</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s1">&#39;vcoord&#39;</span><span class="p">)</span> <span class="c1"># Get v-coordinates (from u,v plane)</span>
    <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">41.04285049</span><span class="p">,</span>   <span class="mf">1.51398432</span><span class="p">,</span>  <span class="mf">13.22854233</span><span class="p">,</span>  <span class="mf">35.11543655</span><span class="p">,</span>
            <span class="mf">30.22608757</span><span class="p">,</span>   <span class="mf">1.65713799</span><span class="p">,</span> <span class="o">-</span><span class="mf">31.00023651</span><span class="p">,</span> <span class="o">-</span><span class="mf">40.52364731</span><span class="p">,</span>
            <span class="mf">42.68415833</span><span class="p">,</span>  <span class="mf">33.51140594</span><span class="p">,</span>  <span class="mf">15.40285206</span><span class="p">,</span>   <span class="mf">3.22378659</span><span class="p">,</span>
@@ -151,7 +149,7 @@ record named by <code class="docutils literal"><span class="pre">field</span></c
            <span class="o">-</span><span class="mf">8.03857231</span><span class="p">,</span>  <span class="o">-</span><span class="mf">8.59758091</span><span class="p">,</span>  <span class="mf">15.26423931</span><span class="p">,</span>  <span class="mf">13.05595779</span><span class="p">,</span>
            <span class="mf">10.33599758</span><span class="p">,</span>   <span class="mf">6.71977472</span><span class="p">,</span>   <span class="mf">0.81495309</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.18943191</span><span class="p">])</span>
 
-<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;raep0&#39;</span><span class="p">),</span> <span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;decep0&#39;</span><span class="p">)</span>  <span class="c1"># get RA &amp; DEC</span>
+<span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;raep0&#39;</span><span class="p">),</span> <span class="n">ff</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s1">&#39;decep0&#39;</span><span class="p">)</span> <span class="c1"># get RA &amp; DEC</span>
    <span class="p">(</span><span class="n">array</span><span class="p">([</span> <span class="mf">213.292174</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">65.33936</span><span class="p">]))</span>
 </pre></div>
 </div>
@@ -304,7 +302,7 @@ optionally <code class="docutils literal"><span class="pre">.wcs</span></code>),
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

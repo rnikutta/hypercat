@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>hypercat &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,7 +46,9 @@
           <div class="body" role="main">
             
   <h1>Source code for hypercat</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170828&#39;</span> <span class="c1">#yyyymmdd</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span> <span class="c1">#yyyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
@@ -60,7 +59,7 @@
 <span class="c1"># IMPORTS</span>
 <span class="c1"># std lib</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="c1">#import logging</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">itemgetter</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
@@ -156,15 +155,19 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="o">=</span> <span class="n">omit</span>
 
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening HDF5 file: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">hdffile</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening HDF5 file: </span><span class="si">{:s}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hdffile</span><span class="p">))</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdffile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">hypercube</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">groupname</span> <span class="o">=</span> <span class="n">hypercube</span>
         
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading sampling parameters.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="c1">#        self.paramnames = self.group[&#39;paramnames&#39;].value.tolist()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
 
         <span class="n">iY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
@@ -174,7 +177,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">npix_per_Rd</span> <span class="o">=</span> <span class="p">(</span><span class="n">npix</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ymax</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npix_per_Rd</span>  <span class="c1"># alias</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Closing HDF5 file.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
        
@@ -198,7 +201,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">d</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">loadjson</span><span class="p">(</span><span class="n">subcube_selection</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;idxes&#39;</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">))]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytesize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -213,11 +216,11 @@
         <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytes_human</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span><span class="p">)</span>
             
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullcubesize</span><span class="p">:</span>
-            <span class="n">hypercubestr</span> <span class="o">=</span> <span class="s1">&#39;hyperslab [shape: (</span><span class="si">%s</span><span class="s1">)] from&#39;</span> <span class="o">%</span> <span class="n">seq2str</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">])</span>
+            <span class="n">hypercubestr</span> <span class="o">=</span> <span class="s1">&#39;hyperslab [shape: (</span><span class="si">{:s}</span><span class="s1">)] from&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seq2str</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">hypercubestr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
             
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading </span><span class="si">%s</span><span class="s2"> hypercube &#39;</span><span class="si">%s</span><span class="s2">&#39; [shape: (</span><span class="si">%s</span><span class="s2">)] to RAM (</span><span class="si">%.2f</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> required) ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hypercubestr</span><span class="p">,</span><span class="n">hypercube</span><span class="p">,</span><span class="n">seq2str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullcubeshape</span><span class="p">),</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading </span><span class="si">{:s}</span><span class="s2"> hypercube &#39;</span><span class="si">{:s}</span><span class="s2">&#39; [shape: (</span><span class="si">{:s}</span><span class="s2">)] to RAM (</span><span class="si">{:.2f}</span><span class="s2"> </span><span class="si">{:s}</span><span class="s2"> required) ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hypercubestr</span><span class="p">,</span><span class="n">hypercube</span><span class="p">,</span><span class="n">seq2str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fullcubeshape</span><span class="p">),</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">))</span>
         <span class="n">dsmm</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">memmap_hdf5_dataset</span><span class="p">(</span><span class="n">hdffile</span><span class="p">,</span><span class="n">hypercube</span><span class="o">+</span><span class="s1">&#39;/hypercube&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_hyperslab_via_mesh</span><span class="p">(</span><span class="n">dsmm</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">idxes</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span>
@@ -258,62 +261,105 @@
 
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Done.&quot;</span><span class="p">)</span>
         
-        <span class="nb">print</span> <span class="s2">&quot;Inspect loaded hypercube with .print_sampling()</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Inspect the loaded hypercube with .print_sampling()</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">print_sampling</span><span class="p">()</span></div>
         
 
+<span class="c1">#good    def print_sampling(self,n=11,fmt=&quot;%7.3f&quot;):</span>
+<span class="c1">#good</span>
+<span class="c1">#good        &quot;&quot;&quot;Print a summary table of the parameters and sampled values in the</span>
+<span class="c1">#good        hypercube.</span>
+<span class="c1">#good</span>
+<span class="c1">#good        Parameters</span>
+<span class="c1">#good        ----------</span>
+<span class="c1">#good        n : int</span>
+<span class="c1">#good            The first `n` sampled elements of every parameter will be</span>
+<span class="c1">#good            printed. If the list is shorter than `n`, all of it will</span>
+<span class="c1">#good            be printed. Default: 11.</span>
+<span class="c1">#good</span>
+<span class="c1">#good        fmt : str</span>
+<span class="c1">#good            Format string to use for a single value. Default: &#39;%7.3f&#39;</span>
+<span class="c1">#good</span>
+<span class="c1">#good        Example</span>
+<span class="c1">#good        -------</span>
+<span class="c1">#good        .. code-block:: python</span>
+<span class="c1">#good</span>
+<span class="c1">#good            cube.print_sampling(n=5)</span>
+<span class="c1">#good</span>
+<span class="c1">#good        Prints for instance:</span>
+<span class="c1">#good</span>
+<span class="c1">#good        .. code-block:: text</span>
+<span class="c1">#good</span>
+<span class="c1">#good           -------------------------------------------------------</span>
+<span class="c1">#good           Parameter  Range                Nvalues  Sampled values</span>
+<span class="c1">#good           -------------------------------------------------------</span>
+<span class="c1">#good             sig      [ 15.000 -  15.000]  (  1)    15.000</span>
+<span class="c1">#good               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573</span>
+<span class="c1">#good               Y      [ 20.000 -  20.000]  (  1)    20.000</span>
+<span class="c1">#good               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000</span>
+<span class="c1">#good               q      [  0.000 -   0.000]  (  1)     0.000</span>
+<span class="c1">#good              tv      [ 40.000 -  40.000]  (  1)    40.000</span>
+<span class="c1">#good            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500</span>
+<span class="c1">#good               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
+<span class="c1">#good               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
+<span class="c1">#good           -------------------------------------------------------</span>
+<span class="c1">#good           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.</span>
+<span class="c1">#good           Hypercube size: 14.8714 (MB)</span>
+<span class="c1">#good        &quot;&quot;&quot;</span>
+<span class="c1">#good</span>
+<span class="c1">#good        maxstr = &quot; %%% ds &quot; % max([len(p) for p in self.paramnames])  # longest parameter name</span>
+<span class="c1">#good        maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality</span>
+<span class="c1">#good</span>
+<span class="c1">#good        header = &quot;Parameter  Range                Nvalues  Sampled values&quot;</span>
+<span class="c1">#good        _len = len(header)</span>
+<span class="c1">#good        rule = &quot;-&quot;*_len</span>
+<span class="c1">#good        print(rule)</span>
+<span class="c1">#good        print(header)</span>
+<span class="c1">#good        print(rule)</span>
+<span class="c1">#good        </span>
+<span class="c1">#good        for p,v in zip(self.paramnames,self.theta):</span>
+<span class="c1">#good</span>
+<span class="c1">#good            srange = &quot;[%s&quot; % fmt % v[0] + &quot; - %s]&quot; % fmt % v[-1]  # range string</span>
+<span class="c1">#good            m = min(n,v.size)  # print n elements or all if number of elements smaller than n</span>
+<span class="c1">#good</span>
+<span class="c1">#good            vals = [&quot;%s&quot; % fmt % val for val in v[:m]]</span>
+<span class="c1">#good            svals = &quot;,&quot;.join(vals)  # all values to be printed, as a single string</span>
+<span class="c1">#good            if v.size &gt; n:</span>
+<span class="c1">#good                svals += &#39;, ...&#39;  # continuation indicator, if any</span>
+<span class="c1">#good</span>
+<span class="c1">#good            # bring everything together</span>
+<span class="c1">#good            parstr = maxstr % p</span>
+<span class="c1">#good            asterisk = &quot; &quot;</span>
+<span class="c1">#good            if (p not in self.omit) and (len(vals) != 1):</span>
+<span class="c1">#good                parstr = &quot;\033[1m&quot; + parstr</span>
+<span class="c1">#good                asterisk = &quot;*&quot;</span>
+<span class="c1">#good                svals = svals  + &quot;\033[0m&quot;</span>
+<span class="c1">#good                </span>
+<span class="c1">#good            print(parstr + asterisk + &quot;    %s&quot; % srange + &quot;  (%%%dd)   &quot; % maxn % v.size +  svals)</span>
+<span class="c1">#good            </span>
+<span class="c1">#good        print(rule)</span>
+<span class="c1">#good        print(&quot;Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.&quot;)</span>
+<span class="c1">#good</span>
+<span class="c1">#good        prefix, suffix = bfo.get_bytes_human(self.subcubesize)</span>
+<span class="c1">#good        print(&quot;Hypercube size: %g (%s)&quot; % (prefix, suffix))</span>
+<span class="c1">#good</span>
+<span class="c1">#good    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`</span>
+                     
+    
 <div class="viewcode-block" id="ModelCube.print_sampling"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.print_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">print_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%7.3f</span><span class="s2">&quot;</span><span class="p">):</span>
 
-        <span class="sd">&quot;&quot;&quot;Print a summary table of the parameters and sampled values in the</span>
-<span class="sd">        hypercube.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        n : int</span>
-<span class="sd">            The first `n` sampled elements of every parameter will be</span>
-<span class="sd">            printed. If the list is shorter than `n`, all of it will</span>
-<span class="sd">            be printed. Default: 11.</span>
-
-<span class="sd">        fmt : str</span>
-<span class="sd">            Format string to use for a single value. Default: &#39;%7.3f&#39;</span>
-
-<span class="sd">        Example</span>
-<span class="sd">        -------</span>
-<span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            cube.print_sampling(n=5)</span>
-
-<span class="sd">        Prints for instance:</span>
-
-<span class="sd">        .. code-block:: text</span>
-
-<span class="sd">           -------------------------------------------------------</span>
-<span class="sd">           Parameter  Range                Nvalues  Sampled values</span>
-<span class="sd">           -------------------------------------------------------</span>
-<span class="sd">             sig      [ 15.000 -  15.000]  (  1)    15.000</span>
-<span class="sd">               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573</span>
-<span class="sd">               Y      [ 20.000 -  20.000]  (  1)    20.000</span>
-<span class="sd">               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000</span>
-<span class="sd">               q      [  0.000 -   0.000]  (  1)     0.000</span>
-<span class="sd">              tv      [ 40.000 -  40.000]  (  1)    40.000</span>
-<span class="sd">            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500</span>
-<span class="sd">               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
-<span class="sd">               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...</span>
-<span class="sd">           -------------------------------------------------------</span>
-<span class="sd">           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.</span>
-<span class="sd">           Hypercube size: 14.8714 (MB)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">maxstr</span> <span class="o">=</span> <span class="s2">&quot; </span><span class="si">%%% d</span><span class="s2">s &quot;</span> <span class="o">%</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">])</span>  <span class="c1"># longest parameter name</span>
+<span class="c1">#        maxstr = &quot; %%% ds &quot; % max([len(p) for p in self.paramnames])  # longest parameter name</span>
+        <span class="n">maxlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">])</span>  <span class="c1"># length of longest parameter name</span>
         <span class="n">maxn</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">])</span>  <span class="c1"># largest parameter cardinality</span>
 
         <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;Parameter  Range                Nvalues  Sampled values&quot;</span>
         <span class="n">_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
         <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="n">_len</span>
-        <span class="nb">print</span> <span class="n">rule</span>
-        <span class="nb">print</span> <span class="n">header</span>
-        <span class="nb">print</span> <span class="n">rule</span>
-        
+        <span class="nb">print</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">):</span>
 
             <span class="n">srange</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; - </span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># range string</span>
@@ -325,22 +371,25 @@
                 <span class="n">svals</span> <span class="o">+=</span> <span class="s1">&#39;, ...&#39;</span>  <span class="c1"># continuation indicator, if any</span>
 
             <span class="c1"># bring everything together</span>
-            <span class="n">parstr</span> <span class="o">=</span> <span class="n">maxstr</span> <span class="o">%</span> <span class="n">p</span>
+<span class="c1">#            parstr = maxstr % p</span>
+            <span class="n">parstr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%%%d</span><span class="s1">s&#39;</span> <span class="o">%</span> <span class="n">maxlen</span> <span class="o">%</span> <span class="n">p</span>
+<span class="c1">#Py3            parstr = &quot;{{:&gt;{:d}s}}&quot;.format(maxlen).format(p)</span>
             <span class="n">asterisk</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">parstr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[1m&quot;</span> <span class="o">+</span> <span class="n">parstr</span>
                 <span class="n">asterisk</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span>
                 <span class="n">svals</span> <span class="o">=</span> <span class="n">svals</span>  <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
                 
-            <span class="nb">print</span> <span class="n">parstr</span> <span class="o">+</span> <span class="n">asterisk</span> <span class="o">+</span> <span class="s2">&quot;    </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">srange</span> <span class="o">+</span> <span class="s2">&quot;  (</span><span class="si">%%%d</span><span class="s2">d)   &quot;</span> <span class="o">%</span> <span class="n">maxn</span> <span class="o">%</span> <span class="n">v</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span>  <span class="n">svals</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">parstr</span> <span class="o">+</span> <span class="n">asterisk</span> <span class="o">+</span> <span class="s2">&quot;    </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">srange</span> <span class="o">+</span> <span class="s2">&quot;  (</span><span class="si">%%%d</span><span class="s2">d)   &quot;</span> <span class="o">%</span> <span class="n">maxn</span> <span class="o">%</span> <span class="n">v</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span>  <span class="n">svals</span><span class="p">)</span>
             
-        <span class="nb">print</span> <span class="n">rule</span>
-        <span class="nb">print</span> <span class="s2">&quot;Parameters printed in </span><span class="se">\033</span><span class="s2">[1mbold</span><span class="se">\033</span><span class="s2">[0m and/or marked with an asterisk (*) are interpolable.&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parameters printed in </span><span class="se">\033</span><span class="s2">[1mbold</span><span class="se">\033</span><span class="s2">[0m and/or marked with an asterisk (*) are interpolable.&quot;</span><span class="p">)</span>
 
         <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">bfo</span><span class="o">.</span><span class="n">get_bytes_human</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subcubesize</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;Hypercube size: </span><span class="si">%g</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hypercube size: </span><span class="si">%g</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">))</span></div>
 
     <span class="n">parameter_values</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">print_sampling</span><span class="p">)</span> <span class="c1">#: Property alias for :func:`print_sampling`</span>
+                     
     
 <div class="viewcode-block" id="ModelCube.get_image"><a class="viewcode-back" href="../hypercat.html#hypercat.ModelCube.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">vector</span><span class="p">,</span><span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
@@ -368,19 +417,19 @@
 <span class="sd">            # vector of parameter values; pixel axes are implicit (i.e. don&#39;t specify them)</span>
 <span class="sd">            theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)</span>
 <span class="sd">            image = cube.get_image(theta)</span>
-<span class="sd">            print image.shape</span>
+<span class="sd">            print(image.shape)</span>
 <span class="sd">              (441,441)   # (x,y)</span>
 
 <span class="sd">            # multi-wavelength cube</span>
 <span class="sd">            theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values</span>
 <span class="sd">            image = cube.get_image(theta)</span>
-<span class="sd">            print image.shape</span>
+<span class="sd">            print(image.shape)</span>
 <span class="sd">              (3,441,441)   # (x,y,lambda)</span>
 <span class="sd">            </span>
 <span class="sd">            # multi-wavelength and multi-viewing angle</span>
 <span class="sd">            theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas</span>
 <span class="sd">            image = cube.get_image(theta)</span>
-<span class="sd">            print image.shape</span>
+<span class="sd">            print(image.shape)</span>
 <span class="sd">              (4,3,441,441)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
@@ -456,7 +505,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span> <span class="o">=</span> <span class="n">get_pixelscale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rd</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span><span class="n">outunit</span><span class="o">=</span><span class="s1">&#39;mas&#39;</span><span class="p">,</span><span class="n">npix</span><span class="o">=</span><span class="n">cube</span><span class="o">.</span><span class="n">eta</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">pix</span>  <span class="c1"># mas (per pixel)</span></div>
 
         
-<div class="viewcode-block" id="Source.__call__"><a class="viewcode-back" href="../hypercat.html#hypercat.Source.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">wave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="s1">&#39;1 Jy&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Source.__call__"><a class="viewcode-back" href="../hypercat.html#hypercat.Source.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">theta</span><span class="p">,</span><span class="n">wave</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="s1">&#39;1 Jy&#39;</span><span class="p">,</span><span class="n">snr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">brightness_units</span><span class="o">=</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">):</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span>
 
@@ -472,11 +521,15 @@
 
         <span class="c1"># get raw image</span>
         <span class="n">rawimage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cube</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+<span class="c1">#        co = (rawimage &lt; 0.)</span>
+<span class="c1">#        rawimage[co] = 0. #*rawimage #.unit</span>
+
 
         <span class="c1"># instantiatie Image class, with physical units</span>
-<span class="c1">#        print &quot;SOURCE: self.pa before instaniating Image = &quot;</span>
-<span class="c1">#        print self.pa, type(self.pa)</span>
-        <span class="n">sky</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">rawimage</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pa</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="n">total_flux_density</span><span class="p">)</span>
+<span class="c1">#        print(&quot;SOURCE: self.pa before instaniating Image = &quot;)</span>
+<span class="c1">#        print(self.pa, type(self.pa))</span>
+        <span class="n">sky</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">rawimage</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">pa</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pa</span><span class="p">,</span><span class="n">total_flux_density</span><span class="o">=</span><span class="n">total_flux_density</span><span class="p">,</span><span class="n">snr</span><span class="o">=</span><span class="n">snr</span><span class="p">,</span><span class="n">brightness_units</span><span class="o">=</span><span class="n">brightness_units</span><span class="p">)</span>
+
         <span class="n">sky</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">wave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wave</span>
         <span class="n">sky</span><span class="o">.</span><span class="n">pa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pa</span>
@@ -548,7 +601,7 @@
     <span class="n">lum</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;LUMINOSITY&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;erg/s&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="n">tsub</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">tsub</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;TEMPERATURE&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;K&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     
-    <span class="n">Rd</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lum</span><span class="o">/</span><span class="mi">1</span><span class="n">e45</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1500.</span><span class="o">/</span><span class="n">tsub</span><span class="p">)</span><span class="o">**</span><span class="mf">2.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span>
+    <span class="n">Rd</span> <span class="o">=</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lum</span><span class="o">/</span><span class="mf">1e45</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1500.</span><span class="o">/</span><span class="n">tsub</span><span class="p">)</span><span class="o">**</span><span class="mf">2.6</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">pc</span>
 
     <span class="k">return</span> <span class="n">Rd</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">outunit</span><span class="p">)</span></div>
 
@@ -663,7 +716,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening FITS file: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">fitsfile</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening FITS file: </span><span class="si">{:s}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">))</span>
 
     <span class="n">hdulist</span> <span class="o">=</span> <span class="n">pyfits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fitsfile</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;update&#39;</span><span class="p">,</span><span class="n">save_backup</span><span class="o">=</span><span class="n">save_backup</span><span class="p">)</span>
 
@@ -671,17 +724,18 @@
     
     <span class="k">for</span> <span class="n">hduname</span> <span class="ow">in</span> <span class="n">hdus</span><span class="p">:</span>
         
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accessing HDU: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">hduname</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Accessing HDU: </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hduname</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">hdu</span> <span class="o">=</span> <span class="n">hdulist</span><span class="p">[</span><span class="n">hduname</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">%s</span><span class="s2">&#39; in file </span><span class="si">%s</span><span class="s2"> not found. Skipping this HDU.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hduname</span><span class="p">,</span><span class="n">fitsfile</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">{:s}</span><span class="s2">&#39; in file </span><span class="si">{:s}</span><span class="s2"> not found. Skipping this HDU.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hduname</span><span class="p">,</span><span class="n">fitsfile</span><span class="p">))</span>
             <span class="k">continue</span>
         
         <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hdu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-        <span class="k">if</span> <span class="n">nx</span> <span class="o">!=</span> <span class="p">(</span><span class="n">ny</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>   <span class="c1"># caution: integer division</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">%s</span><span class="s2">&#39; in file </span><span class="si">%s</span><span class="s2"> doesn&#39;t seem to contain a half-sized array (dims = (</span><span class="si">%s</span><span class="s2">). Skipping this HDU.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hduname</span><span class="p">,</span> <span class="n">fitsfile</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">])))</span>
+<span class="c1">#        if nx != (ny/2 + 1):   # caution: integer division</span>
+        <span class="k">if</span> <span class="n">nx</span> <span class="o">!=</span> <span class="p">(</span><span class="n">ny</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>   <span class="c1"># caution: integer division</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HDU &#39;</span><span class="si">{:s}</span><span class="s2">&#39; in file </span><span class="si">{:s}</span><span class="s2"> doesn&#39;t seem to contain a half-sized array (dims = (</span><span class="si">{:s}</span><span class="s2">). Skipping this HDU.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hduname</span><span class="p">,</span> <span class="n">fitsfile</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">])))</span>
             <span class="k">continue</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">nx</span><span class="o">-</span><span class="mi">1</span>
@@ -695,7 +749,7 @@
 
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Flushing and closing fits file.&#39;</span><span class="p">)</span>
     <span class="n">hdulist</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="nb">print</span></div>
+    <span class="nb">print</span><span class="p">()</span></div>
             
 
 <div class="viewcode-block" id="mirror_all_fitsfiles"><a class="viewcode-back" href="../hypercat.html#hypercat.mirror_all_fitsfiles">[docs]</a><span class="k">def</span> <span class="nf">mirror_all_fitsfiles</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span><span class="n">hdus</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;IMGDATA&#39;</span><span class="p">,</span><span class="s1">&#39;CLDDATA&#39;</span><span class="p">)):</span>
@@ -720,10 +774,10 @@
     <span class="n">files</span> <span class="o">=</span> <span class="n">get_clean_file_list</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.fits&#39;</span><span class="p">)</span>
     <span class="n">nfiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
     
-    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%d</span><span class="s2"> &#39;</span><span class="si">%s</span><span class="s2">&#39;-files in directory </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nfiles</span><span class="p">,</span><span class="n">suffix</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">{:d}</span><span class="s2"> &#39;</span><span class="si">{:s}</span><span class="s2">&#39;-files in directory </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfiles</span><span class="p">,</span><span class="n">suffix</span><span class="p">,</span><span class="n">d</span><span class="p">))</span>
     
     <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Working on file </span><span class="si">%s</span><span class="s2"> [</span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">nfiles</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Working on file </span><span class="si">{:s}</span><span class="s2"> [</span><span class="si">{:d}</span><span class="s2">/</span><span class="si">{:d}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">nfiles</span><span class="p">))</span>
         <span class="n">mirror_fitsfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">hdus</span><span class="o">=</span><span class="n">hdus</span><span class="p">)</span>
     
     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;All files mirrored.&quot;</span><span class="p">)</span></div>
@@ -765,7 +819,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

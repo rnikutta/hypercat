@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>psf &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,16 +46,21 @@
           <div class="body" role="main">
             
   <h1>Source code for psf</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
-<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pyfits</span>
-<span class="kn">from</span> <span class="nn">astropy.modeling</span> <span class="k">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">fitting</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;numpy.dtype size changed&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">N</span>
+<span class="kn">from</span> <span class="nn">astropy.modeling.models</span> <span class="k">import</span> <span class="n">AiryDisk2D</span><span class="p">,</span> <span class="n">Gaussian2D</span>
 <span class="kn">from</span> <span class="nn">astropy.convolution</span> <span class="k">import</span> <span class="n">convolve</span><span class="p">,</span> <span class="n">convolve_fft</span>
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pyfits</span>
 <span class="kn">from</span> <span class="nn">imageops</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">units</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">imageops</span> <span class="k">import</span> <span class="n">checkOdd</span>
 
 <span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Enrique Lopez-Rodriguez &lt;enloro@gmail.com&gt;, Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&quot;</span>
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170814&#39;</span> <span class="c1">#yyyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span> <span class="c1">#yyyymmdd</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for the PSF analysis of the images created by hyperCAT</span>
 <span class="sd">    </span>
@@ -79,7 +81,7 @@
 <span class="sd">            The pixelscale of `image`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">ImageFrame</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="n">pixelscale</span><span class="p">)</span></div>
+        <span class="n">ImageFrame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="n">pixelscale</span><span class="p">)</span></div>
 
         
 <div class="viewcode-block" id="PSF.convolve"><a class="viewcode-back" href="../psf.html#psf.PSF.convolve">[docs]</a>    <span class="k">def</span> <span class="nf">convolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">):</span>
@@ -261,7 +263,8 @@
     <span class="c1"># Intensity of the 2D Airy Disk</span>
     <span class="n">aI</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sigma_p</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
 
-    <span class="n">a2D</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AiryDisk2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">aI</span><span class="p">,</span><span class="n">x_0</span><span class="o">=</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">y_0</span><span class="o">=</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
+<span class="c1">#    a2D = models.AiryDisk2D(amplitude=aI,x_0=npix/2,y_0=npix/2,radius=radius)</span>
+    <span class="n">a2D</span> <span class="o">=</span> <span class="n">AiryDisk2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">aI</span><span class="p">,</span><span class="n">x_0</span><span class="o">=</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">y_0</span><span class="o">=</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
     <span class="n">a2D</span> <span class="o">=</span> <span class="n">a2D</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="c1"># evaluate the 2D Airy disk</span>
 
     <span class="c1"># 2D Gaussian: Core of PSF</span>
@@ -276,7 +279,8 @@
     <span class="c1"># Intensity of the 2D Gaussian</span>
     <span class="n">gI</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">aI</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="p">(</span><span class="n">diameter</span><span class="o">/</span><span class="n">rho_o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>            
 
-    <span class="n">g2D</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Gaussian2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">gI</span><span class="p">,</span><span class="n">x_mean</span><span class="o">=</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">y_mean</span><span class="o">=</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">x_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">y_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+<span class="c1">#    g2D = models.Gaussian2D(amplitude=gI,x_mean=npix/2,y_mean=npix/2,x_stddev=rad_H,y_stddev=rad_H,theta=0.)</span>
+    <span class="n">g2D</span> <span class="o">=</span> <span class="n">Gaussian2D</span><span class="p">(</span><span class="n">amplitude</span><span class="o">=</span><span class="n">gI</span><span class="p">,</span><span class="n">x_mean</span><span class="o">=</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">y_mean</span><span class="o">=</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">x_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">y_stddev</span><span class="o">=</span><span class="n">rad_H</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
     <span class="n">g2D</span> <span class="o">=</span> <span class="n">g2D</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="c1"># evaluate the 2D Gaussian</span>
 
     <span class="c1"># Final PSF</span>
@@ -381,9 +385,9 @@
 <span class="c1">#    ### Final PSF</span>
 <span class="c1">#    psf = a2D + g2D</span>
 <span class="c1">#</span>
-<span class="c1">##    print &#39;Telescope Diameter [m]=&#39;, diameter</span>
-<span class="c1">##    print &#39;Angular Resolution [&quot;] =&#39;,radius*pixelscale</span>
-<span class="c1">##    print &#39;Angular resolution [px] =&#39;,radius</span>
+<span class="c1">##    print(&#39;Telescope Diameter [m]=&#39;, diameter)</span>
+<span class="c1">##    print(&#39;Angular Resolution [&quot;] =&#39;,radius*pixelscale)</span>
+<span class="c1">##    print(&#39;Angular resolution [px] =&#39;,radius)</span>
 <span class="c1">#</span>
 <span class="c1">#    return psf</span>
 </pre></div>
@@ -422,7 +426,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

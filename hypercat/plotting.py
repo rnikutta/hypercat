@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-__version__ = '20180207'   #yyymmdd
-__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
+__version__ = '20180215'   #yyymmdd
+s__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
 
@@ -20,8 +20,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy import units as u
 
 # own
-from utils import *
-
+from utils import arrayify
 
 def plot_with_wcs(image):
 
@@ -71,8 +70,12 @@ def plot_with_wcs(image):
 #    )
 #    p.show()
 
+
 def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None,interpolation='bicubic'):
 
+    """Plot a single panel. To be called from :func:`multiplot()`
+    """
+    
     # what kind of animal is 'image'?
     cls = None
     try:
@@ -146,28 +149,155 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
         print("Setting cax.set_visible(False)")
         cax.set_visible(False)    
 
-            
+
 def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               sharex=True,sharey=True,\
-              colorbars=True,\
-              units='',\
-              titles='',\
-              contours=None,
+              colorbars=True,units='',titles='',contours=None,
               interpolation='bicubic',cmap=p.cm.viridis,figtitle='',\
               **kwargs):
 
+    """Plot one or more images in a multi-panel figure.
+
+    Flexible plotting of multi-panel figures.
+
+    Parameters
+    ----------
+    images : instance or sequence
+        Single instance of base class :class:`imageops.ImageFrame`
+        object, or a sequence of them (list,tuple). If single
+        instance, the multipanel figure will have shape (1,1).
+
+        Note that instances of :class:`imageops.Image` will be
+        normalized linearly, and those of :class:`imageops.Image`
+        logarithmically.
+
+    geometry : 2-tuple or None
+        The (nrow,ncol) layout of the multipanel figure. If ``None``
+        (default), the figure shape will be ``(1,len(images))``,
+        i.e. all in one row. Otherwise `geometry` dictates the
+        multiplot shape. ``np.prod(geometry)`` can be smaller or
+        larger than ``len(images)``. If smaller, the displayed image
+        sequence will be truncated. If larger, the image sequence will
+        fill the first ``len(images)`` axes in the multiplot, leaving
+        the other panels empty.
+
+    panelsize : float
+        Size of single panel in inches. Default is 4.
+
+    direction : str
+        If ``'x'`` (default), the figure panels are populated with
+        images from the image sequence in the order
+        row-first-then-column, i.e. left-to-right then
+        top-to-bottom). If ``'y'``, the panels are populated
+        column-first-then-row, i.e. top-to-bottom then left-to-right.
+
+    extent : tuple or None
+        Currently not used.
+
+    sharex : bool
+        If ``True`` (default), only the bottom row of panels will have
+        x-axis labels and tick labels.
+
+    sharey : bool
+        If ``True`` (default), only the leftmost column of panels will
+        have y-axis labels and tick labels.
+
+    colorbars : bool or sequence of bools
+        If ``True`` (default), add a colorbar to a panel. If single
+        bool value, it determines for all panels whether colorbars
+        will be added to each (i.e. ``True`` means add colorbars to
+        all panels). If a sequence of bools, they determine the
+        colorbar status for each panel separately. The number of
+        booleans in the sequence `nb` need not be the same as the
+        number of images in the `images` sequence `ni`; only
+        ``max(nb,ni)`` elements will be used.
+
+    units : str or sequence of strings
+        String that describes to units of the colorbar quantity. If
+        colorbar is ``True`` (for any panel), the corresponding
+        element from the `units` sequence will be used at the
+        colorbar label. The logic is the same as for `colorbars` (see
+        there).
+
+        Since the images in `images` carry units with them, the units
+        in `units` will actually cause the plot to convert to the
+        desired units.
+
+    titles : str or sequence of strings
+       Title(s) of each panel. Same logic as `colorbars` (see there).
+
+    contours : str or sequence of strings or None
+        If not None (default), add contours to panels. If string or
+        seq of strings, they must be either ``'lin'`` for linearly
+        spaced contours or ``'log'`` for logarithmically spaced
+        contours. Five contour lines will be added. Same logic as
+        `colorbars` (see there).
+
+    interpolation : str
+        Type of image interpolation to use on the panels. All values
+        permissible my :func:`pylab.imshow()` are possible, including
+        ``'none'``. Default is ``'bicubic'``.
+
+    cmap : instance
+        Colormap to be used for the images. Must be one of the
+        colormaps in module :mod:`pylab.cm`. Default is
+        ``p.cm.viridis``
+
+    figtitle : str
+        Super-title of the entire multi-panel figure. Default is
+        ``''``.
+
+    Examples
+    --------
+
+    Have a few :class:`imageops.ImageFrame` instances, here
+    e.g. ``sky``, ``obs``, and ``psf``.
+
+    .. code-block:: python
+
+       # plots a 1x1 figure
+       multiplot(img)
+
+       # plots a 1x3 figure (1 row, 3 columns)
+       multiplot((sky,obs,psf))
+
+       # plots a 3x1 figure (3 rows, 1 columns)
+       multiplot((sky,obs,psf),geometry=(3,1))
+
+       # plots a 2x2 figure, the 1st row showing img & obs, 2nd row showing psf in the left panel
+       multiplot((sky,obs,psf),geometry=(2,2))
+
+       # plots a 2x2 figure, the 1st column showing img & obs, 2nd column showing psf in the upper panel
+       multiplot((sky,obs,psf),geometry=(2,2),direction='y')
+
+       # 1x3 figure, all panels have a colorbar (use same logic for ``units``, ``titles``, ``contours``)
+       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True)
+
+       # 1x3 figure, 1st and last panels have a colorbar, middle panel doesn't (use same logic for ``units``, ``titles``, ``contours``)
+       multiplot((sky,obs,psf),geometry=(1,3),colorbars=(True,False,True))
+
+       # 1x3 figure, all panels have colorbar and (the same) units
+       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True,units=('Jy/arcsec^2','mJy/mas^2'))
+
+       # 1x3 figure, all panels have colorbar; first two panels have colorbar units, albeit different ones
+       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True,units=('Jy/arcsec^2','mJy/mas^2'))
+
+       # 1x3 figure; middle panel has 5 logarithmically scaled contours
+       multiplot((sky,obs,psf),geometry=(1,3),contours=(None,'log'))
+
+    """
+
     # IMAGES ARRAY
-    images = arrayify(images,shape=geometry,direction=direction)
-    
+    images = arrayify(images,shape=geometry,fill=False,direction=direction)
     ny, nx = images.shape #geometry
     n = nx*ny
 
     # ARRAYS OF PANEL FEATURES
-    colorbars = arrayify(colorbars,shape=geometry,direction=direction)
-    units = arrayify(units,shape=geometry,direction=direction)
-    titles = arrayify(titles,shape=geometry,direction=direction)
-    contours = arrayify(contours,shape=geometry,direction=direction)
-    
+    colorbars = arrayify(colorbars,shape=images.shape,fill=True,direction=direction)
+    units = arrayify(units,shape=images.shape,fill=True,direction=direction)
+    titles = arrayify(titles,shape=images.shape,fill=True,direction=direction)
+    contours = arrayify(contours,shape=images.shape,fill=True,direction=direction)
+
     # MAKE FIGURE
     # setup
     fontsize = 10
@@ -181,9 +311,8 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
 #    p.rcParams['pdf.use14corefonts'] = True
 #    p.rcParams['text.usetex'] = True
 
-#    figsize = (panelsize*nx,panelsize*ny)
     figsize = (panelsize*nx,panelsize*ny)
-    fig, axes = p.subplots(ny,nx,sharex=True,sharey=True,figsize=figsize)
+    fig, axes = p.subplots(ny,nx,sharex=sharex,sharey=sharey,figsize=figsize)
     axes = N.atleast_2d(axes)
     if axes.T.shape == geometry:
         axes = axes.T

@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>morphology module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ndiminterpolation module" href="ndiminterpolation.html" />
@@ -204,20 +201,20 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 </table>
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-  <span class="n">array</span><span class="p">([</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span>  <span class="c1"># 2-d unit vector along x-axis</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span> <span class="c1"># 2-d unit vector along x-axis</span>
 
 <span class="n">getUnitVector</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">])</span>  <span class="c1"># 2-d unit vector along y-axis</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">])</span> <span class="c1"># 2-d unit vector along y-axis</span>
 
 <span class="n">getUnitVector</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
-  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span>  <span class="c1"># 5-d unit vector along 2nd axis</span>
+  <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span> <span class="c1"># 5-d unit vector along 2nd axis</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="function">
 <dt id="morphology.get_moment">
-<code class="descclassname">morphology.</code><code class="descname">get_moment</code><span class="sig-paren">(</span><em>image</em>, <em>radius=1.0</em>, <em>angular=’a’</em>, <em>m=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">morphology.</code><code class="descname">get_moment</code><span class="sig-paren">(</span><em>image</em>, <em>radius=1.0</em>, <em>angular='a'</em>, <em>m=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute m-th moment of image.</p>
 <dl class="docutils">
 <dt>image <span class="classifier-delimiter">:</span> <span class="classifier">array (or instance of Image?)</span></dt>
@@ -261,6 +258,12 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="morphology.gini">
+<code class="descclassname">morphology.</code><code class="descname">gini</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gini"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gini" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Gini index of array <cite>arr</cite>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="morphology.imageToEigenvectors">
 <code class="descclassname">morphology.</code><code class="descname">imageToEigenvectors</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#imageToEigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.imageToEigenvectors" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -272,7 +275,7 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 
 <dl class="function">
 <dt id="morphology.plot_symmetric1">
-<code class="descclassname">morphology.</code><code class="descname">plot_symmetric1</code><span class="sig-paren">(</span><em>loadfile=’symmetric1.npz’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#plot_symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.plot_symmetric1" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">morphology.</code><code class="descname">plot_symmetric1</code><span class="sig-paren">(</span><em>loadfile='symmetric1.npz'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#plot_symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.plot_symmetric1" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -310,7 +313,7 @@ counter-clockwise, otherwise counter-clockwise.</li>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">vec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span>  <span class="c1"># unit vector along postive y-axis</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">vec</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span> <span class="c1"># unit vector along postive y-axis</span>
 <span class="n">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">90.</span><span class="p">)</span>
   <span class="n">array</span><span class="p">([</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
 
@@ -325,7 +328,7 @@ counter-clockwise, otherwise counter-clockwise.</li>
 
 <dl class="function">
 <dt id="morphology.symmetric1">
-<code class="descclassname">morphology.</code><code class="descname">symmetric1</code><span class="sig-paren">(</span><em>npix=51</em>, <em>savefile=’symmertric1.npz’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.symmetric1" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">morphology.</code><code class="descname">symmetric1</code><span class="sig-paren">(</span><em>npix=51</em>, <em>savefile='symmertric1.npz'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#symmetric1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.symmetric1" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -418,7 +421,7 @@ If +1., b lies to the right of a (b clockwise from a).</td>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

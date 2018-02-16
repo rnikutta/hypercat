@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>utils &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,7 +46,9 @@
           <div class="body" role="main">
             
   <h1>Source code for utils</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170731&#39;</span>   <span class="c1">#yyymmdd</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180215&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;General helper func for hypercat.</span>
@@ -117,16 +116,16 @@
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">name_resolve</span><span class="o">.</span><span class="n">get_icrs_coordinates</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Coordinates for source &#39;</span><span class="si">%s</span><span class="s2">&#39; successfully resolved. WCS created.&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Coordinates for source &#39;</span><span class="si">{:s}</span><span class="s2">&#39; resolved. WCS created.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">))</span>
         
     <span class="k">except</span> <span class="n">name_resolve</span><span class="o">.</span><span class="n">NameResolveError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Coordinate resolution for source name &#39;</span><span class="si">%s</span><span class="s2">&#39; failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.&quot;&quot;&quot;</span> <span class="o">%</span> <span class="n">image</span><span class="o">.</span><span class="n">objectname</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Coordinate resolution for source name &#39;</span><span class="si">{:s}</span><span class="s2">&#39; failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">objectname</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
     
     <span class="k">else</span><span class="p">:</span>
         <span class="n">unit</span> <span class="o">=</span> <span class="s1">&#39;deg&#39;</span> <span class="c1">#image.pixelscale.unit.to_string()</span>
-        <span class="n">crpix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">npix</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">crpix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">npix</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">cdelt</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">pixelscale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         
         <span class="n">w</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">WCS</span><span class="p">(</span><span class="n">naxis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -137,99 +136,71 @@
         <span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crval</span> <span class="o">=</span> <span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">w</span></div>
+    
 
+<div class="viewcode-block" id="arrayify"><a class="viewcode-back" href="../utils.html#utils.arrayify">[docs]</a><span class="k">def</span> <span class="nf">arrayify</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>
 
-<div class="viewcode-block" id="arrayify"><a class="viewcode-back" href="../utils.html#utils.arrayify">[docs]</a><span class="k">def</span> <span class="nf">arrayify</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Arrange elements of sequence `seq` into an array of shape `shape`.</span>
 
-    <span class="sd">&quot;&quot;&quot;Repeat &#39;arg&#39; &#39;n&#39; times, put that sequence in array with shape &#39;shape&#39;.</span>
+<span class="sd">    Definitions:</span>
+<span class="sd">      * `seq` is input sequence of elements</span>
+<span class="sd">      * `arr` is output array</span>
+<span class="sd">      * ``ne = len(seq)`` # number of elements in input sequence</span>
+<span class="sd">      * ``na = np.prod(shape)`` # number of elements in output array</span>
 
-<span class="sd">    If arg is already a list-like sequence, ignore n.</span>
-<span class="sd">    If &#39;shape&#39; is a 2-tuple, reshape sequence to an array with shape &#39;shape&#39;.</span>
-<span class="sd">    If len(sequence)&gt;array.size, only put the first array.size elements of sequence into the array,</span>
-<span class="sd">    If len(sequence)&lt;=array.size, pad the remaining elements in array with None.</span>
+<span class="sd">    Behavior:</span>
+<span class="sd">      * If `seq` is just a single element, then ``arr.shape`` is (1,1).</span>
+<span class="sd">      * If ``ne&gt;=na``, ``arr[:ne] = seq[:]``, i.a. any extra elements from `seq` will be truncated</span>
+<span class="sd">      * If ``ne&lt;na``, then ``arr[ne:] = None``, i.e. the extra elements in `arr` will be set to ``None``</span>
+<span class="sd">      * If ``ne==1`` and ``fill==True``, then ``arr[:] = seq``, i.e. all elements of `arr` will be set to the value of `seq`</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    arg : singlet, or list-like sequence</span>
-<span class="sd">        If not list or tuple, arg is a single-element object (can be</span>
-<span class="sd">        anything) and will be repeated either n times, or</span>
-<span class="sd">        N.prod(shape) times.</span>
+<span class="sd">    seq : tuple or list or single element</span>
+<span class="sd">        Sequence of elements to be arranged in an array. If single</span>
+<span class="sd">        element, it will be turned into a len-1 sequence.</span>
 
-<span class="sd">    n : int|None</span>
-
-<span class="sd">    shape : 2-tuple|None</span>
+<span class="sd">    shape : tuple or None</span>
+<span class="sd">       2-tuple giving the shape of the output array. If ``None``</span>
+<span class="sd">       (default), the array will have shape (1,ne).</span>
+<span class="sd">    </span>
+<span class="sd">    fill : bool</span>
+<span class="sd">        If ``True`` and ``ne==1`` and ``na&gt;ne``, the entire output</span>
+<span class="sd">        array will be filled with the value of `seq`.</span>
 
 <span class="sd">    direction : str</span>
-<span class="sd">        If &#39;x&#39; (default), elements in resulting 2d array are counted</span>
-<span class="sd">        along rows first, then columns. If &#39;y&#39;, the other way round.</span>
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    .. code-block:: python</span>
-<span class="sd">    </span>
-<span class="sd">        # generate 1d sequence</span>
-<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=None)</span>
-<span class="sd">        --&gt; [&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;]</span>
-
-<span class="sd">        # and reshape to 2d</span>
-<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=(2,3))</span>
-<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;],</span>
-<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;]], dtype=object)</span>
-<span class="sd">        </span>
-<span class="sd">        # embed sequence in larger 2d array (pad tail with None)</span>
-<span class="sd">        arrayify(&#39;foo&#39;,n=10,shape=(2,4))</span>
-<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;, &#39;foo&#39;],</span>
-<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;, None,   None]], dtype=object)</span>
-
-<span class="sd">        # place sequence in smaller 2d array (only use first elements)</span>
-<span class="sd">        arrayify(&#39;foo&#39;,n=6,shape=(2,2))</span>
-<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;foo&#39;],</span>
-<span class="sd">                   [&#39;foo&#39;, &#39;foo&#39;]], dtype=object)</span>
-
-<span class="sd">        # provide a list-like sequence (no effect)</span>
-<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=None,shape=None)</span>
-<span class="sd">        --&gt; [&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;]</span>
-
-<span class="sd">        # provide a list-like sequence, and n (no effect, n ignored)</span>
-<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=None)</span>
-<span class="sd">        --&gt; [&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;]</span>
-
-<span class="sd">        # provide a list-like sequence, and embed in larger array</span>
-<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=(2,4))</span>
-<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;, None],</span>
-<span class="sd">                   [None, None, None, None]], dtype=object)        </span>
-
-<span class="sd">        # provide a list-like sequence, and embed in smaller array</span>
-<span class="sd">        arrayify([&#39;foo&#39;,&#39;bar&#39;,&#39;baz&#39;],n=6,shape=(1,2))</span>
-<span class="sd">        --&gt; array([[&#39;foo&#39;, &#39;bar&#39;]], dtype=object)</span>
+<span class="sd">        If ``&#39;x&#39;`` (default), transpose the output array.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">lili</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span><span class="nb">tuple</span><span class="p">)</span>  <span class="c1"># list-like</span>
+    
+    <span class="c1"># turn single-element argument into a len-1 sequence</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">seq</span><span class="p">,(</span><span class="nb">list</span><span class="p">,</span><span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">seq</span><span class="p">])</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">lili</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
-            <span class="n">seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="p">]</span><span class="o">*</span><span class="n">n</span>
-        <span class="k">elif</span> <span class="n">shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">seq</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="p">]</span><span class="o">*</span><span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">seq</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-            <span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">arg</span>
+    <span class="c1"># if no shape arg was given</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">lili</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
-        <span class="n">seq2d</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">seq2d</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">seq2d</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[:</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">seq2d</span>
+    <span class="n">ne</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="c1"># number of elements in inout sequence</span>
+    <span class="n">na</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># number of elements in output array</span>
 
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
-            <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="n">na</span><span class="p">)</span> <span class="c1"># flatted version of output array</span>
 
-    <span class="k">return</span> <span class="n">seq</span></div>
+    <span class="c1"># deal with sequences too long or too short for array</span>
+    <span class="n">nmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ne</span><span class="p">,</span><span class="n">na</span><span class="p">)</span>
+    <span class="n">arr</span><span class="p">[:</span><span class="n">nmin</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span><span class="n">nmin</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ne</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">fill</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">arr</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># final shape of array</span>
 
+    <span class="c1"># transpose if necessary</span>
+    <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">arr</span></div>
+    
 
 <div class="viewcode-block" id="mirror_axis"><a class="viewcode-back" href="../utils.html#utils.mirror_axis">[docs]</a><span class="k">def</span> <span class="nf">mirror_axis</span><span class="p">(</span><span class="n">cube</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="p">):</span>
 
@@ -339,7 +310,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

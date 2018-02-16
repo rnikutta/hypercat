@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>instruments module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="interferometry module" href="interferometry.html" />
@@ -59,19 +56,20 @@
 <span id="instruments-module"></span><h1>instruments module<a class="headerlink" href="#module-instruments" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="instruments.Instrument">
-<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base class for optical observing apparatus of all kinds (e.g. Telescope, Interferometer, etc.)</p>
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Base class for optical observing apparatus of all kinds (e.g. Telescope, Interferometer, etc.)</p>
 <dl class="method">
 <dt id="instruments.Instrument.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate observing instrument.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>telescope</strong> (<em>str</em>) – Name of telescope, optional. E.g. ‘TMT’. Default ”.</li>
-<li><strong>instrument</strong> (<em>str</em>) – Name of instrument mounted to telescope, optional. E.g. ‘VISIR’. Default ”.</li>
+<li><strong>telescope</strong> (<em>str</em>) – Name of telescope, optional. E.g. ‘TMT’. Default ‘’.</li>
+<li><strong>instrument</strong> (<em>str</em>) – Name of instrument mounted to telescope, optional. E.g. ‘VISIR’. Default ‘’.</li>
 </ul>
 </td>
 </tr>
@@ -81,7 +79,7 @@
 
 <dl class="method">
 <dt id="instruments.Instrument.observe">
-<code class="descname">observe</code><span class="sig-paren">(</span><em>sky</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.observe" title="Permalink to this definition">¶</a></dt>
+<code class="descname">observe</code><span class="sig-paren">(</span><em>sky</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument.observe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument.observe" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
 <dt>‘Observe’ the sky with an instrument, i.e. return an image of the</dt>
 <dd>sky processed by the instrument (e.g. PSF applied etc.).</dd>
@@ -128,16 +126,16 @@ input baseline (BL length and PA).</p>
 
 <dl class="class">
 <dt id="instruments.Telescope">
-<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
 <dl class="method">
 <dt id="instruments.Telescope.__call__">
-<code class="descname">__call__</code><span class="sig-paren">(</span><em>sky</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__call__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>sky</em>, <em>snr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__call__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="instruments.Telescope.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=”</em>, <em>instrument=”</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the effects of a single-dish telescope with a pixel camera
 attached to it.</p>
 <p>Model a Gaussian+Airy PSF, or load PSF from a FITS file. Apply
@@ -261,7 +259,7 @@ check this by calling <code class="xref py py-func docutils literal"><span class
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

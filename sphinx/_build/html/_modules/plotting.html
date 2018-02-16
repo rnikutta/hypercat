@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>plotting &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -49,8 +46,10 @@
           <div class="body" role="main">
             
   <h1>Source code for plotting</h1><div class="highlight"><pre>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170828&#39;</span>   <span class="c1">#yyymmdd</span>
-<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180215&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">s__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Plotting funcs for hypercat.</span>
 
@@ -66,10 +65,10 @@
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">p</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="k">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">from</span> <span class="nn">astropy</span> <span class="k">import</span> <span class="n">units</span> <span class="k">as</span> <span class="n">u</span>
 
 <span class="c1"># own</span>
-<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="o">*</span>
-
+<span class="kn">from</span> <span class="nn">utils</span> <span class="k">import</span> <span class="n">arrayify</span>
 
 <div class="viewcode-block" id="plot_with_wcs"><a class="viewcode-back" href="../plotting.html#plotting.plot_with_wcs">[docs]</a><span class="k">def</span> <span class="nf">plot_with_wcs</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
 
@@ -95,24 +94,45 @@
 <span class="sd">       plotting.plot_with_wcs(sky)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">fig</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>           
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.5</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="c1">#    fig = p.figure()</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">wcs</span><span class="p">)</span>
+    <span class="n">xc</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">yc</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;RA&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Dec&#39;</span><span class="p">)</span></div>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Dec&#39;</span><span class="p">)</span>
+    <span class="n">xc</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">spacing</span><span class="o">=</span><span class="mf">100.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">mas</span><span class="p">)</span>
+    <span class="n">yc</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">(</span><span class="n">spacing</span><span class="o">=</span><span class="mf">100.</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">mas</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="mf">0.98</span><span class="p">,</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.07</span><span class="p">)</span></div>
     
+<span class="c1">#    ax.tick_params(</span>
+<span class="c1">#    axis=&#39;both&#39;,          # changes apply to the x-axis</span>
+<span class="c1">#    which=&#39;major&#39;,      # both major and minor ticks are affected</span>
+<span class="c1">#    bottom=&#39;on&#39;,      # ticks along the bottom edge are off</span>
+<span class="c1">#    top=&#39;off&#39;,         # ticks along the top edge are off</span>
+<span class="c1">#    left=&#39;on&#39;,         # ticks along the top edge are off</span>
+<span class="c1">#    right=&#39;off&#39;         # ticks along the top edge are off</span>
+<span class="c1">#    )</span>
+<span class="c1">#    p.show()</span>
+
 
 <div class="viewcode-block" id="plotPanel"><a class="viewcode-back" href="../plotting.html#plotting.plotPanel">[docs]</a><span class="k">def</span> <span class="nf">plotPanel</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">,</span><span class="n">contours</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;bicubic&#39;</span><span class="p">):</span>
 
+    <span class="sd">&quot;&quot;&quot;Plot a single panel. To be called from :func:`multiplot()`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="c1"># what kind of animal is &#39;image&#39;?</span>
-    <span class="n">cls</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">cls</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="k">except</span><span class="p">:</span>
         <span class="k">raise</span>
 
     <span class="c1"># extract the data (2d array) to be plotted</span>
-    <span class="k">if</span> <span class="n">cls</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Image&#39;</span><span class="p">,</span><span class="s1">&#39;PSF&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Image&#39;</span><span class="p">,</span><span class="s1">&#39;PSF&#39;</span><span class="p">):</span>
         
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">units</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span> <span class="c1"># use native/attached values and units of image</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span>
@@ -128,12 +148,12 @@
             <span class="n">rad</span> <span class="o">=</span> <span class="n">fov</span><span class="o">/</span><span class="mf">2.</span>
             <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">rad</span><span class="p">,</span><span class="n">rad</span><span class="p">,</span><span class="o">-</span><span class="n">rad</span><span class="p">,</span><span class="n">rad</span><span class="p">]</span>
         
-    <span class="k">elif</span> <span class="n">cls</span> <span class="o">==</span> <span class="s1">&#39;ndarray&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="bp">cls</span> <span class="o">==</span> <span class="s1">&#39;ndarray&#39;</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">image</span>
         <span class="n">axunit</span> <span class="o">=</span> <span class="s1">&#39;pixel&#39;</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">,</span> <span class="s2">&quot;Don&#39;t know how to plot &#39;image&#39;. Must be either instance of class &#39;Image&#39;, or &#39;PSF, or a 2d array.&quot;</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Don&#39;t know how to plot &#39;image&#39;. Must be either instance of class &#39;Image&#39;, or &#39;PSF, or a 2d array.&quot;</span><span class="p">)</span>
 
     <span class="c1"># transpose here once for all future plotting in this function</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
@@ -142,7 +162,7 @@
     <span class="n">norm</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">()</span>  <span class="c1"># possibly allow this to be an argument? (e.g. for absolute normalizations)</span>
 <span class="c1">#    norm = matplotlib.colors.PowerNorm(1.)  # possibly allow this to be an argument? (e.g. for absolute normalizations)</span>
 
-    <span class="k">if</span> <span class="n">cls</span> <span class="o">==</span> <span class="s1">&#39;PSF&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">cls</span> <span class="o">==</span> <span class="s1">&#39;PSF&#39;</span><span class="p">:</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">()</span>
 
     <span class="c1"># reserve space for colorbar (even if later not used)</span>
@@ -164,46 +184,173 @@
     <span class="c1"># set title, labels</span>
     <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;offset (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">axunit</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;offset (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">axunit</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;offset (</span><span class="si">{:s}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">axunit</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;offset (</span><span class="si">{:s}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">axunit</span><span class="p">))</span>
 
     <span class="c1"># make colorbar; set invisible if no colorbar requested</span>
     <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">colorbar</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">cb</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span><span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cls</span> <span class="o">==</span> <span class="s1">&#39;Image&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="o">==</span> <span class="s1">&#39;Image&#39;</span><span class="p">:</span>
             <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span> <span class="s2">&quot;Setting cax.set_visible(False)&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting cax.set_visible(False)&quot;</span><span class="p">)</span>
         <span class="n">cax</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>    </div>
 
-            
+
 <div class="viewcode-block" id="multiplot"><a class="viewcode-back" href="../plotting.html#plotting.multiplot">[docs]</a><span class="k">def</span> <span class="nf">multiplot</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">geometry</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">panelsize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>\
               <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>\
-              <span class="n">colorbars</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>\
-              <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>\
-              <span class="n">titles</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>\
-              <span class="n">contours</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">colorbars</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">titles</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">contours</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;bicubic&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">p</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">,</span><span class="n">figtitle</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>\
               <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
+    <span class="sd">&quot;&quot;&quot;Plot one or more images in a multi-panel figure.</span>
+
+<span class="sd">    Flexible plotting of multi-panel figures.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    images : instance or sequence</span>
+<span class="sd">        Single instance of base class :class:`imageops.ImageFrame`</span>
+<span class="sd">        object, or a sequence of them (list,tuple). If single</span>
+<span class="sd">        instance, the multipanel figure will have shape (1,1).</span>
+
+<span class="sd">        Note that instances of :class:`imageops.Image` will be</span>
+<span class="sd">        normalized linearly, and those of :class:`imageops.Image`</span>
+<span class="sd">        logarithmically.</span>
+
+<span class="sd">    geometry : 2-tuple or None</span>
+<span class="sd">        The (nrow,ncol) layout of the multipanel figure. If ``None``</span>
+<span class="sd">        (default), the figure shape will be ``(1,len(images))``,</span>
+<span class="sd">        i.e. all in one row. Otherwise `geometry` dictates the</span>
+<span class="sd">        multiplot shape. ``np.prod(geometry)`` can be smaller or</span>
+<span class="sd">        larger than ``len(images)``. If smaller, the displayed image</span>
+<span class="sd">        sequence will be truncated. If larger, the image sequence will</span>
+<span class="sd">        fill the first ``len(images)`` axes in the multiplot, leaving</span>
+<span class="sd">        the other panels empty.</span>
+
+<span class="sd">    panelsize : float</span>
+<span class="sd">        Size of single panel in inches. Default is 4.</span>
+
+<span class="sd">    direction : str</span>
+<span class="sd">        If ``&#39;x&#39;`` (default), the figure panels are populated with</span>
+<span class="sd">        images from the image sequence in the order</span>
+<span class="sd">        row-first-then-column, i.e. left-to-right then</span>
+<span class="sd">        top-to-bottom). If ``&#39;y&#39;``, the panels are populated</span>
+<span class="sd">        column-first-then-row, i.e. top-to-bottom then left-to-right.</span>
+
+<span class="sd">    extent : tuple or None</span>
+<span class="sd">        Currently not used.</span>
+
+<span class="sd">    sharex : bool</span>
+<span class="sd">        If ``True`` (default), only the bottom row of panels will have</span>
+<span class="sd">        x-axis labels and tick labels.</span>
+
+<span class="sd">    sharey : bool</span>
+<span class="sd">        If ``True`` (default), only the leftmost column of panels will</span>
+<span class="sd">        have y-axis labels and tick labels.</span>
+
+<span class="sd">    colorbars : bool or sequence of bools</span>
+<span class="sd">        If ``True`` (default), add a colorbar to a panel. If single</span>
+<span class="sd">        bool value, it determines for all panels whether colorbars</span>
+<span class="sd">        will be added to each (i.e. ``True`` means add colorbars to</span>
+<span class="sd">        all panels). If a sequence of bools, they determine the</span>
+<span class="sd">        colorbar status for each panel separately. The number of</span>
+<span class="sd">        booleans in the sequence `nb` need not be the same as the</span>
+<span class="sd">        number of images in the `images` sequence `ni`; only</span>
+<span class="sd">        ``max(nb,ni)`` elements will be used.</span>
+
+<span class="sd">    units : str or sequence of strings</span>
+<span class="sd">        String that describes to units of the colorbar quantity. If</span>
+<span class="sd">        colorbar is ``True`` (for any panel), the corresponding</span>
+<span class="sd">        element from the `units` sequence will be used at the</span>
+<span class="sd">        colorbar label. The logic is the same as for `colorbars` (see</span>
+<span class="sd">        there).</span>
+
+<span class="sd">        Since the images in `images` carry units with them, the units</span>
+<span class="sd">        in `units` will actually cause the plot to convert to the</span>
+<span class="sd">        desired units.</span>
+
+<span class="sd">    titles : str or sequence of strings</span>
+<span class="sd">       Title(s) of each panel. Same logic as `colorbars` (see there).</span>
+
+<span class="sd">    contours : str or sequence of strings or None</span>
+<span class="sd">        If not None (default), add contours to panels. If string or</span>
+<span class="sd">        seq of strings, they must be either ``&#39;lin&#39;`` for linearly</span>
+<span class="sd">        spaced contours or ``&#39;log&#39;`` for logarithmically spaced</span>
+<span class="sd">        contours. Five contour lines will be added. Same logic as</span>
+<span class="sd">        `colorbars` (see there).</span>
+
+<span class="sd">    interpolation : str</span>
+<span class="sd">        Type of image interpolation to use on the panels. All values</span>
+<span class="sd">        permissible my :func:`pylab.imshow()` are possible, including</span>
+<span class="sd">        ``&#39;none&#39;``. Default is ``&#39;bicubic&#39;``.</span>
+
+<span class="sd">    cmap : instance</span>
+<span class="sd">        Colormap to be used for the images. Must be one of the</span>
+<span class="sd">        colormaps in module :mod:`pylab.cm`. Default is</span>
+<span class="sd">        ``p.cm.viridis``</span>
+
+<span class="sd">    figtitle : str</span>
+<span class="sd">        Super-title of the entire multi-panel figure. Default is</span>
+<span class="sd">        ``&#39;&#39;``.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    Have a few :class:`imageops.ImageFrame` instances, here</span>
+<span class="sd">    e.g. ``sky``, ``obs``, and ``psf``.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       # plots a 1x1 figure</span>
+<span class="sd">       multiplot(img)</span>
+
+<span class="sd">       # plots a 1x3 figure (1 row, 3 columns)</span>
+<span class="sd">       multiplot((sky,obs,psf))</span>
+
+<span class="sd">       # plots a 3x1 figure (3 rows, 1 columns)</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(3,1))</span>
+
+<span class="sd">       # plots a 2x2 figure, the 1st row showing img &amp; obs, 2nd row showing psf in the left panel</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(2,2))</span>
+
+<span class="sd">       # plots a 2x2 figure, the 1st column showing img &amp; obs, 2nd column showing psf in the upper panel</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(2,2),direction=&#39;y&#39;)</span>
+
+<span class="sd">       # 1x3 figure, all panels have a colorbar (use same logic for ``units``, ``titles``, ``contours``)</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True)</span>
+
+<span class="sd">       # 1x3 figure, 1st and last panels have a colorbar, middle panel doesn&#39;t (use same logic for ``units``, ``titles``, ``contours``)</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(1,3),colorbars=(True,False,True))</span>
+
+<span class="sd">       # 1x3 figure, all panels have colorbar and (the same) units</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True,units=(&#39;Jy/arcsec^2&#39;,&#39;mJy/mas^2&#39;))</span>
+
+<span class="sd">       # 1x3 figure, all panels have colorbar; first two panels have colorbar units, albeit different ones</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(1,3),colorbars=True,units=(&#39;Jy/arcsec^2&#39;,&#39;mJy/mas^2&#39;))</span>
+
+<span class="sd">       # 1x3 figure; middle panel has 5 logarithmically scaled contours</span>
+<span class="sd">       multiplot((sky,obs,psf),geometry=(1,3),contours=(None,&#39;log&#39;))</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># IMAGES ARRAY</span>
-    <span class="n">images</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
-    
+    <span class="n">images</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
     <span class="n">ny</span><span class="p">,</span> <span class="n">nx</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span> <span class="c1">#geometry</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">nx</span><span class="o">*</span><span class="n">ny</span>
 
     <span class="c1"># ARRAYS OF PANEL FEATURES</span>
-    <span class="n">colorbars</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">colorbars</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
-    <span class="n">units</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">units</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
-    <span class="n">titles</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">titles</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
-    <span class="n">contours</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">contours</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
-    
+    <span class="n">colorbars</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">colorbars</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">units</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+    <span class="n">titles</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">titles</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+    <span class="n">contours</span> <span class="o">=</span> <span class="n">arrayify</span><span class="p">(</span><span class="n">contours</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+
     <span class="c1"># MAKE FIGURE</span>
     <span class="c1"># setup</span>
     <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.labelsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;text.fontsize&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">fontsize</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;font.size&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">fontsize</span>
     <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span><span class="o">-</span><span class="mi">2</span>
     <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fontsize</span><span class="o">-</span><span class="mi">2</span>
     <span class="n">p</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;font.family&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;serif&#39;</span> <span class="c1"># &#39;sans-serif&#39;</span>
@@ -213,15 +360,15 @@
 <span class="c1">#    p.rcParams[&#39;text.usetex&#39;] = True</span>
 
     <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="n">panelsize</span><span class="o">*</span><span class="n">nx</span><span class="p">,</span><span class="n">panelsize</span><span class="o">*</span><span class="n">ny</span><span class="p">)</span>
-    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">,</span><span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ny</span><span class="p">,</span><span class="n">nx</span><span class="p">,</span><span class="n">sharex</span><span class="o">=</span><span class="n">sharex</span><span class="p">,</span><span class="n">sharey</span><span class="o">=</span><span class="n">sharey</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
     <span class="n">axes</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">axes</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">geometry</span><span class="p">:</span>
         <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">T</span>
     
     <span class="c1"># generate panels</span>
-    <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">ny</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">nx</span><span class="p">):</span>
-            <span class="nb">print</span> <span class="s2">&quot;Plotting panel (</span><span class="si">%d</span><span class="s2">,</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iy</span><span class="p">,</span><span class="n">ix</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ny</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Plotting panel (</span><span class="si">{:d}</span><span class="s2">,</span><span class="si">{:d}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iy</span><span class="p">,</span><span class="n">ix</span><span class="p">))</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">images</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span><span class="n">ix</span><span class="p">]</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">iy</span><span class="p">,</span><span class="n">ix</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -288,7 +435,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

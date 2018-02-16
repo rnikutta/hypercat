@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>units module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="utils module" href="utils.html" />
@@ -59,7 +56,7 @@
 <span id="units-module"></span><h1>units module<a class="headerlink" href="#module-units" title="Permalink to this headline">¶</a></h1>
 <dl class="data">
 <dt id="units.UNITS">
-<code class="descclassname">units.</code><code class="descname">UNITS</code><em class="property"> = {‘FLUXDENSITY’: (‘Jy’, ‘mJy’, ‘MJy’, ‘erg/s/cm^2/Hz’, ‘W/m^2/Hz’), ‘TEMPERATURE’: (‘K’,), ‘BRIGHTNESS’: (‘Jy/pix’, ‘mJy/pix’), ‘LUMINOSITY’: (‘erg/s’, ‘W’, ‘Lsun’, ‘solLum’), ‘WAVE’: (‘Angstrom’, ‘nm’, ‘micron’, ‘mm’), ‘CUNITS’: (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’, ‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’), ‘ANGULAR’: (‘arcsec’, ‘mas’, ‘milliarcsecond’, ‘deg’, ‘degree’, ‘rad’, ‘radian’), ‘LINEAR’: (‘cm’, ‘m’, ‘AU’, ‘lyr’, ‘pc’, ‘kpc’, ‘Mpc’, ‘Gpc’)}</em><a class="headerlink" href="#units.UNITS" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">units.</code><code class="descname">UNITS</code><em class="property"> = {'ANGULAR': ('arcsec', 'mas', 'milliarcsecond', 'deg', 'degree', 'rad', 'radian'), 'BRIGHTNESS': ('Jy/pix', 'mJy/pix'), 'CUNITS': ('arcsec', 'mas', 'milliarcsecond', 'deg', 'degree', 'rad', 'radian', 'cm', 'm', 'AU', 'lyr', 'pc', 'kpc', 'Mpc', 'Gpc'), 'FLUXDENSITY': ('Jy', 'mJy', 'MJy', 'erg/s/cm^2/Hz', 'W/m^2/Hz'), 'LINEAR': ('cm', 'm', 'AU', 'lyr', 'pc', 'kpc', 'Mpc', 'Gpc'), 'LUMINOSITY': ('erg/s', 'W', 'Lsun', 'solLum'), 'TEMPERATURE': ('K',), 'WAVE': ('Angstrom', 'nm', 'micron', 'mm')}</em><a class="headerlink" href="#units.UNITS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dictionary of permitted units.</p>
 </dd></dl>
 
@@ -155,7 +152,7 @@ of <cite>string</cite> will be checked against.</li>
 
 <dl class="data">
 <dt id="units.numeric_pattern">
-<code class="descclassname">units.</code><code class="descname">numeric_pattern</code><em class="property"> = ‘^\s*\n         [-+]? # optional sign\n         \s*\n         (?:\n             (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc\n             |\n             (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc\n         )\n         # followed by optional exponent part if desired\n         (?: [Ee] [+-]? \d+ ) ?\n         ‘</em><a class="headerlink" href="#units.numeric_pattern" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">units.</code><code class="descname">numeric_pattern</code><em class="property"> = '^\\s*\n         [-+]? # optional sign\n         \\s*\n         (?:\n             (?: \\d* \\. \\d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc\n             |\n             (?: \\d+ \\.? ) # 1. 12. 123. etc 1 12 123 etc\n         )\n         # followed by optional exponent part if desired\n         (?: [Ee] [+-]? \\d+ ) ?\n         '</em><a class="headerlink" href="#units.numeric_pattern" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regex pattern to identify numbers in a string.</p>
 </dd></dl>
 
@@ -214,7 +211,7 @@ of <cite>string</cite> will be checked against.</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

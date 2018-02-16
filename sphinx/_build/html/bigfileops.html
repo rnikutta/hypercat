@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>bigfileops module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="hypercat module" href="hypercat.html" />
@@ -60,7 +57,8 @@
 <dl class="class">
 <dt id="bigfileops.CheckListSelector">
 <em class="property">class </em><code class="descclassname">bigfileops.</code><code class="descname">CheckListSelector</code><span class="sig-paren">(</span><em>parname</em>, <em>theta</em>, <em>initsize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#CheckListSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.CheckListSelector" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interactively select values from a list.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Interactively select values from a list.</p>
 <dl class="method">
 <dt id="bigfileops.CheckListSelector.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>parname</em>, <em>theta</em>, <em>initsize=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bigfileops.html#CheckListSelector.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bigfileops.CheckListSelector.__init__" title="Permalink to this definition">¶</a></dt>
@@ -162,13 +160,13 @@ whatever units) by making the interactive selections.</li>
 <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
 <span class="n">t</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">cs</span> <span class="o">=</span> <span class="n">getIndexLists</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span><span class="n">paramnames</span><span class="p">)</span>
 <span class="c1"># ...make interactive selections on the screen...</span>
-<span class="k">print</span> <span class="n">theta</span>
+<span class="k">print</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
   <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mf">11.0</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]]</span>
-<span class="k">print</span> <span class="n">i</span>
+<span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
   <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
-<span class="k">print</span> <span class="n">t</span>
+<span class="k">print</span><span class="p">(</span><span class="n">t</span> <span class="p">)</span>
   <span class="p">[</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span> <span class="mf">11.</span><span class="p">,</span>  <span class="mf">12.</span><span class="p">,</span>  <span class="mf">15.</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span> <span class="mf">0.1</span><span class="p">,</span>  <span class="mf">0.4</span><span class="p">,</span>  <span class="mf">0.6</span><span class="p">])]</span>
-<span class="k">print</span> <span class="n">cs</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
   <span class="mf">108.0</span>  <span class="c1"># currentsize; before selections it was 60 elements x 4 bytes 240 bytes</span>
 </pre></div>
 </div>
@@ -197,11 +195,11 @@ the the human-readable bytes count. In log steps of 3.</li>
 </table>
 <p class="rubric">Examples</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">get_bytes_human</span><span class="p">(</span><span class="mi">1023</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span>
 <span class="mf">1023.0</span> <span class="nb">bytes</span>
 
 <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">get_bytes_human</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
-<span class="nb">print</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span>
 <span class="mf">1.0</span> <span class="n">KB</span>
 </pre></div>
 </div>
@@ -476,7 +474,7 @@ will raise an Exception. If <code class="docutils literal"><span class="pre">Non
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>imageops module &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="instruments module" href="instruments.html" />
@@ -59,7 +56,7 @@
 <span id="imageops-module"></span><h1>imageops module<a class="headerlink" href="#module-imageops" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="imageops.Image">
-<em class="property">class </em><code class="descclassname">imageops.</code><code class="descname">Image</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale=‘1 arcsec’</em>, <em>distance=None</em>, <em>total_flux_density=‘1 Jy’</em>, <em>pa=‘0 deg’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">imageops.</code><code class="descname">Image</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale='1 arcsec'</em>, <em>distance=None</em>, <em>total_flux_density='1 Jy'</em>, <em>pa='0 deg'</em>, <em>snr=None</em>, <em>brightness_units='Jy/mas^2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#imageops.ImageFrame" title="imageops.ImageFrame"><code class="xref py py-class docutils literal"><span class="pre">imageops.ImageFrame</span></code></a></p>
 <dl class="attribute">
 <dt id="imageops.Image.F">
@@ -69,12 +66,12 @@
 
 <dl class="method">
 <dt id="imageops.Image.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale=‘1 arcsec’</em>, <em>distance=None</em>, <em>total_flux_density=‘1 Jy’</em>, <em>pa=‘0 deg’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale='1 arcsec'</em>, <em>distance=None</em>, <em>total_flux_density='1 Jy'</em>, <em>pa='0 deg'</em>, <em>snr=None</em>, <em>brightness_units='Jy/mas^2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="imageops.Image.getBrightness">
-<code class="descname">getBrightness</code><span class="sig-paren">(</span><em>units=’Jy/arcsec^2’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.getBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.getBrightness" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getBrightness</code><span class="sig-paren">(</span><em>units='Jy/arcsec^2'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.getBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.getBrightness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the image brightness in the requested ‘units’
 (brightness-per-solid-angle).</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -91,7 +88,7 @@ possibilities: <code class="docutils literal"><span class="pre">Jy/mas^2,</span>
 </tbody>
 </table>
 <p class="rubric">Example</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">);</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">());</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">))</span>
   <span class="mf">1.0</span> <span class="n">arcsec</span>
   <span class="mf">3.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span>
   <span class="mf">0.003</span> <span class="n">Jy</span> <span class="o">/</span> <span class="n">arcsec2</span>
@@ -101,7 +98,7 @@ possibilities: <code class="docutils literal"><span class="pre">Jy/mas^2,</span>
 
 <dl class="method">
 <dt id="imageops.Image.getTotalFluxDensity">
-<code class="descname">getTotalFluxDensity</code><span class="sig-paren">(</span><em>units=’Jy’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.getTotalFluxDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.getTotalFluxDensity" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getTotalFluxDensity</code><span class="sig-paren">(</span><em>units='Jy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.getTotalFluxDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.getTotalFluxDensity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the total flux density within the FOV.</p>
 <p>The total flux density is the brightness integral over the solid
 angle of the FOV.</p>
@@ -120,7 +117,7 @@ should be output. Default: ‘Jy’</td>
 </table>
 <p class="rubric">Example</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">total</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
-<span class="nb">print</span> <span class="n">total</span><span class="p">;</span> <span class="nb">print</span> <span class="n">total</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mJy&#39;</span><span class="p">)</span>  <span class="c1"># can be easily converted to other units</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">total</span><span class="p">);</span> <span class="nb">print</span><span class="p">(</span><span class="n">total</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mJy&#39;</span><span class="p">))</span>  <span class="c1"># can be easily converted to other units</span>
   <span class="mf">0.0050459482673</span> <span class="n">Jy</span>
   <span class="mf">5.0459482673</span> <span class="n">mJy</span>
 </pre></div>
@@ -129,7 +126,7 @@ should be output. Default: ‘Jy’</td>
 
 <dl class="method">
 <dt id="imageops.Image.setBrightness">
-<code class="descname">setBrightness</code><span class="sig-paren">(</span><em>total_flux_density=‘1 Jy’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.setBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.setBrightness" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setBrightness</code><span class="sig-paren">(</span><em>total_flux_density='1 Jy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#Image.setBrightness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.Image.setBrightness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale the brightness of the image such that total flux is <code class="docutils literal"><span class="pre">total_flux_density</span></code>.</p>
 <p>This does not touch the <code class="docutils literal"><span class="pre">self.pixelsize</span></code> and
 <code class="docutils literal"><span class="pre">self.pixelarea</span></code> values of the image.</p>
@@ -147,12 +144,12 @@ the requirements.</p>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">());</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">())</span>
 <span class="mf">0.000383368023904</span> <span class="n">Jy</span> <span class="o">/</span> <span class="n">pix</span>
 <span class="mf">1.00000080509</span> <span class="n">Jy</span>
 
 <span class="n">I</span><span class="o">.</span><span class="n">setBrightness</span><span class="p">(</span><span class="s1">&#39;2 Jy&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">();</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">());</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">())</span>
 <span class="mf">0.000766735291108</span> <span class="n">Jy</span> <span class="o">/</span> <span class="n">pix</span>
 <span class="mf">1.99999992838</span> <span class="n">Jy</span>
 </pre></div>
@@ -164,7 +161,8 @@ the requirements.</p>
 <dl class="class">
 <dt id="imageops.ImageFrame">
 <em class="property">class </em><code class="descclassname">imageops.</code><code class="descname">ImageFrame</code><span class="sig-paren">(</span><em>image</em>, <em>pixelscale=None</em>, <em>distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
 <dt id="imageops.ImageFrame.I">
 <code class="descname">I</code><a class="headerlink" href="#imageops.ImageFrame.I" title="Permalink to this definition">¶</a></dt>
 <dd><p>Property alias for <code class="xref py py-func docutils literal"><span class="pre">_getImageT()</span></code></p>
@@ -236,25 +234,25 @@ requirement that <code class="docutils literal"><span class="pre">npix_new</span
 <span class="c1"># `Image` instance</span>
 <span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
 
-<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())]))</span>
   <span class="mi">221</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">1.0</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
-<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">())</span>
   <span class="mf">5.35844</span> <span class="n">Jy</span>  <span class="c1"># total flux density</span>
 
 <span class="c1"># new instance, upsampled 2x</span>
 <span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
 <span class="n">I</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())]))</span>
   <span class="mi">443</span><span class="p">,</span> <span class="mf">0.49887</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">0.24887</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">0.26328</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">1.05787</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
-<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotaFluxDensity</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getTotaFluxDensity</span><span class="p">())</span>
   <span class="mf">5.38289</span> <span class="n">Jy</span>  <span class="c1"># total flux density preserved; difference due to interpolation errors</span>
 
 <span class="c1"># new instance, downsampled 0.5x</span>
 <span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">,</span><span class="n">peak_pixel_brightness</span><span class="o">=</span><span class="s1">&#39;1.0 mJy/pix&#39;</span><span class="p">)</span>
 <span class="n">I</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="nb">print</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">FOV</span><span class="p">,</span><span class="n">I</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">I</span><span class="o">.</span><span class="n">getBrightness</span><span class="p">(</span><span class="s1">&#39;mJy/arcsec^2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())]))</span>
   <span class="mi">111</span><span class="p">,</span> <span class="mf">1.99099099</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">3.96405</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">221.0</span> <span class="n">arcsec</span><span class="p">,</span> <span class="mf">3.92935</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">pix</span><span class="p">,</span> <span class="mf">0.99125</span> <span class="n">mJy</span> <span class="o">/</span> <span class="n">arcsec2</span>
-<span class="nb">print</span> <span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">getTotalFluxDensity</span><span class="p">())</span>
   <span class="mf">5.30354</span> <span class="n">Jy</span>  <span class="c1"># still preserved</span>
 </pre></div>
 </div>
@@ -262,7 +260,7 @@ requirement that <code class="docutils literal"><span class="pre">npix_new</span
 
 <dl class="method">
 <dt id="imageops.ImageFrame.rotate">
-<code class="descname">rotate</code><span class="sig-paren">(</span><em>angle</em>, <em>direction=’NE’</em>, <em>returnimage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame.rotate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>angle</em>, <em>direction='NE'</em>, <em>returnimage=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame.rotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate <code class="docutils literal"><span class="pre">self.data</span></code> by <cite>angle</cite> degrees from North towards
 <cite>direction</cite> (either East or West).</p>
 <p>See docstring of <a class="reference internal" href="#imageops.rotateImage" title="imageops.rotateImage"><code class="xref py py-func docutils literal"><span class="pre">rotateImage()</span></code></a></p>
@@ -306,7 +304,7 @@ requirement that <code class="docutils literal"><span class="pre">npix_new</span
 
 <dl class="method">
 <dt id="imageops.ImageFrame.setPixelscale">
-<code class="descname">setPixelscale</code><span class="sig-paren">(</span><em>pixelscale=‘1 arcsec’</em>, <em>distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame.setPixelscale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame.setPixelscale" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setPixelscale</code><span class="sig-paren">(</span><em>pixelscale='1 arcsec'</em>, <em>distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#ImageFrame.setPixelscale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.ImageFrame.setPixelscale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set size and area of a pixel from user input.</p>
 <p>This does not affect the brightness per pixel.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -334,19 +332,25 @@ rather an argument akin to ‘pixelscale’ above, i.e. str or
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">Image</span><span class="p">(</span><span class="n">raw_image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;0.2 arsec&#39;</span><span class="p">)</span>  <span class="c1"># definition of an &#39;Image&#39; instance</span>
-<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">;</span> <span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="o">=</span> <span class="n">hypercat</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">raw_image</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;0.2 arcsec&#39;</span><span class="p">)</span>  <span class="c1"># definition of an &#39;Image&#39; instance</span>
+<span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">);</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">)</span>
   <span class="mf">0.2</span> <span class="n">arcsec</span>
-  <span class="mf">0.04</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span>
+  <span class="mf">0.04</span> <span class="n">arcsec2</span>
 
 <span class="n">I</span><span class="o">.</span><span class="n">setPixelscale</span><span class="p">(</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 AU&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="s1">&#39;1 pc&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">,</span> <span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span>
+<span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelscale</span><span class="p">);</span> <span class="k">print</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">pixelarea</span><span class="p">)</span>
   <span class="mf">1.0</span> <span class="n">arcsec</span>
-  <span class="mf">1.0</span> <span class="n">arcsec2</span> <span class="o">/</span> <span class="n">pix</span>
+  <span class="mf">1.0</span> <span class="n">arcsec2</span>
 </pre></div>
 </div>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="imageops.add_noise">
+<code class="descclassname">imageops.</code><code class="descname">add_noise</code><span class="sig-paren">(</span><em>image</em>, <em>snr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#add_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.add_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Gaussian noise to <code class="docutils literal"><span class="pre">image</span></code> such that SNR is <code class="docutils literal"><span class="pre">snr</span></code>.</p>
 </dd></dl>
 
 <dl class="function">
@@ -374,24 +378,24 @@ yet handle multi-wavelength images.</li>
 </table>
 <p class="rubric">Examples</p>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># all tests pass, returns nothing</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">)</span>
 <span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># fails with Exception if image not square</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
   <span class="o">...</span>
   <span class="ne">ValueError</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span> <span class="n">must</span> <span class="n">be</span> <span class="n">square</span> <span class="p">(</span><span class="n">nx</span><span class="o">=</span><span class="n">ny</span><span class="p">)</span>
 
 <span class="c1"># fails with Exception if size not odd</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
   <span class="s1">&#39;image&#39;</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">pixels</span> <span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="n">must</span> <span class="n">be</span> <span class="n">odd</span> <span class="ow">and</span> <span class="n">integer</span><span class="p">,</span> <span class="n">but</span> <span class="ow">is</span> <span class="n">nx</span> <span class="o">=</span>  <span class="mi">10</span>
   <span class="o">...</span>
   <span class="ne">ValueError</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">odd</span><span class="o">.</span>
 
 <span class="c1"># fails with Exception if image not 2D</span>
-<span class="n">image</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">check</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">returnsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
   <span class="o">...</span>
   <span class="ne">ValueError</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span> <span class="n">must</span> <span class="n">be</span> <span class="mi">2</span><span class="n">D</span><span class="o">.</span>
@@ -452,6 +456,12 @@ nearest odd-valued integer to <code class="docutils literal"><span class="pre">n
 </dd></dl>
 
 <dl class="function">
+<dt id="imageops.measure_snr">
+<code class="descclassname">imageops.</code><code class="descname">measure_snr</code><span class="sig-paren">(</span><em>noisy_image</em>, <em>noise_pattern</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#measure_snr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.measure_snr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Measure the effective SNR = mean(signal) / std(noise)</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="imageops.resampleImage">
 <code class="descclassname">imageops.</code><code class="descname">resampleImage</code><span class="sig-paren">(</span><em>image</em>, <em>resamplingfactor</em>, <em>conserve=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#resampleImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.resampleImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resample an image by <cite>resamplingfactor</cite>.</p>
@@ -487,7 +497,7 @@ the requirement that <code class="docutils literal"><span class="pre">npix_new</
 
 <dl class="function">
 <dt id="imageops.rotateImage">
-<code class="descclassname">imageops.</code><code class="descname">rotateImage</code><span class="sig-paren">(</span><em>image</em>, <em>angle</em>, <em>direction=’NE’</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#rotateImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.rotateImage" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">imageops.</code><code class="descname">rotateImage</code><span class="sig-paren">(</span><em>image</em>, <em>angle</em>, <em>direction='NE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/imageops.html#rotateImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#imageops.rotateImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rotate an image around its central pixel by <cite>angle</cite> degrees.</p>
 <p>The parts of <cite>image</cite> which after rotation are outside the frame,
 will be truncated. Areas in the rotated image which are empty will
@@ -573,7 +583,7 @@ argument).</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

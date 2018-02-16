@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180207'   #yyymmdd
+__version__ = '20180215'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -88,120 +88,71 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
         w.wcs.crval = (coords.ra.to(unit).value, coords.dec.to(unit).value)
 
         return w
+    
 
+def arrayify(seq,shape=None,fill=False,direction='x'):
 
-def arrayify(arg,n=None,shape=None,direction='x'):
+    """Arrange elements of sequence `seq` into an array of shape `shape`.
 
-    """Repeat 'arg' 'n' times, put that sequence in array with shape 'shape'.
+    Definitions:
+      * `seq` is input sequence of elements
+      * `arr` is output array
+      * ``ne = len(seq)`` # number of elements in input sequence
+      * ``na = np.prod(shape)`` # number of elements in output array
 
-    If arg is already a list-like sequence, ignore n.
-    If 'shape' is a 2-tuple, reshape sequence to an array with shape 'shape'.
-    If len(sequence)>array.size, only put the first array.size elements of sequence into the array,
-    If len(sequence)<=array.size, pad the remaining elements in array with None.
+    Behavior:
+      * If `seq` is just a single element, then ``arr.shape`` is (1,1).
+      * If ``ne>=na``, ``arr[:ne] = seq[:]``, i.a. any extra elements from `seq` will be truncated
+      * If ``ne<na``, then ``arr[ne:] = None``, i.e. the extra elements in `arr` will be set to ``None``
+      * If ``ne==1`` and ``fill==True``, then ``arr[:] = seq``, i.e. all elements of `arr` will be set to the value of `seq`
 
     Parameters
     ----------
-    arg : singlet, or list-like sequence
-        If not list or tuple, arg is a single-element object (can be
-        anything) and will be repeated either n times, or
-        N.prod(shape) times.
+    seq : tuple or list or single element
+        Sequence of elements to be arranged in an array. If single
+        element, it will be turned into a len-1 sequence.
 
-    n : int|None
-
-    shape : 2-tuple|None
+    shape : tuple or None
+       2-tuple giving the shape of the output array. If ``None``
+       (default), the array will have shape (1,ne).
+    
+    fill : bool
+        If ``True`` and ``ne==1`` and ``na>ne``, the entire output
+        array will be filled with the value of `seq`.
 
     direction : str
-        If 'x' (default), elements in resulting 2d array are counted
-        along rows first, then columns. If 'y', the other way round.
-
-    Examples
-    --------
-    .. code-block:: python
-    
-        # generate 1d sequence
-        arrayify('foo',n=10,shape=None)
-        --> ['foo', 'foo', 'foo', 'foo', 'foo', 'foo']
-
-        # and reshape to 2d
-        arrayify('foo',n=10,shape=(2,3))
-        --> array([['foo', 'foo', 'foo'],
-                   ['foo', 'foo', 'foo']], dtype=object)
-        
-        # embed sequence in larger 2d array (pad tail with None)
-        arrayify('foo',n=10,shape=(2,4))
-        --> array([['foo', 'foo', 'foo', 'foo'],
-                   ['foo', 'foo', None,   None]], dtype=object)
-
-        # place sequence in smaller 2d array (only use first elements)
-        arrayify('foo',n=6,shape=(2,2))
-        --> array([['foo', 'foo'],
-                   ['foo', 'foo']], dtype=object)
-
-        # provide a list-like sequence (no effect)
-        arrayify(['foo','bar','baz'],n=None,shape=None)
-        --> ['foo', 'bar', 'baz']
-
-        # provide a list-like sequence, and n (no effect, n ignored)
-        arrayify(['foo','bar','baz'],n=6,shape=None)
-        --> ['foo', 'bar', 'baz']
-
-        # provide a list-like sequence, and embed in larger array
-        arrayify(['foo','bar','baz'],n=6,shape=(2,4))
-        --> array([['foo', 'bar', 'baz', None],
-                   [None, None, None, None]], dtype=object)        
-
-        # provide a list-like sequence, and embed in smaller array
-        arrayify(['foo','bar','baz'],n=6,shape=(1,2))
-        --> array([['foo', 'bar']], dtype=object)
+        If ``'x'`` (default), transpose the output array.
 
     """
 
-    lili = (list,tuple)  # list-like
-
-#    if not isinstance(arg,lili):
-#        print(type(arg))
-#        if isinstance(n,int):
-#            seq = [arg]*n
-#        elif shape is not None:
-#            seq = [arg]*N.prod(shape)
-#        else:
-#            seq = N.empty((1,1),dtype=object)
-#            seq[0,0] = arg
-#    else:
-#        n = len(arg)
-#        seq = arg
-#
-
-        
-    if not isinstance(arg,lili):
-        print(type(arg))
-        if isinstance(n,int):
-            seq = [arg]*n
-        elif shape is not None:
-            seq = [arg]*N.prod(shape)
-        else:
-            seq = N.empty((1,1),dtype=object)
-            seq[0,0] = arg
-    else:
-        n = len(arg)
-        seq = arg
-
-
-    print("n = ", n)
-    print("seq = ", seq)
     
-    if isinstance(shape,lili) and len(shape)==2:
-        print("shape = ",shape)
-        seq2d = N.empty(shape,dtype=object)
-        idx = min(n,seq2d.size)
-        seq2d.ravel()[:idx] = seq[:idx]
-        seq = seq2d
+    # turn single-element argument into a len-1 sequence
+    if not isinstance(seq,(list,tuple)):
+        seq = tuple([seq])
 
-        if direction == 'y':
-            seq = seq.reshape(shape[::-1]).T
+    # if no shape arg was given
+    if not isinstance(shape,tuple):
+        shape = (1,len(seq))
 
-    return seq
+    ne = len(seq) # number of elements in inout sequence
+    na = N.prod(shape) # number of elements in output array
 
+    arr = np.array([None]*na) # flatted version of output array
+
+    # deal with sequences too long or too short for array
+    nmin = min(ne,na)
+    arr[:nmin] = seq[:nmin]
+    if ne == 1 and fill is True:
+        arr[:] = seq[0]
+    
+    arr = arr.reshape(shape) # final shape of array
+
+    # transpose if necessary
+    if direction == 'x':
+        arr = arr.reshape(shape[::-1]).T
+
+    return arr
+    
 
 def mirror_axis(cube,axis=-2):
 

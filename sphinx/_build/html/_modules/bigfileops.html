@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>bigfileops &#8212; HyperCAT API 1.0.0 documentation</title>
-    
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -24,7 +21,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
   </head>
@@ -51,7 +48,7 @@
   <h1>Source code for bigfileops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20170714&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180202&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling large hypercubes in hdf5 files.</span>
@@ -231,13 +228,13 @@
         
         <span class="c1"># We ensure we have a non-compressed contiguous array.</span>
         <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">chunks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mem-mapping only works for non-chunked hdf5 dastasets. Datset &#39;</span><span class="si">%s</span><span class="s2">&#39; appears to have chunks.&quot;</span> <span class="o">%</span> <span class="n">dsetpath</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mem-mapping only works for non-chunked hdf5 dastasets. Datset &#39;</span><span class="si">{:s}</span><span class="s2">&#39; appears to have chunks.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dsetpath</span><span class="p">))</span>
         
         <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">compression</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mem-mapping only works for non-compressed hdf5 dastasets. Datset &#39;</span><span class="si">%s</span><span class="s2">&#39; appears to have compression ON.&quot;</span> <span class="o">%</span> <span class="n">dsetpath</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mem-mapping only works for non-compressed hdf5 dastasets. Datset &#39;</span><span class="si">{:s}</span><span class="s2">&#39; appears to have compression ON.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dsetpath</span><span class="p">))</span>
         
         <span class="k">if</span> <span class="n">offset</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid offset found for dataset &#39;</span><span class="si">%s</span><span class="s2">&#39;. Offset must be an integer &gt; 0&quot;</span> <span class="o">%</span> <span class="n">dsetpath</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid offset found for dataset &#39;</span><span class="si">{:s}</span><span class="s2">&#39;. Offset must be an integer &gt; 0&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dsetpath</span><span class="p">))</span>
         
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">dtype</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span>
@@ -369,13 +366,13 @@
 <span class="sd">       paramnames = [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;]</span>
 <span class="sd">       t,i,cs = getIndexLists(theta,paramnames)</span>
 <span class="sd">       # ...make interactive selections on the screen...</span>
-<span class="sd">       print theta</span>
+<span class="sd">       print(theta)</span>
 <span class="sd">         [[0, 1, 2, 3], [11.0, 12, 13, 14, 15], [0.1, 0.4, 0.6]]</span>
-<span class="sd">       print i</span>
+<span class="sd">       print(i)</span>
 <span class="sd">         [[1, 2, 3], [0, 1, 4], [0, 1, 2]]</span>
-<span class="sd">       print t </span>
+<span class="sd">       print(t )</span>
 <span class="sd">         [array([1, 2, 3]), array([ 11.,  12.,  15.]), array([ 0.1,  0.4,  0.6])]</span>
-<span class="sd">       print cs</span>
+<span class="sd">       print(cs)</span>
 <span class="sd">         108.0  # currentsize; before selections it was 60 elements x 4 bytes 240 bytes</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -464,7 +461,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">HEADER</span> <span class="o">=</span> <span class="n">urwid</span><span class="o">.</span><span class="n">AttrWrap</span><span class="p">(</span>
                       <span class="n">urwid</span><span class="o">.</span><span class="n">Text</span><span class="p">(</span><span class="s2">&quot;Use the keyboard arrows to move between checkboxes.</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span>\
                                  <span class="s2">&quot;Hit SPACE to select/deselect. Hit ENTER when done.</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span>\
-                                 <span class="s2">&quot;Select values for parameter </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">parname</span><span class="p">),</span>
+                                 <span class="s2">&quot;Select values for parameter </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parname</span><span class="p">)),</span>
                       <span class="s1">&#39;header&#39;</span><span class="p">)</span>
 
         <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">]</span>
@@ -509,12 +506,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">idxes</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="o">.</span><span class="n">size</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">nselected</span> <span class="o">=</span> <span class="n">N</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
 
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Selected </span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nselected</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Selected </span><span class="si">{:d}</span><span class="s2">/</span><span class="si">{:d}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nselected</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">currentsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initsize</span> <span class="o">*</span> <span class="n">nselected</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bidxes</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
             <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">get_bytes_human</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentsize</span><span class="p">)</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; (Total size: </span><span class="si">%.2f</span><span class="s2"> </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; (Total size: </span><span class="si">{:.2f}</span><span class="s2"> </span><span class="si">{:s}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">suffix</span><span class="p">)</span>
             
         <span class="k">if</span> <span class="n">nselected</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; Select at least one value.&quot;</span>
@@ -539,7 +536,7 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">f</span><span class="p">)</span>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saved objects in file </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">jsonfile</span><span class="p">)</span></div>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saved objects in file </span><span class="si">{:s}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">))</span></div>
     
 
 <div class="viewcode-block" id="loadjson"><a class="viewcode-back" href="../bigfileops.html#bigfileops.loadjson">[docs]</a><span class="k">def</span> <span class="nf">loadjson</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">):</span>
@@ -557,7 +554,7 @@
 <span class="sd">        Dictionary of the content stored in the json file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading objects from file </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">jsonfile</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading objects from file </span><span class="si">{:s}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">))</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -618,11 +615,11 @@
 <span class="sd">    .. code:: python</span>
 
 <span class="sd">        prefix, suffix = get_bytes_human(1023)</span>
-<span class="sd">        print prefix, suffix</span>
+<span class="sd">        print(prefix,suffix)</span>
 <span class="sd">        1023.0 bytes</span>
 
 <span class="sd">        prefix, suffix = get_bytes_human(1024)</span>
-<span class="sd">        print prefix, suffix</span>
+<span class="sd">        print(prefix,suffix)</span>
 <span class="sd">        1.0 KB</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -646,7 +643,6 @@
     <span class="n">suffix</span> <span class="o">=</span> <span class="n">suffixes</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
     
     <span class="k">return</span> <span class="n">sig</span><span class="o">*</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span></div>
-
 </pre></div>
 
           </div>
@@ -683,7 +679,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
