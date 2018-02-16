@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180202'   #yyymmdd
+__version__ = '20180216'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling large hypercubes in hdf5 files.
@@ -19,7 +19,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 import logging
 import json
 import urwid, urwid.curses_display
-import numpy as N
+import numpy as np
 import h5py
 
 
@@ -83,8 +83,8 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
 
     for name,data in mapping.items():
 
-        if isinstance(data[0],N.ndarray) and isragged(data):
-            dflt = h5py.special_dtype(vlen=N.dtype('float64'))
+        if isinstance(data[0],np.ndarray) and isragged(data):
+            dflt = h5py.special_dtype(vlen=np.dtype('float64'))
             ds = g.create_dataset(name, (len(data),), dtype=dflt)
             for j,v in enumerate(data):
                 print("j, v, type(v) = ", j, v, type(v))
@@ -131,7 +131,7 @@ def isragged(arr):
 
     """
     
-    ragged = not (N.unique([len(r) for r in arr]).size == 1)
+    ragged = not (np.unique([len(r) for r in arr]).size == 1)
     
     return ragged
 
@@ -192,7 +192,7 @@ def memmap_hdf5_dataset(hdf5file,dsetpath):
         shape = ds.shape
 
     # provide memory-mapped array object (this does not occupy RAM until the array (or part of it) is explicitly read
-    dsmemmap = N.memmap(hdf5file, mode='r', shape=shape, offset=offset, dtype=dtype)
+    dsmemmap = np.memmap(hdf5file, mode='r', shape=shape, offset=offset, dtype=dtype)
     
     return dsmemmap
 
@@ -226,7 +226,7 @@ def get_hyperslab_via_mesh(dset,idxlist):
     .. code-block:: python
 
        import numpy as N
-       A = N.arange(3*4*5).reshape((3,4,5))
+       A = np.arange(3*4*5).reshape((3,4,5))
          array([[[ 0,  1,  2,  3,  4],
                  [ 5,  6,  7,  8,  9],
                  [10, 11, 12, 13, 14],
@@ -251,7 +251,7 @@ def get_hyperslab_via_mesh(dset,idxlist):
 
     """
     
-    mesh = N.ix_(*idxlist)
+    mesh = np.ix_(*idxlist)
     arr = dset[mesh]
 
     return arr
@@ -280,7 +280,7 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
         If not Note, it is the size (e.g. in GB, or simply in counts)
         of the pre-selection full cube. This size will be numerically
         reduced for every element removed during the selection. If
-        None, the size will be computed as N.prod(shape) * wordsize,
+        None, the size will be computed as np.prod(shape) * wordsize,
         where ``shape`` are all lengths of all sub-lists in
         `'theta``. For ``wordsize`` see below.
 
@@ -332,8 +332,8 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
     if initsize is not None:
         currentsize = initsize
     else:
-        shape_ = N.array([len(_) for _ in theta])
-        currentsize = N.prod(shape_) * wordsize
+        shape_ = np.array([len(_) for _ in theta])
+        currentsize = np.prod(shape_) * wordsize
     
     # select a sub-hypercube
     t = []
@@ -390,8 +390,8 @@ class CheckListSelector:
         """
 
         self.theta = theta
-        if not isinstance(self.theta,N.ndarray):
-            self.theta = N.array(self.theta)
+        if not isinstance(self.theta,np.ndarray):
+            self.theta = np.array(self.theta)
         
         self.parname = parname
         self.initsize = initsize
@@ -417,7 +417,7 @@ class CheckListSelector:
                       'header')
 
         strings = [str(e) for e in self.theta]
-        len_ = int(N.max([len(e) for e in strings]))
+        len_ = int(np.max([len(e) for e in strings]))
         self.cells = [urwid.AttrWrap(urwid.CheckBox(e,state=True),'buttn','buttnf') for e in strings]
 
         self.pad = urwid.Padding( urwid.GridFlow(self.cells,4+int(len_),2,0,'left'), ('fixed left',4), ('fixed right',3) )
@@ -454,9 +454,9 @@ class CheckListSelector:
         self.ui.draw_screen( self.size, self.canvas )
 
     def update_footer(self):
-        self.bidxes = N.array([e.get_state() for e in self.cells])
-        self.idxes = N.arange(self.theta.size)[self.bidxes].tolist()
-        nselected = N.argwhere(self.bidxes).size
+        self.bidxes = np.array([e.get_state() for e in self.cells])
+        self.idxes = np.arange(self.theta.size)[self.bidxes].tolist()
+        nselected = np.argwhere(self.bidxes).size
 
         text = "Selected {:d}/{:d}.".format(nselected,self.bidxes.size)
         
@@ -536,7 +536,7 @@ def get_bytesize(lol,wordsize=4):
     """
     
     shape_ = [len(_) for _ in lol]
-    bytesize = N.prod(shape_) * wordsize
+    bytesize = np.prod(shape_) * wordsize
 
     return bytesize
 

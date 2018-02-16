@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180215'   #yyymmdd
+__version__ = '20180216'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -8,7 +8,6 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: utils
 """
 
-import numpy as N
 import numpy as np
 from astropy.coordinates import name_resolve
 from astropy import wcs
@@ -135,7 +134,7 @@ def arrayify(seq,shape=None,fill=False,direction='x'):
         shape = (1,len(seq))
 
     ne = len(seq) # number of elements in inout sequence
-    na = N.prod(shape) # number of elements in output array
+    na = np.prod(shape) # number of elements in output array
 
     arr = np.array([None]*na) # flatted version of output array
 
@@ -178,7 +177,7 @@ def mirror_axis(cube,axis=-2):
     --------
     .. code-block:: python
 
-        c = N.arange(9).reshape((3,3))
+        c = np.arange(9).reshape((3,3))
         c
         --> array([[0, 1, 2],
                    [3, 4, 5],
@@ -203,7 +202,7 @@ def mirror_axis(cube,axis=-2):
     allpads = [(0,0)]*ndim
     allpads[axis] = (npix-1,0)
     
-    newcube = N.pad(cube,tuple(allpads),'reflect')
+    newcube = np.pad(cube,tuple(allpads),'reflect')
 
     return newcube
     

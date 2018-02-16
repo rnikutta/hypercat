@@ -10,12 +10,10 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 # IMPORTS
 # std lib
-import numpy as N
 import numpy as np
-from numpy import ma
 
 # 3rd party
-import pylab as p
+import pylab as plt
 import matplotlib
 from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -49,12 +47,12 @@ def plot_with_wcs(image):
     """
     
     
-    fig = p.figure(figsize=(6.5,6))
-#    fig = p.figure()
+    fig = plt.figure(figsize=(6.5,6))
+#    fig = plt.figure()
     ax = fig.add_subplot(111, projection=image.wcs)
     xc = ax.coords[0]
     yc = ax.coords[1]
-    ax.imshow(image.data.T, origin='lower', cmap=p.cm.viridis)
+    ax.imshow(image.data.T, origin='lower', cmap=plt.cm.viridis)
     ax.set_xlabel('RA')
     ax.set_ylabel('Dec')
     xc.set_ticks(spacing=100.*u.mas)
@@ -70,10 +68,10 @@ def plot_with_wcs(image):
 #    left='on',         # ticks along the top edge are off
 #    right='off'         # ticks along the top edge are off
 #    )
-#    p.show()
+#    plt.show()
 
 
-def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None,interpolation='bicubic'):
+def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.viridis,contours=None,interpolation='bicubic'):
 
     """Plot a single panel. To be called from :func:`multiplot() (see docstring there).`
     """
@@ -153,7 +151,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     # make colorbar; set invisible if no colorbar requested
     cax = divider.append_axes('right', size='5%', pad=0.05)
     if colorbar == True:
-        cb = p.colorbar(im,cax=cax,orientation='vertical')
+        cb = plt.colorbar(im,cax=cax,orientation='vertical')
         if cls == 'Image' and units is not None:
             cb.set_label(units)
     else:
@@ -164,7 +162,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
 def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               sharex=True,sharey=True,\
               colorbars=True,units='',titles='',contours=None,
-              interpolation='bicubic',cmap=p.cm.viridis,figtitle='',\
+              interpolation='bicubic',cmap=plt.cm.viridis,figtitle='',\
               **kwargs):
 
     """Plot one or more images in a multi-panel figure.
@@ -256,7 +254,7 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     cmap : instance
         Colormap to be used for the images. Must be one of the
         colormaps in module :mod:`pylab.cm`. Default is
-        ``p.cm.viridis``
+        ``plt.cm.viridis``
 
     figtitle : str
         Super-title of the entire multi-panel figure. Default is
@@ -319,19 +317,19 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # MAKE FIGURE
     # setup
     fontsize = 10
-    p.rcParams['axes.labelsize'] = fontsize
-    p.rcParams['font.size'] =  fontsize
-    p.rcParams['xtick.labelsize'] = fontsize-2
-    p.rcParams['ytick.labelsize'] = fontsize-2
-    p.rcParams['font.family'] = 'serif' # 'sans-serif'
+    plt.rcParams['axes.labelsize'] = fontsize
+    plt.rcParams['font.size'] =  fontsize
+    plt.rcParams['xtick.labelsize'] = fontsize-2
+    plt.rcParams['ytick.labelsize'] = fontsize-2
+    plt.rcParams['font.family'] = 'serif' # 'sans-serif'
 #    # don't use Type 3 fonts (MNRAS requeirement)
-#    p.rcParams['ps.useafm'] = True
-#    p.rcParams['pdf.use14corefonts'] = True
-#    p.rcParams['text.usetex'] = True
+#    plt.rcParams['ps.useafm'] = True
+#    plt.rcParams['pdf.use14corefonts'] = True
+#    plt.rcParams['text.usetex'] = True
 
     figsize = (panelsize*nx,panelsize*ny)
-    fig, axes = p.subplots(ny,nx,sharex=sharex,sharey=sharey,figsize=figsize)
-    axes = N.atleast_2d(axes)
+    fig, axes = plt.subplots(ny,nx,sharex=sharex,sharey=sharey,figsize=figsize)
+    axes = np.atleast_2d(axes)
     if axes.T.shape == geometry:
         axes = axes.T
     

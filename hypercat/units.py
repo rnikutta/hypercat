@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180207'   #yyymmdd
+__version__ = '20180216'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling units and units strings.
@@ -8,7 +8,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: units
 """
 
-import numpy as N
+import numpy as np
 from astropy import units as u
 import re
 
@@ -161,7 +161,7 @@ def getValueUnit(quantity,recognized_units):
         raise AttributeError("Argument 'quantity' is neither string nor instance of 'Quantity'.")
 
     try:
-        value = N.float(value)
+        value = np.float(value)
     except ValueError:
         value = ''
 

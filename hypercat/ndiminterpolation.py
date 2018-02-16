@@ -4,11 +4,11 @@ from __future__ import print_function
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180207' #yyyymmdd
+__version__ = '20180216' #yyyymmdd
 
 #TODO: update doc strings
 
-import numpy as N
+import numpy as np
 import warnings
 from scipy import interpolate, ndimage
 import itertools
@@ -119,7 +119,7 @@ class NdimInterpolation:
         # take log10 of 'data' ('y' values)
         if self.mode in ('log','loglog'):
             try:
-                self.data_hypercube = N.log10(self.data_hypercube)
+                self.data_hypercube = np.log10(self.data_hypercube)
             except RuntimeWarning:
                 raise Exception("For mode='log' all entries in 'data' must be > 0.")
 
@@ -127,14 +127,14 @@ class NdimInterpolation:
         if self.mode == 'loglog':
             for jt,t in enumerate(self.theta):
                 try:
-                    self.theta[jt] = N.log10(t)
+                    self.theta[jt] = np.log10(t)
                 except:
                     raise # Exception
 
         # set up n 1-d linear interpolators for all n parameters in theta
         self.ips = [] # list of 1-d interpolator objects
         for t in self.theta:
-            self.ips.append(interpolate.interp1d(t,N.linspace(0.,float(t.size-1.),t.size)))
+            self.ips.append(interpolate.interp1d(t,np.linspace(0.,float(t.size-1.),t.size)))
 
         if self.order == 3:
             print("Evaluating cubic spline coefficients for subsequent use, please wait...")
@@ -164,7 +164,7 @@ class NdimInterpolation:
             2D array of coordinates in pixel space, on which then the
             multi-dim interpolation can be performed.
 
-            Overall, A = N.prod([len(vec_i) for vec_i in vec])
+            Overall, A = np.prod([len(vec_i) for vec_i in vec])
             coordinate sets, for B = len(self.theta) parameters, will
             be generated, i.e. the returned coordinate matrix has
             coordinates.shape = (A,B).
@@ -200,7 +200,7 @@ class NdimInterpolation:
             vec = (0,1,2,3,(0,1,2),(3,4,5),6)
             vectup = [e if isinstance(e,tuple) else (e,) for e in vec]
                [(0,), (1,), (2,), (3,), (0, 1, 2), (3, 4, 5), (6,)]
-            coords = N.array([e for e in itertools.product(*vectup)])  # in pixel space
+            coords = np.array([e for e in itertools.product(*vectup)])  # in pixel space
                array([[0, 1, 2, 3, 0, 3, 6],
                       [0, 1, 2, 3, 0, 4, 6],
                       [0, 1, 2, 3, 0, 5, 6],
@@ -218,12 +218,12 @@ class NdimInterpolation:
         shape_ = [len(e) for e in vectup] # tuple shape
 
         # create a fleshed-out mesh of (multi-dim) locations to interpolate `data` at
-        coords_real = N.array([e for e in itertools.product(*vectup)])
+        coords_real = np.array([e for e in itertools.product(*vectup)])
         
         columns = coords_real.T.tolist() # transpose
 
         # convert physical coordinate values to (fractional) pixel-space
-        coords_pix = N.array([ self.ips[j](columns[j]) for j in range(len(columns)) ])
+        coords_pix = np.array([ self.ips[j](columns[j]) for j in range(len(columns)) ])
         
         return coords_pix, shape_
 
@@ -236,7 +236,7 @@ class NdimInterpolation:
         for j,v in enumerate(vec):
             if isinstance(v,(list,tuple)):
                 vec[j] = tuple(v)
-            elif isinstance(v,N.ndarray):
+            elif isinstance(v,np.ndarray):
                 vec[j] = tuple(v.squeeze()) # to allow for 1-d arrays embedded in higher-dims
             else:
                 vec[j] = v
@@ -253,7 +253,7 @@ class NdimInterpolation:
             vector = [vector]
             
         if self.mode == 'loglog':
-            vector = [N.log10(e) for e in vector]
+            vector = [np.log10(e) for e in vector]
             
         vec = self.serialize_vector(vector)
         

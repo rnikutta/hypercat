@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180207' #yyyymmdd
+__version__ = '20180216' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -17,10 +17,7 @@ from operator import itemgetter
 from copy import copy
 
 # 3rd party
-import numpy
-import numpy as N
 import numpy as np
-#from numpy import ma
 from astropy import units as u
 from units import *
 from astropy import wcs
@@ -136,7 +133,7 @@ class ModelCube:
        
         # compute total byte size
         self.fullcubeshape = [t.size for t in self.theta]
-        self.nvoxels = N.prod(self.fullcubeshape)
+        self.nvoxels = np.prod(self.fullcubeshape)
         self.wordsize = 4.
         self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
         self.subcubesize = self.fullcubesize
@@ -157,7 +154,7 @@ class ModelCube:
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
 
-        if not isinstance(self.theta,numpy.ndarray):
+        if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
             
         # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
@@ -187,7 +184,7 @@ class ModelCube:
 
 #squeezed        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
 #squeezed        logging.info("Squeezing all dim-1 axes...")
-#squeezed        sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
+#squeezed        sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
 #squeezed        self.theta = itemgetter(*sel)(self.theta)
 #squeezed        self.paramnames = itemgetter(*sel)(self.paramnames)
 #squeezed        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
@@ -201,7 +198,7 @@ class ModelCube:
             
         # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
         logging.info("Squeezing all dim-1 axes...")
-        sel = N.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
+        sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
         theta_sel = itemgetter(*sel)(self.theta)
 #        self.paramnames = itemgetter(*sel)(self.paramnames)
 #        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
@@ -261,7 +258,7 @@ class ModelCube:
 #good        """
 #good
 #good        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
-#good        maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality
+#good        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
 #good
 #good        header = "Parameter  Range                Nvalues  Sampled values"
 #good        _len = len(header)
@@ -304,7 +301,7 @@ class ModelCube:
 
 #        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
         maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
-        maxn = max([int(N.ceil(N.log10(t.size))) for t in self.theta])  # largest parameter cardinality
+        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
 
         header = "Parameter  Range                Nvalues  Sampled values"
         _len = len(header)
@@ -390,7 +387,7 @@ class ModelCube:
 
         # sub-vectors can be arrays or lists; convert to tuples
         for j,v in enumerate(vec):
-            if isinstance(v,N.ndarray):
+            if isinstance(v,np.ndarray):
                 vec[j] = tuple(v.tolist())
             elif isinstance(v,list):
                 vec[j] = tuple(v)
@@ -476,7 +473,6 @@ class Source:
         rawimage = self.cube.get_image(theta)
         co = (rawimage < 0.)
         rawimage[co] = 0. #*rawimage #.unit
-##        rawimage = ma.array(rawimage, mask=(rawimage<=0.))
 
         # instantiatie Image class, with physical units
 #        print("SOURCE: self.pa before instaniating Image = ")
@@ -554,7 +550,7 @@ def get_Rd(luminosity='1e45 erg/s',tsub='1500 K',outunit='pc'):
     lum = getQuantity(luminosity,recognized_units=UNITS['LUMINOSITY']).to('erg/s').value
     tsub = getQuantity(tsub,recognized_units=UNITS['TEMPERATURE']).to('K').value
     
-    Rd = 0.4*N.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
+    Rd = 0.4*np.sqrt(lum/1e45) * (1500./tsub)**2.6 * u.pc
 
     return Rd.to(outunit)
 
@@ -585,7 +581,7 @@ def get_pixelscale(linsize,distance,outunit='arcsec',npix=1):
     linsize = getQuantity(linsize,UNITS['LINEAR'])
     distance = getQuantity(distance,UNITS['LINEAR'])
     
-    angular = N.arctan2(linsize,distance).to(outunit)
+    angular = np.arctan2(linsize,distance).to(outunit)
     angular_per_linsize = angular / linsize  # e.g. arcsec/pc
     angular_per_pixel = angular / (float(npix)*u.pix)  # e.g. arcsec/pixel
     
@@ -632,9 +628,9 @@ def get_sed_from_fitsfile(fitsfile):
     """
 
     header = pyfits.getheader(fitsfile)
-    wave = N.array([v for k,v in header.items() if k.startswith('LAMB')])  # in micron
+    wave = np.array([v for k,v in header.items() if k.startswith('LAMB')])  # in micron
     data = pyfits.getdata(fitsfile)  # uses first HDU by default
-    sed = N.sum(data,axis=(1,2)) * header['CDELT1']**2   # \int I(x,y) dx dy
+    sed = np.sum(data,axis=(1,2)) * header['CDELT1']**2   # \int I(x,y) dx dy
 
     return wave, sed
 
@@ -695,7 +691,7 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
         
         logging.info("Mirroring half-cube.")
         aux = hdu.data[...,::-1]  # x-flipped half-cube
-        newdata = N.zeros(shape,dtype=N.float32)
+        newdata = np.zeros(shape,dtype=np.float32)
         newdata[...,:nx] = aux[...]
         newdata[...,nx-1:] = hdu.data[...]
         hdu.data = newdata

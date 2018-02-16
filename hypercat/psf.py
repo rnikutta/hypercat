@@ -3,7 +3,7 @@ from __future__ import print_function
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 
-import numpy as N
+import numpy as np
 from astropy.modeling.models import AiryDisk2D, Gaussian2D
 from astropy.convolution import convolve, convolve_fft
 import astropy.io.fits as pyfits
@@ -12,7 +12,7 @@ from units import *
 from imageops import checkOdd
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180207' #yyyymmdd
+__version__ = '20180216' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
     
@@ -202,7 +202,7 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
     
     # Position of Gaussian at the center of the array. Coordinates, x_mean, y_mean,
     # must be loaded from Hypercat to be equal to the dimensions of the clumpy models
-    y, x = N.mgrid[:npix, :npix] # this should be the dimension of the hypercat array
+    y, x = np.mgrid[:npix, :npix] # this should be the dimension of the hypercat array
 
     # 2D AiryDisk: Halo of PSF
     radius = ((1.22 * wavelength/diameter)*u.radian) # Radius is the radius of the first zero 1.22 l/D in arcsec
@@ -213,7 +213,7 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
     sigma_p = strehl * (sigma_p_dl / S_dl) # normalization of the aberration level
     
     # Intensity of the 2D Airy Disk
-    aI = N.exp(-sigma_p**2.)
+    aI = np.exp(-sigma_p**2.)
 
 #    a2D = models.AiryDisk2D(amplitude=aI,x_0=npix/2,y_0=npix/2,radius=radius)
     a2D = AiryDisk2D(amplitude=aI,x_0=npix//2,y_0=npix//2,radius=radius)
@@ -225,7 +225,7 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
 
     rho_o = r_o * (1. + 0.37*(r_o/diameter)**(1./3.)) # rho_o for short exposures
 
-    rad_H = ((1.22*(wavelength/diameter) * N.sqrt(1. + (diameter/rho_o)**2.))*u.radian)
+    rad_H = ((1.22*(wavelength/diameter) * np.sqrt(1. + (diameter/rho_o)**2.))*u.radian)
     rad_H = (rad_H/pixelscale).decompose() # Halo diameter in px
 
     # Intensity of the 2D Gaussian
@@ -306,7 +306,7 @@ def get_normalization(r_0='0.15 m',wave='0.5 micron'):
 #
 #    ###   Position of Gaussian at the center of the array. Coordinates, x_mean, y_mean,
 #    #must be loaded from Hypercat to be equal to the dimensions of the clumpy models
-#    y, x = N.mgrid[:npix, :npix] #this should be the dimension of the hypercat array
+#    y, x = np.mgrid[:npix, :npix] #this should be the dimension of the hypercat array
 #
 #    wavelength = wavelength * 1E-6
 #    ### 2D AiryDisk: Halo of PSF
@@ -317,7 +317,7 @@ def get_normalization(r_0='0.15 m',wave='0.5 micron'):
 #    S_dl       = 0.8                              #Diffraction-limited Strengthl of 0.8 to normalize
 #    sigma_p = strehl * (sigma_p_dl / S_dl)        #normalization of the aberration level
 #    
-#    aI = N.exp(-sigma_p**2.)                      #Intensity of the 2D Airy Disk
+#    aI = np.exp(-sigma_p**2.)                      #Intensity of the 2D Airy Disk
 #
 #    a2D = models.AiryDisk2D(amplitude=aI,x_0=len(x)/2,y_0=len(y)/2,radius=radius)
 #    a2D = a2D(x,y)                                # This is the 2D Airy disk
@@ -326,7 +326,7 @@ def get_normalization(r_0='0.15 m',wave='0.5 micron'):
 #    r_o = 5461692.609 * (wavelength)**(6./5.)           #Normalized assuming r_o = 0.15m at 0.5um, r_o in m
 #    rho_o = r_o * (1. + 0.37*(r_o/diameter)**(1./3.))   #rho_o for short exposures
 #    #rho_o = r_o                                         #rho_o for long exposures
-#    rad_H = 1.22*(wavelength/diameter) * N.sqrt(1. + (diameter/rho_o)**2.) * 206265     #arcsec
+#    rad_H = 1.22*(wavelength/diameter) * np.sqrt(1. + (diameter/rho_o)**2.) * 206265     #arcsec
 #    rad_H = rad_H / pixelscale                             #Halo diameter in px
 #    
 #    gI = (1-aI) / (1. + (diameter/rho_o)**2)            #Intensity of the 2D Gaussian
