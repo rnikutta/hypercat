@@ -48,7 +48,7 @@
   <h1>Source code for imageops</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180207&#39;</span>   <span class="c1">#yyymmdd</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180216&#39;</span>   <span class="c1">#yyymmdd</span>
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 
 <span class="sd">&quot;&quot;&quot;Utilities for handling the CLUMPY image hypercube.</span>
@@ -78,10 +78,10 @@
         <span class="c1"># IMAGE DATA</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_raw</span> <span class="o">=</span> <span class="n">image</span>  <span class="c1"># keep original array</span>
 <span class="c1">#        self.data = image   # will rescale this array in setBrightness()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">image</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># will rescale this array in setBrightness()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;At init: self.data.value.std() =&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">std</span><span class="p">())</span></div>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">image</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># will rescale this array in setBrightness()</span></div>
+<span class="c1">#        print(&quot;At init: self.data.value.std() =&quot;, self.data.value.std())</span>
 
+        
 <div class="viewcode-block" id="ImageFrame.setPixelscale"><a class="viewcode-back" href="../imageops.html#imageops.ImageFrame.setPixelscale">[docs]</a>    <span class="k">def</span> <span class="nf">setPixelscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pixelscale</span><span class="o">=</span><span class="s1">&#39;1 arcsec&#39;</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="sd">&quot;&quot;&quot;Set size and area of a pixel from user input.</span>
@@ -423,8 +423,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span><span class="n">astropy</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
             <span class="n">pa</span> <span class="o">=</span> <span class="n">getQuantity</span><span class="p">(</span><span class="n">pa</span><span class="p">,</span><span class="n">recognized_units</span><span class="o">=</span><span class="n">UNITS</span><span class="p">[</span><span class="s1">&#39;ANGULAR&#39;</span><span class="p">])</span>
 
-<span class="c1">#        if pa.to(&#39;deg&#39;) != 0.:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pa</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span>
 
         <span class="c1"># add noise</span>
         <span class="k">if</span> <span class="n">snr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -619,8 +619,12 @@
     
     <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;NW&#39;</span><span class="p">:</span>
         <span class="n">angle</span> <span class="o">=</span> <span class="o">-</span><span class="n">angle</span>
-    
+
+    <span class="c1"># remember circular zero-value area around torus, and after rotation, re-set everything in said area to zero again</span>
+    <span class="c1"># (rotation is a interpolation scheme and might introduce minor fluctuations)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">image</span> <span class="o">&lt;=</span> <span class="mf">0.</span><span class="p">)</span>
     <span class="n">rotimage</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">angle</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">reshape</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">rotimage</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
 
     <span class="k">return</span> <span class="n">rotimage</span></div>
 

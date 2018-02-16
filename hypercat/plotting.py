@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-__version__ = '20180215'   #yyymmdd
-s__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
+__version__ = '20180216'   #yyymmdd
+__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
 
@@ -11,11 +11,13 @@ s__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 # IMPORTS
 # std lib
 import numpy as N
+import numpy as np
 from numpy import ma
 
 # 3rd party
 import pylab as p
 import matplotlib
+from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy import units as u
 
@@ -73,7 +75,7 @@ def plot_with_wcs(image):
 
 def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.viridis,contours=None,interpolation='bicubic'):
 
-    """Plot a single panel. To be called from :func:`multiplot()`
+    """Plot a single panel. To be called from :func:`multiplot() (see docstring there).`
     """
     
     # what kind of animal is 'image'?
@@ -85,10 +87,11 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
 
     # extract the data (2d array) to be plotted
     if cls in ('Image','PSF'):
-        
-        if units is None or units == '': # use native/attached values and units of image
+        if units == '': # use native/attached values and units of image
             data = image.data.value
             units = image.data.unit
+        elif units is None:
+            data = image.data.value
         else:
             aux = image.getBrightness(units)  # convert brightness to the desired units (at least try)
             data = aux.value
@@ -122,20 +125,28 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
 
     # plot image
     im = ax.imshow(data,origin='lower',extent=extent,interpolation=interpolation,cmap=cmap,norm=norm)
-
-    # plot contours, if requested
+    
+    # plot contours if requested
     if contours is not None:
-        if contours == 'log':
-            aux = ma.masked_where(data <= 0, data)
-            aux = N.log10(aux)
-        elif contours == 'lin':
-            aux = data
-
-        ax.contour(aux,5,origin='lower',extent=extent,colors='w',linestyles='-')
+        ncon = 10
+#        auxdata = data[...]
+        min_ = np.min(data[data>0.])
+        max_ = np.max(data)
+ 
+        if contours == 'lin':
+            norm = matplotlib.colors.Normalize()
+            V = np.linspace(min_,max_,ncon)
+            
+        elif contours == 'log':
+            norm = matplotlib.colors.LogNorm()
+            V = np.logspace(np.log10(min_),np.log10(max_),ncon)
+            
+        ax.contour(data,V,origin='lower',extent=extent,colors='w',linewidths=0.5,linestyles='-',corner_mask=True,norm=norm)
 
     # set title, labels
     if title is not None:
         ax.set_title(title)
+        
     ax.set_xlabel('offset ({:s})'.format(axunit))
     ax.set_ylabel('offset ({:s})'.format(axunit))
 
@@ -143,7 +154,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=p.cm.vi
     cax = divider.append_axes('right', size='5%', pad=0.05)
     if colorbar == True:
         cb = p.colorbar(im,cax=cax,orientation='vertical')
-        if cls == 'Image':
+        if cls == 'Image' and units is not None:
             cb.set_label(units)
     else:
         print("Setting cax.set_visible(False)")
@@ -212,25 +223,29 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
         number of images in the `images` sequence `ni`; only
         ``max(nb,ni)`` elements will be used.
 
-    units : str or sequence of strings
-        String that describes to units of the colorbar quantity. If
-        colorbar is ``True`` (for any panel), the corresponding
-        element from the `units` sequence will be used at the
-        colorbar label. The logic is the same as for `colorbars` (see
-        there).
+    units : str or None, or sequence of these
+        String that describes the units of the colorbar quantity. If
+        `colorbars` is ``True`` (for any panel), the corresponding
+        element from the `units` sequence will be used at the colorbar
+        label. The logic is the same as for `colorbars` (see there).
 
-        Since the images in `images` carry units with them, the units
-        in `units` will actually cause the plot to convert to the
-        desired units.
+        If an element is the empty string ``''``, the natural units of
+        the image (if present) will be used. If ``None``, no units
+        will be displayed with the colorbar.
+
+        Since the images in `images` can carry units with them, the
+        units given in `units` will actually cause the plot to convert
+        to the desired units (e.g. if the image carries
+        ``'Jy/arcsec^2'`` but you ask for ``'mJy/mas^2'``.)
 
     titles : str or sequence of strings
        Title(s) of each panel. Same logic as `colorbars` (see there).
 
-    contours : str or sequence of strings or None
+    contours : str or None, or sequence of these
         If not None (default), add contours to panels. If string or
         seq of strings, they must be either ``'lin'`` for linearly
         spaced contours or ``'log'`` for logarithmically spaced
-        contours. Five contour lines will be added. Same logic as
+        contours. Up to ten contour lines will be added. Same logic as
         `colorbars` (see there).
 
     interpolation : str
@@ -282,7 +297,10 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
        # 1x3 figure, all panels have colorbar; first two panels have colorbar units, albeit different ones
        multiplot((sky,obs,psf),geometry=(1,3),colorbars=True,units=('Jy/arcsec^2','mJy/mas^2'))
 
-       # 1x3 figure; middle panel has 5 logarithmically scaled contours
+       # 1x3 figure; middle panel has 10 logarithmically scaled contours
+       multiplot((sky,obs,psf),geometry=(1,3),contours=(None,'log'))
+
+       # 1x3 figure; left panel has 10 linearly scaled contours, middle panel 10 logarithmically scaled ones
        multiplot((sky,obs,psf),geometry=(1,3),contours=(None,'log'))
 
     """

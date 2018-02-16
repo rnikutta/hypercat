@@ -98,20 +98,23 @@ colorbar status for each panel separately. The number of
 booleans in the sequence <cite>nb</cite> need not be the same as the
 number of images in the <cite>images</cite> sequence <cite>ni</cite>; only
 <code class="docutils literal"><span class="pre">max(nb,ni)</span></code> elements will be used.</li>
-<li><strong>units</strong> (<em>str</em><em> or </em><em>sequence of strings</em>) – <p>String that describes to units of the colorbar quantity. If
-colorbar is <code class="docutils literal"><span class="pre">True</span></code> (for any panel), the corresponding
-element from the <cite>units</cite> sequence will be used at the
-colorbar label. The logic is the same as for <cite>colorbars</cite> (see
-there).</p>
-<p>Since the images in <cite>images</cite> carry units with them, the units
-in <cite>units</cite> will actually cause the plot to convert to the
-desired units.</p>
+<li><strong>units</strong> (<em>str</em><em> or </em><em>None</em><em>, or </em><em>sequence of these</em>) – <p>String that describes the units of the colorbar quantity. If
+<cite>colorbars</cite> is <code class="docutils literal"><span class="pre">True</span></code> (for any panel), the corresponding
+element from the <cite>units</cite> sequence will be used at the colorbar
+label. The logic is the same as for <cite>colorbars</cite> (see there).</p>
+<p>If an element is the empty string <code class="docutils literal"><span class="pre">''</span></code>, the natural units of
+the image (if present) will be used. If <code class="docutils literal"><span class="pre">None</span></code>, no units
+will be displayed with the colorbar.</p>
+<p>Since the images in <cite>images</cite> can carry units with them, the
+units given in <cite>units</cite> will actually cause the plot to convert
+to the desired units (e.g. if the image carries
+<code class="docutils literal"><span class="pre">'Jy/arcsec^2'</span></code> but you ask for <code class="docutils literal"><span class="pre">'mJy/mas^2'</span></code>.)</p>
 </li>
 <li><strong>titles</strong> (<em>str</em><em> or </em><em>sequence of strings</em>) – Title(s) of each panel. Same logic as <cite>colorbars</cite> (see there).</li>
-<li><strong>contours</strong> (<em>str</em><em> or </em><em>sequence of strings</em><em> or </em><em>None</em>) – If not None (default), add contours to panels. If string or
+<li><strong>contours</strong> (<em>str</em><em> or </em><em>None</em><em>, or </em><em>sequence of these</em>) – If not None (default), add contours to panels. If string or
 seq of strings, they must be either <code class="docutils literal"><span class="pre">'lin'</span></code> for linearly
 spaced contours or <code class="docutils literal"><span class="pre">'log'</span></code> for logarithmically spaced
-contours. Five contour lines will be added. Same logic as
+contours. Up to ten contour lines will be added. Same logic as
 <cite>colorbars</cite> (see there).</li>
 <li><strong>interpolation</strong> (<em>str</em>) – Type of image interpolation to use on the panels. All values
 permissible my <code class="xref py py-func docutils literal"><span class="pre">pylab.imshow()</span></code> are possible, including
@@ -156,7 +159,10 @@ e.g. <code class="docutils literal"><span class="pre">sky</span></code>, <code c
 <span class="c1"># 1x3 figure, all panels have colorbar; first two panels have colorbar units, albeit different ones</span>
 <span class="n">multiplot</span><span class="p">((</span><span class="n">sky</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">psf</span><span class="p">),</span><span class="n">geometry</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="n">colorbars</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Jy/arcsec^2&#39;</span><span class="p">,</span><span class="s1">&#39;mJy/mas^2&#39;</span><span class="p">))</span>
 
-<span class="c1"># 1x3 figure; middle panel has 5 logarithmically scaled contours</span>
+<span class="c1"># 1x3 figure; middle panel has 10 logarithmically scaled contours</span>
+<span class="n">multiplot</span><span class="p">((</span><span class="n">sky</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">psf</span><span class="p">),</span><span class="n">geometry</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="n">contours</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="s1">&#39;log&#39;</span><span class="p">))</span>
+
+<span class="c1"># 1x3 figure; left panel has 10 linearly scaled contours, middle panel 10 logarithmically scaled ones</span>
 <span class="n">multiplot</span><span class="p">((</span><span class="n">sky</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">psf</span><span class="p">),</span><span class="n">geometry</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="n">contours</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="s1">&#39;log&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -165,7 +171,7 @@ e.g. <code class="docutils literal"><span class="pre">sky</span></code>, <code c
 <dl class="function">
 <dt id="plotting.plotPanel">
 <code class="descclassname">plotting.</code><code class="descname">plotPanel</code><span class="sig-paren">(</span><em>ax</em>, <em>image</em>, <em>units=''</em>, <em>extent=None</em>, <em>colorbar=False</em>, <em>title=''</em>, <em>cmap=&lt;matplotlib.colors.ListedColormap object&gt;</em>, <em>contours=None</em>, <em>interpolation='bicubic'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting.html#plotPanel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotting.plotPanel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a single panel. To be called from <a class="reference internal" href="#plotting.multiplot" title="plotting.multiplot"><code class="xref py py-func docutils literal"><span class="pre">multiplot()</span></code></a></p>
+<dd><p>Plot a single panel. To be called from <code class="xref py py-func docutils literal"><span class="pre">multiplot()</span> <span class="pre">(see</span> <span class="pre">docstring</span> <span class="pre">there).()</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -192,12 +198,6 @@ e.g. <code class="docutils literal"><span class="pre">sky</span></code>, <code c
 </pre></div>
 </div>
 </dd></dl>
-
-<dl class="data">
-<dt id="plotting.s__author__">
-<code class="descclassname">plotting.</code><code class="descname">s__author__</code><em class="property"> = 'Robert Nikutta &lt;robert.nikutta&#64;gmail.com&gt;'</em><a class="headerlink" href="#plotting.s__author__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plotting funcs for hypercat.</p>
-<span class="target" id="module-plotting"></span></dd></dl>
 
 </div>
 

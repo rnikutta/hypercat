@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180207'   #yyymmdd
+__version__ = '20180216'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -31,9 +31,9 @@ class ImageFrame:
         self.data_raw = image  # keep original array
 #        self.data = image   # will rescale this array in setBrightness()
         self.data = image * u.Quantity(1)   # will rescale this array in setBrightness()
-        print("At init: self.data.value.std() =", self.data.value.std())
-        
+#        print("At init: self.data.value.std() =", self.data.value.std())
 
+        
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
 
         """Set size and area of a pixel from user input.
@@ -375,8 +375,8 @@ class Image(ImageFrame):
         if not isinstance(pa,astropy.units.quantity.Quantity):
             pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])
 
-#        if pa.to('deg') != 0.:
-        self.rotate(pa)
+        if pa.to('deg').value != 0.:
+            self.rotate(pa)
 
         # add noise
         if snr is not None:
@@ -571,8 +571,12 @@ def rotateImage(image,angle,direction='NE'):
     
     if direction == 'NW':
         angle = -angle
-    
+
+    # remember circular zero-value area around torus, and after rotation, re-set everything in said area to zero again
+    # (rotation is a interpolation scheme and might introduce minor fluctuations)
+    mask = (image <= 0.)
     rotimage = ndimage.rotate(image,angle.to('deg').value,reshape=False)
+    rotimage[mask] = 0.
 
     return rotimage
 

@@ -20,6 +20,7 @@ from copy import copy
 import numpy
 import numpy as N
 import numpy as np
+#from numpy import ma
 from astropy import units as u
 from units import *
 from astropy import wcs
@@ -473,9 +474,9 @@ class Source:
 
         # get raw image
         rawimage = self.cube.get_image(theta)
-#        co = (rawimage < 0.)
-#        rawimage[co] = 0. #*rawimage #.unit
-
+        co = (rawimage < 0.)
+        rawimage[co] = 0. #*rawimage #.unit
+##        rawimage = ma.array(rawimage, mask=(rawimage<=0.))
 
         # instantiatie Image class, with physical units
 #        print("SOURCE: self.pa before instaniating Image = ")
