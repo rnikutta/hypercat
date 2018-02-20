@@ -16,7 +16,7 @@ import math
 from astropy.modeling.functional_models import Gaussian2D
 
 def gini(arr):
-    """Compute Gini index of array `arr`.
+    """Compute Gini coefficient of array `arr`.
     """
 
     arr = arr.flatten()

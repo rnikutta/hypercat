@@ -1,6 +1,6 @@
 __version__ = '20180207'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
-g
+
 """Utilities for handling the real PSF of 30-m telescopes.
     
     .. automodule:: interferometry
