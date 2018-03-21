@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180216' #yyyymmdd
+__version__ = '20180321' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -127,7 +127,6 @@ class ModelCube:
         self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
         self.eta = self.npix_per_Rd  # alias
         
-#        self.idxes = [range(len(t)) for t in self.theta]
         self.idxes = [list(range(len(t))) for t in self.theta]
         logging.info("Closing HDF5 file.")
         self.h.close()
@@ -183,27 +182,10 @@ class ModelCube:
             self.y = self.theta[-2]
             self.wave = self.theta[-1]
 
-#squeezed        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
-#squeezed        logging.info("Squeezing all dim-1 axes...")
-#squeezed        sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
-#squeezed        self.theta = itemgetter(*sel)(self.theta)
-#squeezed        self.paramnames = itemgetter(*sel)(self.paramnames)
-#squeezed        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
-#squeezed        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
-#squeezed        
-#squeezed        # instantiate an n-dim interpolator object
-#squeezed        if ndinterpolator is True:
-#squeezed            logging.info("Instantiating n-dim interpolation object ...")
-#squeezed            self.ip = ndiminterpolation.NdimInterpolation(self.data,self.theta,mode='lin')
-
-            
         # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
         logging.info("Squeezing all dim-1 axes...")
         sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
         theta_sel = itemgetter(*sel)(self.theta)
-#        self.paramnames = itemgetter(*sel)(self.paramnames)
-#        self.data = self.data.squeeze()  # drop from ndim-index all dimensions with length-one
-#        logging.info("Done. New shape: (%s)" % seq2str(self.data.shape))
         
         # instantiate an n-dim interpolator object
         if ndinterpolator is True:
@@ -498,7 +480,6 @@ class Source:
             setattr(sky,attr+'_',val)
         
         # construct WCS if possible
-
         if self.objectname != '':
             wcs = get_wcs(sky)
             if wcs is not None:

@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180216'   #yyymmdd
+__version__ = '20180321'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -132,7 +132,7 @@ class ImageFrame:
 
         Examples
         --------
-        .. code:: python
+        .. code-block:: python
 
             theta = (30,0,3,0,20,9.7) # (sig,i,N0,q,tauv,lambda)
             img = M.get_image(theta)  # raw model image
@@ -185,8 +185,6 @@ class ImageFrame:
 
         """
         
-#        self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
-#        self.data = rotateImage(self.data.value,angle=angle.to('deg').value,direction=direction) * self.data.unit
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
         logging.info("Rotated image (see self.data) by {:s} in direction '{:s}'.".format(str(angle),direction))
 
@@ -481,7 +479,7 @@ class Image(ImageFrame):
 
         Example
         -------
-        .. code:: python
+        .. code-block:: python
 
             total = I.getTotalFluxDensity()
             print(total); print(total.to('mJy'))  # can be easily converted to other units
@@ -669,7 +667,7 @@ def checkImage(image,returnsize=True,enforce2d=True):
 
     Examples
     --------
-    .. code:: python
+    .. code-block:: python
 
         # all tests pass, returns nothing
         image = np.ones(11,11)
@@ -740,8 +738,8 @@ def computeIntCorrections(npix,factor):
 
     Examples
     --------
-    .. code:: python
-    
+    .. code-block:: python
+
         computeIntCorrections(3,2.)
           (7, 2.33333)  # factor was corrected
 
@@ -769,7 +767,40 @@ def make_binary(img,eps=0.3):
     """Make an image strictly binary.
 
     Assuming that all pixels should be either 0 or 1, but that there
-    might be small deviations from 0 and 1, 
+    might be small deviations from 0 and 1, bring all pixels up to
+    ``eps`` away from 0 and 1 to exactly 0 and 1.
+
+    Parameters
+    ----------
+    img : 2D array
+        Image array to be 'binarified'. All values should be close to
+        0 or 1.
+
+    eps: float
+        Maximal deviation from 0. and 1. values. Must be 0.0<eps<0.5
+        (otherwise assignment to 0 or 1 is ambiguous.
+
+    Returns
+    -------
+    img : 2D array
+        The binariefied array.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        img = np.array([[0.99,0.01],[-0.11,1.2]])
+        img
+          array([[ 0.99,  0.01],
+                 [-0.11,  1.2 ]])
+
+        make_binary(img,eps=0.1)
+          array([[ 1.  ,  0.  ],
+                 [-0.11,  1.2 ]])
+
+        imageops.make_binary(img,eps=0.2)
+          array([[1., 0.],
+                 [0., 1.]])
 
     """
 
@@ -783,6 +814,26 @@ def make_binary(img,eps=0.3):
 
 
 def trim_square(img):
+
+    """Trim image to the largest envelope square.
+
+    Finds all zero-valued margins (left,right,top,bottom) and trims
+    the image to the largest centered square. It will not cut into any
+    non-zero pixels.
+
+    Parameters
+    ----------
+
+    img : 2D array
+        Image to be trimmed.
+
+    Returns
+    -------
+    img : 2D array
+        Trimmed image. If no trimming was performed, the original
+        image is returned.
+
+    """
 
     aux = np.argwhere(img>0.)
     xmin,ymin = np.min(aux,axis=0)
@@ -798,13 +849,60 @@ def trim_square(img):
 
 def resample_image(img,factor=None,npixout=None):
 
+    """Resample image either but a factor, or to a target npix value.
+
+    This version of the function makes no checks of number of pixels etc.
+
+    Parameters
+    ----------
+    img : 2D array
+        Image array to be resampled.
+
+    factor: float or None
+        If not ``None``, the image will be resampled by ``factor``.
+
+    npixout: int or None
+        If not ``None``, this takes precedence over
+        ``factor``. ``npixout`` is the desired image dimension after
+        resampling.
+
+    Returns
+    -------
+    res : 2D array
+        The resampled image.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        img = np.zeros((101,101))
+
+        resample_image(img,factor=2.0).shape
+          factor =  2.0
+          (202,202)
+
+        resample_image(img,factor=0.7).shape
+          factor =  0.7
+          (71,71) # uses round() function to get integer npix
+
+        resample_image(img,npixout=202).shape
+          npixin,npixout =  101 202
+          factor =  2.0
+          (202, 202)
+
+        imageops.resample_image(img,npixout=71).shape
+          npixin, npixout =  101 71
+          factor =  0.7029702970297029
+          (71, 71)
+    """
+    
     if factor is None:
         pass
     
     if npixout is not None:
         npixin = img.shape[0]
         factor = npixout / npixin
-        print("npixin,npixout = ",npixin,npixout)
+        print("npixin, npixout = ",npixin,npixout)
 
     if factor is None and npixout is None:
         raise Exception("Specify either ``factor`` ot ``npixout``.")

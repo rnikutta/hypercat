@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180316'   #yyymmdd
+__version__ = '20180321'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling large hypercubes in hdf5 files.
@@ -82,21 +82,16 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
                'theta': cube.theta}
 
     for name,data in mapping.items():
-        print("name, type(data): ", name, type(data))
-
         if isinstance(data[0],np.ndarray) and isragged(data):
             dflt = h5py.special_dtype(vlen=np.dtype('float64'))
             ds = g.create_dataset(name, (len(data),), dtype=dflt)
             for j,v in enumerate(data):
-#                print("j, v, type(v) = ", j, v, type(v))
                 ds[j] = v
 
         else:
             if isinstance(data,list) and isinstance(data[0],str):  # CAUTION: test it more
                 data = [e.encode() for e in data]
 
-            
-            print("type(data): ", type(data))
             ds = g.create_dataset(name,data=data)
 
     # if all went well, increment h['Nhypercubes'] by one...
@@ -350,7 +345,6 @@ def getIndexLists(theta,paramnames,initsize=None,wordsize=4,omit=()):
 
         if parname in omit:
             t.append(theta[j])
-#            i.append(range(len(theta[j])))
             i.append(list(range(len(theta[j]))))
         else:
             while len(idxes) == 0:

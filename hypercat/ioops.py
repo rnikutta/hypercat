@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180207' #yyymmdd
+__version__ = '20180321' #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -123,26 +123,14 @@ def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
                 keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
                 header[keyword] = (getattr(obj,attr),comment)
 
-#        def add2header(obj,attr,comment='',keyword=None,suffix=''):
-#            if keyword is None:
-#                keyword = attr.upper()
-#
-#            if keyword.endswith('_'):
-#                keyword = keyword[:-1]
-#                
-#            keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
-#            header[keyword] = (getattr(obj,attr),comment)
-        
-
         # use helper func to put attrs in header
         add2header(image_,'objectname','target name','OBJECT')
         add2header(image_,'telescope','telescope/facility')
         add2header(image_,'instrument','instrument')
-
+        
         # extra keywords from outside (as dict) to be included in the header
         if isinstance(extra_keywords,dict):
             for k,v in extra_keywords.items():
-                print(k,v)
                 value, comment = v
                 header.set(k,value,comment)
 
@@ -163,9 +151,6 @@ def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
         # Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf
         #   section 4.4.2.1 "General descriptive keywords, DATE keyword"
         header['DATE'] = (datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"), 'HDU creation time (UTC)')
-
-        print("header: ")
-        print(header)
 
         # encapsulate image data in new ImageHDU and append
         dhdu = fits.ImageHDU(image_.data.value.T,header=header)
