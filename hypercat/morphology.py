@@ -3,6 +3,8 @@ from __future__ import print_function
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 __version__ = '20180216' # yyyymmdd
 
+import itertools
+import warnings
 from copy import copy
 import numpy as np
 from scipy import ndimage, integrate
@@ -14,6 +16,237 @@ import pylab as plt
 import math
 
 from astropy.modeling.functional_models import Gaussian2D
+
+
+def get_cov_from_moments(img):
+    mu00 = get_moment_central(img,(0,0))
+    mu11p = get_moment_central(img,(1,1)) / mu00
+    mu20p = get_moment_central(img,(2,0)) / mu00
+    mu02p = get_moment_central(img,(0,2)) / mu00
+    cov = np.zeros((2,2))
+    cov[0,0] = mu20p
+    cov[0,1] = mu11p
+    cov[1,0] = mu11p
+    cov[1,1] = mu02p
+
+    return cov
+
+
+def get_centroid(img):
+    M00 = get_moment_raw(img,(0,0))
+    xbar = get_moment_raw(img,(1,0)) / M00
+    ybar = get_moment_raw(img,(0,1)) / M00
+
+    return M00, xbar, ybar
+
+
+def get_eigenvalues(cov):
+    eigenvals = np.linalg.eigvals(cov)
+    
+    return eigenvals
+
+
+def get_angle(cov):
+    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
+
+    return angle
+    
+
+def get_elongation(cov):
+    eigenvals = get_eigenvalues(cov)
+    elong = np.sqrt(eigenvals[0]/eigenvals[1])
+
+    return elong
+    
+
+#def make_circle(npix,r,x0=0,y0=0):
+def circle(npix,r,x0=0,y0=0):
+
+    I = np.zeros((npix,npix))
+    cpix = npix//2
+    x = np.linspace(-cpix,cpix,npix)
+    X,Y = np.meshgrid(x,x,indexing='ij')
+    mask = np.sqrt((X-x0)**2 + (Y-y0)**2) <= r
+    I[mask] = 1.
+
+    return I
+
+#def make_square(npix,a,x0=0,y0=0):
+def square(npix,a,x0=0,y0=0):
+
+    I = np.zeros((npix,npix))
+    cpix = npix//2
+    x = np.linspace(-cpix,cpix,npix)
+    X,Y = np.meshgrid(x,x,indexing='ij')
+    mask = (np.abs(X-x0) <= a//2) & (np.abs(Y-y0) <= a//2)
+    I[mask] = 1.
+
+    return I
+
+#def make_rectangle(npix,a,b,x0=0,y0=0):
+def rectangle(npix,a,b,x0=0,y0=0):
+
+    I = np.zeros((npix,npix))
+    cpix = npix//2
+    x = np.linspace(-cpix,cpix,npix)
+    X,Y = np.meshgrid(x,x,indexing='ij')
+    mask = (np.abs(X-x0) <= a//2) & (np.abs(Y-y0) <= b//2)
+    I[mask] = 1.
+
+    return I
+
+
+#def moment_raw_upto(img,maxorder=7):
+#    n = maxorder + 1
+#    res = np.zeros(n)
+#    for j in range(n):
+#        res[j] = moment_raw(img,order=j)
+#
+#    return res
+
+def get_hu_moment(img,orders):
+    pass
+
+def get_moment(img,orders,central=False,scaleinvariant=False):
+
+    p, q = orders
+
+    
+    if central is True:
+        mu00 = get_moment(img,(0,0))
+        xbar = get_moment(img,(1,0)) / mu00  # these seem correct, as the give the correct
+        ybar = get_moment(img,(0,1)) / mu00  # coords of the center of gravity
+    else:
+        xbar = 0.
+        ybar = 0.
+        
+    lattice = np.arange(img.shape[0])
+    X, Y = np.meshgrid(lattice,lattice,indexing='ij')
+    mu = np.sum((X-xbar)**p * (Y-ybar)**q * img)
+
+#    if scaleinvariant is True and p>=1 and q>=1:
+    if scaleinvariant is True and p+q>=2:
+        mu00 = get_moment(img,(0,0))
+        aux = mu00**(1+(p+q)/2.)
+        mu = mu / aux
+    
+#    print(mu)
+    
+    return mu
+
+
+def get_moment_raw(img,orders,xbar=0.,ybar=0.):
+    
+    p, q = orders
+    lattice = np.arange(img.shape[0])
+    X, Y = np.meshgrid(lattice,lattice,indexing='ij')
+    M = np.sum((X-xbar)**p * (Y-ybar)**q * img)
+
+    return M
+
+
+def get_moment_central(img,orders):
+
+    p, q = orders
+    M00 = get_moment_raw(img,(0,0))
+    xbar = get_moment_raw(img,(1,0)) / M00  # these seem correct, as the give the correct
+    ybar = get_moment_raw(img,(0,1)) / M00  # coords of the center of gravity
+    mu = get_moment_raw(img,orders,xbar=xbar,ybar=ybar)
+
+    return mu
+
+
+def get_moment_scaleinvariant(img,orders):
+
+    p, q = orders
+    if p+q < 2:
+        raise Exception('Moment orders must satisfy p+q>=2')
+
+    mu = get_moment_central(img,orders)
+    mu00 = get_moment_raw(img,(0,0))
+    aux = mu00**(1+(p+q)/2.)
+    eta = mu / aux
+
+    return eta
+        
+    
+
+class Moment:
+
+    def __init__(self,img):
+        self.img = img
+        lattice = np.arange(self.img.shape[0])
+        self.X, self.Y = np.meshgrid(lattice,lattice,indexing='ij')
+        self.M00, self.xbar, self.ybar = get_centroid(self.img)
+
+    def __call__(self,p,q):
+        self.p, self.q = p, q
+        self.raw = get_moment_raw(self.img,(self.p,self.q))
+        self.central = get_moment_central(self.img,(self.p,self.q)) #,xbar=self.xbar,ybar=self.ybar)
+        
+        try:
+            self.scaleinvariant = get_moment_scaleinvariant(self.img,(self.p,self.q))
+        except:
+            warnings.warn("Can't compute scale-invariant moments. p+q>=2 must hold.")
+            
+        self.cov = get_cov_from_moments(self.img)
+        self.eigenvals = get_eigenvalues(self.cov)
+        self.elongation = get_elongation(self.cov)
+        self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
+        
+
+class MomentAnalytics:
+
+    def __init__(self):
+        ord = (0,1,2) #,3,4)
+        self.orders = list(itertools.product(ord,ord))
+
+    def __call__(self,img=None,a=20,b=10,xoff=0.,yoff=0.,theta=0.,model='gaussian',npix=241,norm=1.,eps=0.3):
+
+        if img is None:
+            self.a, self.b, self.xoff, self.yoff, self.theta =  a, b, xoff, yoff, theta
+            func = globals()[model]
+            self.npix = npix
+            self.img = func(self.npix,self.a,self.b,self.xoff,self.yoff,self.theta)
+        else:
+            self.img = img
+            
+        
+        dummy, self.xbar, self.ybar = get_centroid(self.img)
+        
+        for (p,q) in self.orders:
+            self.set_moment_name(p,q,get_moment_raw(self.img,(p,q)),prefix='M')
+            self.set_moment_name(p,q,get_moment_central(self.img,(p,q)),prefix='m')
+            if (p+q>=2):
+                self.set_moment_name(p,q,get_moment_scaleinvariant(self.img,(p,q)),prefix='eta')
+
+        self.cov = get_cov_from_moments(self.img)
+        self.eigenvals = get_eigenvalues(self.cov)
+        self.elongation = get_elongation(self.cov)
+        self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
+                
+    def set_moment_name(self,p,q,val,prefix):
+        setattr(self, '%s%d%d' % (prefix,p,q), val)
+        
+
+#def moment(img,orders=(0,),central=False):
+#
+#    if not isinstance(orders,(list,tuple,np.ndarray)):
+#        orders = (orders,)
+#        
+#    moments = np.zeros(len(orders))
+#
+#    if central is True:
+#        pass
+#    
+#    lattice = np.arange(img.shape[0])
+#    X, Y = np.meshgrid(lattice,lattice,indexing='ij')
+#    for j,order in enumerate(orders):
+#        print(order)
+#        moments[j] = np.sum(X**order * Y**order * img)
+#    
+#    return moments
+
 
 def gini(arr):
     """Compute Gini coefficient of array `arr`.
@@ -363,7 +596,7 @@ def getAngle(a,b,pa=True):
 
 
 
-def get_moment(image,radius=1.,angular='a',m=1):
+def get_moment_old(image,radius=1.,angular='a',m=1):
 
     """Compute m-th moment of image.
 

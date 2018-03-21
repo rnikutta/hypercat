@@ -80,7 +80,7 @@ class ImageFrame:
 
         self.pixelscale = getQuantity(pixelscale,UNITS['CUNITS'])
 
-        if self.pixelscale.unit in UNITS['LINEAR']:
+        if self.pixelscale.unit in UNITS['LINEAR'] and distance is not None:
             try:
                 self.distance = getQuantity(distance,UNITS['LINEAR'])
             except AttributeError:
@@ -763,3 +763,54 @@ def computeIntCorrections(npix,factor):
 
     return newnpix, newfactor
 
+
+def make_binary(img,eps=0.3):
+
+    """Make an image strictly binary.
+
+    Assuming that all pixels should be either 0 or 1, but that there
+    might be small deviations from 0 and 1, 
+
+    """
+
+    if eps >= 0.5:
+        raise Exception("eps>=0 can lead to ambiguous results when binarizing, since 0+0.5 <= 1-0.5")
+
+    img[np.abs(img-1.)<eps] = 1.
+    img[np.abs(img-0.)<eps] = 0.
+
+    return img
+
+
+def trim_square(img):
+
+    aux = np.argwhere(img>0.)
+    xmin,ymin = np.min(aux,axis=0)
+    xmax,ymax = np.max(aux,axis=0)
+    
+    MIN = min(xmin,ymin)
+    MAX = max(xmax,ymax)
+
+    img = img[MIN:MAX,MIN:MAX]
+
+    return img
+
+
+def resample_image(img,factor=None,npixout=None):
+
+    if factor is None:
+        pass
+    
+    if npixout is not None:
+        npixin = img.shape[0]
+        factor = npixout / npixin
+        print("npixin,npixout = ",npixin,npixout)
+
+    if factor is None and npixout is None:
+        raise Exception("Specify either ``factor`` ot ``npixout``.")
+
+    print("factor = ", factor)
+    res = ndimage.zoom(img,factor)
+    res = make_binary(res)
+    
+    return res

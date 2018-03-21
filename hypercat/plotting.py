@@ -52,7 +52,8 @@ def plot_with_wcs(image):
     ax = fig.add_subplot(111, projection=image.wcs)
     xc = ax.coords[0]
     yc = ax.coords[1]
-    ax.imshow(image.data.T, origin='lower', cmap=plt.cm.viridis)
+#    ax.imshow(image.data.T, origin='lower', cmap=plt.cm.viridis)
+    ax.imshow(image.data.value.T, origin='lower', cmap=plt.cm.viridis)
     ax.set_xlabel('RA')
     ax.set_ylabel('Dec')
     xc.set_ticks(spacing=100.*u.mas)
@@ -158,7 +159,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
         print("Setting cax.set_visible(False)")
         cax.set_visible(False)    
 
-
+# TODO: add 'scaling' arg; default = 'auto'; otherwise 'lin' or 'log' (like contours)
 def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               sharex=True,sharey=True,\
               colorbars=True,units='',titles='',contours=None,

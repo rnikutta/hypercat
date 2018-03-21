@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180216'   #yyymmdd
+__version__ = '20180222'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling units and units strings.
@@ -24,6 +24,8 @@ UNITS = {\
 } #: Dictionary of permitted units.
 
 UNITS['CUNITS'] = UNITS['ANGULAR'] + UNITS['LINEAR'] # Union of permitted angular and linear units.
+UNITS['INVERSELINEAR'] = tuple(['1/%s'%e for e in UNITS['LINEAR']])  # inverse lenghts  # TODO: check if we can remove these
+
 ## TODO: implement also per-beam, brightness specifications (and maybe also per-pc^2 etc.)
 ##        self.UNITS_BRIGHTNESS_SOLIDANGLE = ('Jy/arcsec^2','Jy/mas^2','Jy/milliarcsec^2','mJy/arcsec^2','mJy/mas^2','mJy/milliarcsec^2')
 

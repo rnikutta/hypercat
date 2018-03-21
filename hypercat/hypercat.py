@@ -127,7 +127,8 @@ class ModelCube:
         self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
         self.eta = self.npix_per_Rd  # alias
         
-        self.idxes = [range(len(t)) for t in self.theta]
+#        self.idxes = [range(len(t)) for t in self.theta]
+        self.idxes = [list(range(len(t))) for t in self.theta]
         logging.info("Closing HDF5 file.")
         self.h.close()
        
@@ -497,9 +498,11 @@ class Source:
             setattr(sky,attr+'_',val)
         
         # construct WCS if possible
-        wcs = get_wcs(sky)
-        if wcs is not None:
-            sky.wcs = wcs
+
+        if self.objectname != '':
+            wcs = get_wcs(sky)
+            if wcs is not None:
+                sky.wcs = wcs
 
         return sky
 

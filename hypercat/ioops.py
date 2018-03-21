@@ -16,7 +16,7 @@ from astropy.coordinates import name_resolve
 import logging
 import datetime
 
-def save2fits(image,fitsfile,usewcs=True):
+def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
 
     """Save instance of class with ``.data`` member to a new ImageHDU in FITS file.
 
@@ -123,10 +123,28 @@ def save2fits(image,fitsfile,usewcs=True):
                 keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
                 header[keyword] = (getattr(obj,attr),comment)
 
+#        def add2header(obj,attr,comment='',keyword=None,suffix=''):
+#            if keyword is None:
+#                keyword = attr.upper()
+#
+#            if keyword.endswith('_'):
+#                keyword = keyword[:-1]
+#                
+#            keyword = "{:<8s}".format(keyword.upper()[:(8-len(suffix))]+suffix)
+#            header[keyword] = (getattr(obj,attr),comment)
+        
+
         # use helper func to put attrs in header
         add2header(image_,'objectname','target name','OBJECT')
         add2header(image_,'telescope','telescope/facility')
         add2header(image_,'instrument','instrument')
+
+        # extra keywords from outside (as dict) to be included in the header
+        if isinstance(extra_keywords,dict):
+            for k,v in extra_keywords.items():
+                print(k,v)
+                value, comment = v
+                header.set(k,value,comment)
 
         # store all model parameter values
         # enforce last valid non-whitespace char to be '_' to avoid name-space collisions
@@ -145,6 +163,9 @@ def save2fits(image,fitsfile,usewcs=True):
         # Format according to https://fits.gsfc.nasa.gov/standard30/fits_standard30aa.pdf
         #   section 4.4.2.1 "General descriptive keywords, DATE keyword"
         header['DATE'] = (datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"), 'HDU creation time (UTC)')
+
+        print("header: ")
+        print(header)
 
         # encapsulate image data in new ImageHDU and append
         dhdu = fits.ImageHDU(image_.data.value.T,header=header)
