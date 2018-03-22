@@ -438,7 +438,7 @@ class Source:
         self.pixelscale = get_pixelscale(self.Rd,self.distance,outunit='mas',npix=cube.eta)[2]*u.pix  # mas (per pixel)
 
         
-    def __call__(self,theta,wave=None,total_flux_density='1 Jy',snr=None,brightness_units='Jy/arcsec^2'):
+    def __call__(self,theta,total_flux_density='1 Jy',snr=None,brightness_units='Jy/arcsec^2'):
 
         self.theta = theta
 
@@ -446,11 +446,14 @@ class Source:
 #            raise Exception, "The provided model hypercube and vector of parameters are not compatible!"
 #        if self.cube.ip.data_hypercube.ndim != len(theta) + len(self.cube.omit):
 #            raise Exception, "The provided model hypercube and vector of parameters are not compatible!"
-        
-        if wave is None:
-            self.wave = self.theta[-1] * u.micron
-        else:
-            self.wave = getQuantity(wave,recognized_units=UNITS['WAVE'])
+
+        # find out what wave is
+        cube_waveidx = self.cube.paramnames.index('wave')
+        cube_wave = self.cube.theta[cube_waveidx]
+        if cube_wave.size == 1:  # single-valued wave in cube
+            wave = cube_wave[0] * u.micron
+        else: # multi-valued wave in cube, i.e. last entry in user-provided theta vector is wave
+            wave = self.theta[-1] * u.micron
 
         # get raw image
         rawimage = self.cube.get_image(theta)
@@ -463,7 +466,7 @@ class Source:
         sky = Image(rawimage,pixelscale=self.pixelscale,pa=self.pa,total_flux_density=total_flux_density,snr=snr,brightness_units=brightness_units)
 
         sky.theta = self.theta
-        sky.wave = self.wave
+        sky.wave = wave
         sky.pa = self.pa
         sky.objectname = self.objectname  # attach source.objectname to the image of the sky
 
