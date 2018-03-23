@@ -1,0 +1,10 @@
+Telescope,Instrument,Wavelength_ini [microns],Wavelength_end [microns],Pixelscale [mas/px],Reference
+TMT,IRIS,1.0,3.0,4.0,https://arxiv.org/pdf/1608.01720.pdf
+TMT,MICHI,3.0,5.0,11.9,
+TMT,MICHI,8.0,12.0,27.5,
+ELT,MICADO,1.0,3.0,6.0,https://www.eso.org/public/teles-instr/elt/elt-instr/micado/
+ELT,METIS,3.0,5.0,8.0,https://www.eso.org/public/teles-instr/elt/elt-instr/metis/
+ELT,METIS,5.0,12.0,21.2,https://www.eso.org/public/teles-instr/elt/elt-instr/metis/
+JWST,NIRCAM,1.0,3.0,32.0,https://jwst.stsci.edu/instrumentation/nircam
+JWST,NIRISS,3.0,5.0,65.0,https://jwst-docs.stsci.edu/display/JTI/NIRISS+Imaging
+JWST,MIRI,5.0,30.0,110.0,https://jwst-docs.stsci.edu/display/JTI/MIRI+Imaging#MIRIImaging-MIRIFiltersImagingfilters
