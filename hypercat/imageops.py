@@ -497,38 +497,129 @@ class Image(ImageFrame):
 
 # HIGH-LEVEL HELPERS
 
-def add_noise(image,snr):
+def add_noise(image,snr,mode='max'):
 
-    """Add Gaussian noise to ``image`` such that SNR is ``snr``."""
+    """Add Gaussian noise to ``image`` such that SNR is ``snr``.
 
-    print("In add_noise: image.std() =", image.std())
 
+    Parameters
+    ----------
+    image : 2-d array
+        Noise-free image.
+
+    snr : float
+        The desired SNR of image+noise_pattern.
+
+    mode : str
+        Either 'max' (default) or 'mean'. If a source is very bright
+        in comparison with the background, as is the case with CLUMPY
+        images, the standard definition :math:`SNR = \\mu(image) /
+        \\sigma(background)` may underestimate the noise level
+        necessary to produce the requested SNR. ``mode='max'`` is
+        therefore the default way in HyperCAT, and determines SNR
+        using the brightest pixel.
+
+    Returns
+    -------
+    noisy_image, noise_pattern : 2-d arrays
     
+        The noisy image (image + noise_pattern), and the noise_pattern
+        image itself.
+
+    See also
+    --------
+    :func:`measure_snr()`
+
+    Examples
+    --------
+    .. code-block:: python
+
+        img = cube.get_image(vec) # with appropriate parameter vector
+        img.shape
+          (241,241)
+        noisy_image, noise_pattern = add_noise(img,1.,mode='max') # requesting SNR=1
+        import plotting
+        # source in noisy_image should be almost indiscernible
+        plotting.multiplot((img,noisy_image,noise_pattern),titles=('image','image+noise','noise'))
+
+    """
+
+    mapping = {'max' : np.max, 'mean': np.mean}
+    try:
+        func = mapping[mode]
+    except KeyError:
+        logging.error("'mode' must be either 'max' or 'mean'.")
+        raise
+        
     # compute noise pattern with correct amplitude distribution
     mu = 0.0
-#    sigma = np.mean(image) / float(snr)
-    sigma = np.max(image) / float(snr)
+    sigma = func(image) / float(snr)
     noise_pattern = np.random.normal(mu,sigma,size=image.shape)
 
-    # normalize
+    # noisy image
     noisy_image = image + noise_pattern
-#E    noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)  # E
-    noisy_image = noisy_image * (image.max()/noisy_image.max()) # R, TEST
-    
-#    noisy_image = noisy_image * (image.mean()/noisy_image.mean()) # R, TEST
+
+    # normalize
+    if mode == 'mean':
+        noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)
+    elif mode == 'max':
+        noisy_image = noisy_image / np.max(noisy_image) * np.max(image)
     
     return noisy_image, noise_pattern
 
 
-def measure_snr(noisy_image,noise_pattern):
+def measure_snr(noisy_image,noise_pattern,mode='max'):
 
-    """Measure the effective SNR = mean(signal) / std(noise)"""
-    
-#    snr = np.mean(noisy_image) / np.std(noise_pattern)
-    snr = np.max(noisy_image) / np.std(noise_pattern)
-#    snr = np.mean(noisy_image) / np.std(noisy_image)
-    
+    """Measure the effective SNR of a noisy image.
+
+    Assuming that noisy_image has had (Gaussian) noise _pattern added
+    to the signal, measures the effective SNR. Two modes are
+    implemented (see :func:`add_noise()`.
+
+    Parameters
+    ----------
+    noisy_image : 2-d array
+        Image of signal + Gaussian noise.
+
+    noise_pattern : 2-d array
+        The noise image that was added to image to create noisy_image.
+
+    mode : str
+        Either 'max' (default) or 'mean'. See see :func:`add_noise()`.
+
+    Returns
+    -------
+    snr : float
+        The measured SNR of noisy_image.
+
+        If mode == 'max':  SNR = max(signal) / std(noise)
+        If mode == 'mean': SNR = mean(signal) / std(noise)
+
+    See also
+    --------
+    :func:`add_snr()`
+
+    Examples
+    --------
+    .. code-block:: python
+        noisy_image, noise_pattern = add_noise(img,10.,mode='max') # requesting SNR=10
+        measure_snr(noisy_image, noise_pattern, mode='max')
+          10.0048
+
+    """
+
+    mapping = {'max' : np.max, 'mean': np.mean}
+    try:
+        func = mapping[mode]
+    except KeyError:
+        logging.error("'mode' must be either 'max' or 'mean'.")
+        raise
+        
+    snr = func(noisy_image) / np.std(noise_pattern)
+   
     return snr
+
+
 
 
 def rotateImage(image,angle,direction='NE'):

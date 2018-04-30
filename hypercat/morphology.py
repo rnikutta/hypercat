@@ -218,14 +218,68 @@ def get_centroid(img):
     return M00, xbar, ybar
 
 
+def get_rgyr(img):
+
+    m00 = get_moment_central(img,(0,0))
+    m20 = get_moment_central(img,(2,0))
+    m02 = get_moment_central(img,(0,2))
+
+    rgx = np.sqrt(m20/m00)
+    rgy = np.sqrt(m02/m00)
+
+    return rgx, rgy
+
+
 def get_eigenvalues(cov):
     eigenvals = np.linalg.eigvals(cov)
     
     return eigenvals
 
 
-def get_angle(cov):
-    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
+#def get_angle(cov):
+#    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
+#
+#    return angle
+    
+def get_angle(img=None,cov=None):
+
+    """"Compute image position angle.
+
+    At least one of `img' or `cov` must be provided. Works for PA
+    between 0 and 180 degrees (measured E from N),
+    i.e. counter-clockwise from North.
+
+    Parameters
+    ----------
+    img : array or None
+        The image of which to compute the position angle PA.
+
+    cov : 2x2 array or None
+        The covariance matrix of img, of any. If cov os provided, it
+        will be used to compute the PA, even if img is provided as
+        well.
+
+    Returns
+    -------
+    angle : float
+        The position angle of `img` (or of the image represented by
+        `cov`, in degrees East from North.
+
+    """
+
+    if cov is None:
+        if img is not None:
+            cov = get_cov_from_moments(img)
+        else:
+            raise Exception("`cov` is None and `img` is None. One of the two must be provided.")
+
+    else:
+        if img is not None:
+            warnings.warn("Both `img` and `cov` were provided. The position angle will be computed from `cov`.")
+
+    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1])) # TODO: check formula
+
+    angle = 90 - np.degrees(-angle)
 
     return angle
     
@@ -409,6 +463,10 @@ class MomentAnalytics:
         self.elongation = get_elongation(self.cov)
         self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
         self.gini = gini(self.img)
+
+        npix = self.img.shape[0]
+        cpix = npix//2
+        self.fluxasym = np.sum(self.img[:,cpix:])/np.sum(self.img)
                 
     def set_moment_name(self,p,q,val,prefix):
         setattr(self, '%s%d%d' % (prefix,p,q), val)
@@ -462,7 +520,50 @@ def gini(arr):
     arr = np.sort(arr)
     
     print(n,idx,MIN,eps,arr)
+    
     G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
+
+    return G
+    
+
+def gini_pure(arr):
+    """Compute Gini coefficient of array `arr`.
+
+    In mathematical notation, where argument ``arr`` is a discrete
+    array with values :math:`I_i`:
+
+    .. math::
+
+       G = \\frac{\\sum_i (2 i - n - 1)\\cdot I_i}{n \\sum_i I_i} 
+
+    where the array values :math:`I_i` are sorted in ascending order,
+    and the :math:`i` are the array indices of the sorted array.
+
+    """
+    
+    arr = arr.flatten()
+    n = arr.size
+    print(n)
+    idx = np.arange(1,n+1)
+    print(n,idx)
+    eps = 1.e-10
+
+    # offset minor negative vales # TODO: should probably yell if MIN is too far away from 0.
+    MIN = np.min(arr)
+    if MIN < 0.:
+        arr -= MIN
+
+#    arr = arr + eps  # make all pixels non-zero
+    arr = np.sort(arr)
+    
+    print(n,idx,MIN,eps,arr)
+#    mean = np.sum(arr)/n
+#    G = np.sum((2*idx-n-1)*arr) / (n*n*mean)
+
+    G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
+
+    # make it an unbiased estimator
+    G = G * n / (n-1)
 
     return G
     
