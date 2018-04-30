@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>morphology module &#8212; HyperCAT API 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -26,8 +18,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ndiminterpolation module" href="ndiminterpolation.html" />
     <link rel="prev" title="loggers module" href="loggers.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -54,6 +45,52 @@
             
   <div class="section" id="module-morphology">
 <span id="morphology-module"></span><h1>morphology module<a class="headerlink" href="#module-morphology" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="morphology.Moment">
+<em class="property">class </em><code class="descclassname">morphology.</code><code class="descname">Moment</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#Moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.Moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="morphology.Moment.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>p</em>, <em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#Moment.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.Moment.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="morphology.Moment.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#Moment.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.Moment.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="morphology.MomentAnalytics">
+<em class="property">class </em><code class="descclassname">morphology.</code><code class="descname">MomentAnalytics</code><a class="reference internal" href="_modules/morphology.html#MomentAnalytics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.MomentAnalytics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="morphology.MomentAnalytics.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>img=None</em>, <em>a=20</em>, <em>b=10</em>, <em>xoff=0.0</em>, <em>yoff=0.0</em>, <em>theta=0.0</em>, <em>model='gaussian'</em>, <em>npix=241</em>, <em>norm=1.0</em>, <em>eps=0.3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#MomentAnalytics.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.MomentAnalytics.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="morphology.MomentAnalytics.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#MomentAnalytics.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.MomentAnalytics.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="morphology.MomentAnalytics.set_moment_name">
+<code class="descname">set_moment_name</code><span class="sig-paren">(</span><em>p</em>, <em>q</em>, <em>val</em>, <em>prefix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#MomentAnalytics.set_moment_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.MomentAnalytics.set_moment_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.circle">
+<code class="descclassname">morphology.</code><code class="descname">circle</code><span class="sig-paren">(</span><em>npix</em>, <em>r</em>, <em>x0=0</em>, <em>y0=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#circle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.circle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="function">
 <dt id="morphology.eq11">
 <code class="descclassname">morphology.</code><code class="descname">eq11</code><span class="sig-paren">(</span><em>I</em>, <em>sig</em>, <em>a</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#eq11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.eq11" title="Permalink to this definition">¶</a></dt>
@@ -62,7 +99,7 @@
 <dl class="function">
 <dt id="morphology.findEmissionCentroid">
 <code class="descclassname">morphology.</code><code class="descname">findEmissionCentroid</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#findEmissionCentroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.findEmissionCentroid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return (fractional) pixel coordinates of the emission centroid in <code class="docutils literal"><span class="pre">image</span></code>.</p>
+<dd><p>Return (fractional) pixel coordinates of the emission centroid in <code class="docutils literal notranslate"><span class="pre">image</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -70,7 +107,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>img</strong> (<em>2-d array</em>) – 2-d image.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x0, y0</strong> – Fractional pixel coordinates of the emission centroid in
-<code class="docutils literal"><span class="pre">image</span></code></td>
+<code class="docutils literal notranslate"><span class="pre">image</span></code></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
@@ -89,7 +126,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>2-d array</em>) – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>pa</strong> – Postion angle (PA) of the dominant emission feature in
-<code class="docutils literal"><span class="pre">image</span></code>, measured in degrees counter-clockwise from North
+<code class="docutils literal notranslate"><span class="pre">image</span></code>, measured in degrees counter-clockwise from North
 (i.e. from the positive y-axis.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
@@ -118,7 +155,7 @@
 <code class="descclassname">morphology.</code><code class="descname">getAngle</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>pa=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#getAngle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.getAngle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute angle between two vectors a and b.</p>
 <p>Uses formula:</p>
-<div class="math">
+<div class="math notranslate">
 \[\tan \theta = \frac{|a \times b|}{a \cdot b}\]</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -127,16 +164,16 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>b</strong> (<em>a</em><em>,</em>) – Vectors to measure angle between.</li>
 <li><strong>pa</strong> (<em>bool</em>) – Position angle flag. If True, the measured angle will be
-measured as angle between vector <code class="docutils literal"><span class="pre">a</span></code> counter-clockwise from
-vector <code class="docutils literal"><span class="pre">b</span></code>, and angle always non-negative. If False, the
-measured angle can be positive (i.e. <code class="docutils literal"><span class="pre">a''</span> <span class="pre">is</span> <span class="pre">``angle</span></code>
-degrees counter-clockwise from <code class="docutils literal"><span class="pre">b</span></code>), or negative
-(i.e. <code class="docutils literal"><span class="pre">a</span></code> is <code class="docutils literal"><span class="pre">angle</span></code> degrees clockwise from <code class="docutils literal"><span class="pre">b</span></code>).</li>
+measured as angle between vector <code class="docutils literal notranslate"><span class="pre">a</span></code> counter-clockwise from
+vector <code class="docutils literal notranslate"><span class="pre">b</span></code>, and angle always non-negative. If False, the
+measured angle can be positive (i.e. <code class="docutils literal notranslate"><span class="pre">a''</span> <span class="pre">is</span> <span class="pre">``angle</span></code>
+degrees counter-clockwise from <code class="docutils literal notranslate"><span class="pre">b</span></code>), or negative
+(i.e. <code class="docutils literal notranslate"><span class="pre">a</span></code> is <code class="docutils literal notranslate"><span class="pre">angle</span></code> degrees clockwise from <code class="docutils literal notranslate"><span class="pre">b</span></code>).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>angle</strong> – Angle in degrees between vectors <code class="docutils literal"><span class="pre">a</span></code> and <code class="docutils literal"><span class="pre">b</span></code>. See
-description of <code class="docutils literal"><span class="pre">pa</span></code> for more details.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>angle</strong> – Angle in degrees between vectors <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>. See
+description of <code class="docutils literal notranslate"><span class="pre">pa</span></code> for more details.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
@@ -156,7 +193,7 @@ description of <code class="docutils literal"><span class="pre">pa</span></code>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>image</strong> (<em>2-d array</em>) – Image.</li>
-<li><strong>thresh</strong> (<em>float</em>) – Pixels as dim as <code class="docutils literal"><span class="pre">'thresh</span></code> (fraction) of peak pixel
+<li><strong>thresh</strong> (<em>float</em>) – Pixels as dim as <code class="docutils literal notranslate"><span class="pre">'thresh</span></code> (fraction) of peak pixel
 brightness will be considered. Default 0.001 (= 0.1 %).</li>
 <li><strong>sortdescending</strong> (<em>bool</em>) – If True (the default), returns the eigenvalues and
 eigentvectors sorted by the eigenvalues in descending order
@@ -166,7 +203,7 @@ the original order.</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
-<li><strong>evals</strong> (<em>array</em>) – 1-d array of eigenvalues vor each axis in <code class="docutils literal"><span class="pre">image</span></code>.</li>
+<li><strong>evals</strong> (<em>array</em>) – 1-d array of eigenvalues vor each axis in <code class="docutils literal notranslate"><span class="pre">image</span></code>.</li>
 <li><strong>evecs</strong> (<em>aray</em>)</li>
 </ul>
 </p>
@@ -185,13 +222,13 @@ the original order.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>axis</strong> (<em>int</em>) – Direction of the vector, counting axes from 0 (the pythonic way) up to <code class="docutils literal"><span class="pre">ndim</span></code>-1.</li>
+<li><strong>axis</strong> (<em>int</em>) – Direction of the vector, counting axes from 0 (the pythonic way) up to <code class="docutils literal notranslate"><span class="pre">ndim</span></code>-1.</li>
 <li><strong>ndim</strong> (<em>int</em>) – Dimensionality of the unit vector. Default 2.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>uvec</strong> – 1-dim array of length <code class="docutils literal"><span class="pre">ndim</span></code>, representing a unit vector
-along the given <code class="docutils literal"><span class="pre">axis</span></code>, in <code class="docutils literal"><span class="pre">ndim</span></code> dimensions.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>uvec</strong> – 1-dim array of length <code class="docutils literal notranslate"><span class="pre">ndim</span></code>, representing a unit vector
+along the given <code class="docutils literal notranslate"><span class="pre">axis</span></code>, in <code class="docutils literal notranslate"><span class="pre">ndim</span></code> dimensions.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
@@ -200,7 +237,7 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">getUnitVector</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
   <span class="n">array</span><span class="p">([</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])</span> <span class="c1"># 2-d unit vector along x-axis</span>
 
 <span class="n">getUnitVector</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
@@ -213,14 +250,203 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 </dd></dl>
 
 <dl class="function">
-<dt id="morphology.get_moment">
-<code class="descclassname">morphology.</code><code class="descname">get_moment</code><span class="sig-paren">(</span><em>image</em>, <em>radius=1.0</em>, <em>angular='a'</em>, <em>m=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute m-th moment of image.</p>
-<dl class="docutils">
-<dt>image <span class="classifier-delimiter">:</span> <span class="classifier">array (or instance of Image?)</span></dt>
-<dd>2d array (or instance of Image?)</dd>
-</dl>
+<dt id="morphology.get_all_moments_raw_matmul">
+<code class="descclassname">morphology.</code><code class="descname">get_all_moments_raw_matmul</code><span class="sig-paren">(</span><em>img</em>, <em>pmax=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_all_moments_raw_matmul"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_all_moments_raw_matmul" title="Permalink to this definition">¶</a></dt>
+<dd><p>All raw image moments up to oder (pmax,pmax).</p>
+<p>Compute all (p+q) orders at once, with <span class="math notranslate">\(p,q \in [0,pmax]\)</span>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>img</strong> (<em>2-d array</em>) – (nxm) shaped image array.</li>
+<li><strong>pmax</strong> (<em>int</em>) – Max p,q moment orders.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>M</strong> – 2-d array with shape (pmax+1,pmax+1). Contains all geometric
+moments from (0,0) up to (pmax,pmax). To access moment (i,j),
+just index the result array (see Examples).</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">2-d array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span> <span class="c1"># npix,sigmax,sigmay</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">get_all_moments_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pmax</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="n">M</span>
+  <span class="n">array</span><span class="p">([[</span><span class="mf">9.88438828e-01</span><span class="p">,</span> <span class="mf">4.94219414e+01</span><span class="p">,</span> <span class="mf">2.83323273e+03</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">4.94219414e+01</span><span class="p">,</span> <span class="mf">2.47109707e+03</span><span class="p">,</span> <span class="mf">1.41661637e+05</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">2.49580804e+03</span><span class="p">,</span> <span class="mf">1.24790402e+05</span><span class="p">,</span> <span class="mf">7.15391265e+06</span><span class="p">]])</span>
+
+<span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+  <span class="mf">0.999999497938336</span>
+
+<span class="n">M</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+  <span class="mf">10024.994966831815</span>
+
+<span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+  <span class="mf">10399.989518069591</span>
+</pre></div>
+</div>
 </dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_angle">
+<code class="descclassname">morphology.</code><code class="descname">get_angle</code><span class="sig-paren">(</span><em>cov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_angle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_centroid">
+<code class="descclassname">morphology.</code><code class="descname">get_centroid</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_centroid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_cov_from_moments">
+<code class="descclassname">morphology.</code><code class="descname">get_cov_from_moments</code><span class="sig-paren">(</span><em>img</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_cov_from_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_cov_from_moments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_eigenvalues">
+<code class="descclassname">morphology.</code><code class="descname">get_eigenvalues</code><span class="sig-paren">(</span><em>cov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_eigenvalues"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_eigenvalues" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_elongation">
+<code class="descclassname">morphology.</code><code class="descname">get_elongation</code><span class="sig-paren">(</span><em>cov</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_elongation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_elongation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_hu_moment">
+<code class="descclassname">morphology.</code><code class="descname">get_hu_moment</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_hu_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_hu_moment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment">
+<code class="descclassname">morphology.</code><code class="descname">get_moment</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em>, <em>central=False</em>, <em>scaleinvariant=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_central">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_central</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_central"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_central" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_central_matmul">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_central_matmul</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_central_matmul"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_central_matmul" title="Permalink to this definition">¶</a></dt>
+<dd><p>Central image moment via two matrix multiplications.</p>
+<p>This is 14 times faster than the direct summation method.</p>
+<p>Exploits that:</p>
+<div class="math notranslate">
+\[\mu_{pq} = \sum_i^n \sum_j^m (i-\bar i)^p (j-\bar j)^q f_{ij} = \left((\vec i - \bar i)^p\right)^T \cdot \vec f \cdot (\vec j - \bar j)^q\]</div>
+<p>with <span class="math notranslate">\(\vec i^p = (1,2^p,3^p,...,n^p)\)</span>, <span class="math notranslate">\(\vec j^q =
+(1,2^q,3^q,...,m^q)\)</span>, <span class="math notranslate">\(\bar i = M_{01}/M_{00}\)</span>, <span class="math notranslate">\(\bar
+j = M_{10}/M_{00}\)</span>, and <span class="math notranslate">\(\cdot\)</span> are dot products on the RHS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>img</strong> (<em>2-d array</em>) – (NxM) shaped image array.</li>
+<li><strong>orders</strong> (<em>2-tuple of integers</em>) – Image moment order to compute. (p,q) type tuple.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>mupq</strong> – Central image moment of order p+q.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+  <span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+
+<span class="c1"># mu00, i.e. the sum / mass of the image</span>
+<span class="n">get_moment_central_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+  <span class="mf">2.0</span>
+
+<span class="c1"># mu20</span>
+<span class="n">get_moment_central_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+  <span class="mf">0.5</span>
+
+<span class="c1"># mu02</span>
+<span class="n">get_moment_central_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+  <span class="mf">0.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_old">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_old</code><span class="sig-paren">(</span><em>image</em>, <em>radius=1.0</em>, <em>angular='a'</em>, <em>m=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_old"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute m-th moment of image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>array</em><em> (or </em><em>instance of Image?</em><em>)</em>) – 2d array (or instance of Image?)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_raw">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_raw</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em>, <em>xbar=0.0</em>, <em>ybar=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_raw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_raw_matmul">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_raw_matmul</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_raw_matmul"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_raw_matmul" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw image moment via two matrix multiplications.</p>
+<p>This is 14 times faster than the direct summation method.</p>
+<p>Exploits that:</p>
+<div class="math notranslate">
+\[\sum_i^n \sum_j^m i^p j^q f_{ij} = \left(\vec i^p\right)^T \cdot \vec f \cdot \vec j^q\]</div>
+<p>with <span class="math notranslate">\(\vec i^p = (1,2^p,3^p,...,n^p)\)</span>, <span class="math notranslate">\(\vec j^q =
+(1,2^q,3^q,...,m^q)\)</span> and <span class="math notranslate">\(\cdot\)</span> are dot products on the
+RHS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>img</strong> (<em>2-d array</em>) – (NxM) shaped image array.</li>
+<li><strong>orders</strong> (<em>2-tuple of integers</em>) – Image moment order to compute. (p,q) type tuple.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>Mpq</strong> – Geometric image moment of order p+q.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+       <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span>
+
+<span class="c1"># M00, i.e. the sum / mass of the image</span>
+<span class="n">get_moment_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="mf">2.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="morphology.get_moment_scaleinvariant">
+<code class="descclassname">morphology.</code><code class="descname">get_moment_scaleinvariant</code><span class="sig-paren">(</span><em>img</em>, <em>orders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#get_moment_scaleinvariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.get_moment_scaleinvariant" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="morphology.get_power">
@@ -260,7 +486,13 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 <dl class="function">
 <dt id="morphology.gini">
 <code class="descclassname">morphology.</code><code class="descname">gini</code><span class="sig-paren">(</span><em>arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#gini"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.gini" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute Gini index of array <cite>arr</cite>.</p>
+<dd><p>Compute Gini coefficient of array <cite>arr</cite>.</p>
+<p>In mathematical notation, where argument <code class="docutils literal notranslate"><span class="pre">arr</span></code> is a discrete
+array with values <span class="math notranslate">\(I_i\)</span>:</p>
+<div class="math notranslate">
+\[G = \frac{\sum_i (2 i - n - 1)\cdot I_i}{n \sum_i I_i}\]</div>
+<p>where the array values <span class="math notranslate">\(I_i\)</span> are sorted in ascending order,
+and the <span class="math notranslate">\(i\)</span> are the array indices of the sorted array.</p>
 </dd></dl>
 
 <dl class="function">
@@ -281,6 +513,11 @@ along the given <code class="docutils literal"><span class="pre">axis</span></co
 <dl class="function">
 <dt id="morphology.ratio_fluxdensity_upper_over_lower">
 <code class="descclassname">morphology.</code><code class="descname">ratio_fluxdensity_upper_over_lower</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#ratio_fluxdensity_upper_over_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.ratio_fluxdensity_upper_over_lower" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="morphology.rectangle">
+<code class="descclassname">morphology.</code><code class="descname">rectangle</code><span class="sig-paren">(</span><em>npix</em>, <em>a</em>, <em>b</em>, <em>x0=0</em>, <em>y0=0</em>, <em>theta=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#rectangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.rectangle" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -307,13 +544,13 @@ counter-clockwise, otherwise counter-clockwise.</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>rvec</strong> – Rotated vector.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">arrauy</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span> <span class="c1"># unit vector along postive y-axis</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span> <span class="c1"># unit vector along postive y-axis</span>
 <span class="n">rotateVector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span><span class="n">deg</span><span class="o">=</span><span class="mf">90.</span><span class="p">)</span>
   <span class="n">array</span><span class="p">([</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
 
@@ -325,6 +562,11 @@ counter-clockwise, otherwise counter-clockwise.</li>
 </pre></div>
 </div>
 </dd></dl>
+
+<dl class="function">
+<dt id="morphology.square">
+<code class="descclassname">morphology.</code><code class="descname">square</code><span class="sig-paren">(</span><em>npix</em>, <em>a</em>, <em>x0=0</em>, <em>y0=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/morphology.html#square"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morphology.square" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="morphology.symmetric1">
@@ -389,12 +631,14 @@ If +1., b lies to the right of a (b clockwise from a).</td>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -421,7 +665,7 @@ If +1., b lies to the right of a (b clockwise from a).</td>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.2.
     </div>
   </body>
 </html>

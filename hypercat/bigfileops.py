@@ -107,7 +107,8 @@ def storeCubeToHdf5(cube,hdffile,groupname=None):
     try:
         ds = h['hypercubenames']
     except KeyError:
-        ds = h.create_dataset('hypercubenames',data=[groupname],maxshape=(None,))
+#        ds = h.create_dataset('hypercubenames',data=[groupname],maxshape=(None,))
+        ds = h.create_dataset('hypercubenames',data=[groupname.encode()],maxshape=(None,))
     else:
         n = ds.shape[0]
         ds.resize((n+1,))

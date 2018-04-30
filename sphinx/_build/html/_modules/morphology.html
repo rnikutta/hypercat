@@ -4,28 +4,19 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>morphology &#8212; HyperCAT API 1.0.0 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     '1.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -51,6 +42,8 @@
 <span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Robert Nikutta &lt;robert.nikutta@gmail.com&gt;&#39;</span>
 <span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;20180216&#39;</span> <span class="c1"># yyyymmdd</span>
 
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span><span class="p">,</span> <span class="n">integrate</span>
@@ -63,22 +56,448 @@
 
 <span class="kn">from</span> <span class="nn">astropy.modeling.functional_models</span> <span class="k">import</span> <span class="n">Gaussian2D</span>
 
-<div class="viewcode-block" id="gini"><a class="viewcode-back" href="../morphology.html#morphology.gini">[docs]</a><span class="k">def</span> <span class="nf">gini</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute Gini index of array `arr`.</span>
+
+<div class="viewcode-block" id="get_moment_raw_matmul"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_raw_matmul">[docs]</a><span class="k">def</span> <span class="nf">get_moment_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">):</span>
+
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Raw image moment via two matrix multiplications.</span>
+
+<span class="sd">    This is 14 times faster than the direct summation method.</span>
+
+<span class="sd">    Exploits that:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       \sum_i^n \sum_j^m i^p j^q f_{ij} = \left(\vec i^p\right)^T \cdot \vec f \cdot \vec j^q</span>
+
+<span class="sd">    with :math:`\vec i^p = (1,2^p,3^p,...,n^p)`, :math:`\vec j^q =</span>
+<span class="sd">    (1,2^q,3^q,...,m^q)` and :math:`\cdot` are dot products on the</span>
+<span class="sd">    RHS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : 2-d array</span>
+<span class="sd">        (NxM) shaped image array.</span>
+
+<span class="sd">    orders : 2-tuple of integers</span>
+<span class="sd">        Image moment order to compute. (p,q) type tuple.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Mpq : float</span>
+<span class="sd">        Geometric image moment of order p+q.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       img = np.eye(2)</span>
+<span class="sd">       array([[1., 0.],</span>
+<span class="sd">              [0., 1.]])</span>
+
+<span class="sd">       # M00, i.e. the sum / mass of the image</span>
+<span class="sd">       get_moment_raw_matmul(img,(0,0))</span>
+<span class="sd">       2.0</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">**</span><span class="n">p</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">**</span><span class="n">q</span>
+
+    <span class="n">Mpq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">img</span><span class="p">),</span><span class="n">j</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Mpq</span></div>
+
+
+<div class="viewcode-block" id="get_all_moments_raw_matmul"><a class="viewcode-back" href="../morphology.html#morphology.get_all_moments_raw_matmul">[docs]</a><span class="k">def</span> <span class="nf">get_all_moments_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pmax</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;All raw image moments up to oder (pmax,pmax).</span>
+
+<span class="sd">    Compute all (p+q) orders at once, with :math:`p,q \in [0,pmax]`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : 2-d array</span>
+<span class="sd">        (nxm) shaped image array.</span>
+
+<span class="sd">    pmax : int</span>
+<span class="sd">        Max p,q moment orders.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    M : 2-d array</span>
+<span class="sd">        2-d array with shape (pmax+1,pmax+1). Contains all geometric</span>
+<span class="sd">        moments from (0,0) up to (pmax,pmax). To access moment (i,j),</span>
+<span class="sd">        just index the result array (see Examples).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       img = gaussian(201,5,20) # npix,sigmax,sigmay</span>
+<span class="sd">       M = get_all_moments_raw_matmul(img,pmax=2):</span>
+<span class="sd">       M</span>
+<span class="sd">         array([[9.88438828e-01, 4.94219414e+01, 2.83323273e+03],</span>
+<span class="sd">                [4.94219414e+01, 2.47109707e+03, 1.41661637e+05],</span>
+<span class="sd">                [2.49580804e+03, 1.24790402e+05, 7.15391265e+06]])</span>
+
+<span class="sd">       M[0,0]</span>
+<span class="sd">         0.999999497938336</span>
+
+<span class="sd">       M[2,0]</span>
+<span class="sd">         10024.994966831815</span>
+
+<span class="sd">       M[0,2]</span>
+<span class="sd">         10399.989518069591</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">maxorder</span> <span class="o">=</span> <span class="n">pmax</span><span class="o">+</span><span class="mi">1</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">maxorder</span><span class="p">))</span>
+    <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">maxorder</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxorder</span><span class="p">):</span>
+        <span class="n">I</span><span class="p">[:,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">**</span><span class="n">p</span>
+        <span class="n">J</span><span class="p">[:,</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">**</span><span class="n">p</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">I</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">img</span><span class="p">),</span><span class="n">J</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">M</span></div>
+
+
+<div class="viewcode-block" id="get_moment_central_matmul"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_central_matmul">[docs]</a><span class="k">def</span> <span class="nf">get_moment_central_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">):</span>
+
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Central image moment via two matrix multiplications.</span>
+
+<span class="sd">    This is 14 times faster than the direct summation method.</span>
+
+<span class="sd">    Exploits that:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       \mu_{pq} = \sum_i^n \sum_j^m (i-\bar i)^p (j-\bar j)^q f_{ij} = \left((\vec i - \bar i)^p\right)^T \cdot \vec f \cdot (\vec j - \bar j)^q</span>
+
+<span class="sd">    with :math:`\vec i^p = (1,2^p,3^p,...,n^p)`, :math:`\vec j^q =</span>
+<span class="sd">    (1,2^q,3^q,...,m^q)`, :math:`\bar i = M_{01}/M_{00}`, :math:`\bar</span>
+<span class="sd">    j = M_{10}/M_{00}`, and :math:`\cdot` are dot products on the RHS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : 2-d array</span>
+<span class="sd">        (NxM) shaped image array.</span>
+
+<span class="sd">    orders : 2-tuple of integers</span>
+<span class="sd">        Image moment order to compute. (p,q) type tuple.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mupq : float</span>
+<span class="sd">        Central image moment of order p+q.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       img = np.eye(2)</span>
+<span class="sd">         array([[1., 0.],</span>
+<span class="sd">                [0., 1.]])</span>
+
+<span class="sd">       # mu00, i.e. the sum / mass of the image</span>
+<span class="sd">       get_moment_central_matmul(img,(0,0))</span>
+<span class="sd">         2.0</span>
+
+<span class="sd">       # mu20</span>
+<span class="sd">       get_moment_central_matmul(img,(2,0))</span>
+<span class="sd">         0.5</span>
+
+<span class="sd">       # mu02</span>
+<span class="sd">       get_moment_central_matmul(img,(0,2))</span>
+<span class="sd">         0.5</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">M00</span> <span class="o">=</span> <span class="n">get_moment_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">ibar</span> <span class="o">=</span> <span class="n">get_moment_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>
+    <span class="n">jbar</span> <span class="o">=</span> <span class="n">get_moment_raw_matmul</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>
+    
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-</span><span class="n">ibar</span><span class="p">)</span><span class="o">**</span><span class="n">p</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">-</span><span class="n">jbar</span><span class="p">)</span><span class="o">**</span><span class="n">q</span>
+
+    <span class="n">mupq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">img</span><span class="p">),</span><span class="n">j</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mupq</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="get_cov_from_moments"><a class="viewcode-back" href="../morphology.html#morphology.get_cov_from_moments">[docs]</a><span class="k">def</span> <span class="nf">get_cov_from_moments</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">mu00</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">mu11p</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">mu00</span>
+    <span class="n">mu20p</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">mu00</span>
+    <span class="n">mu02p</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">mu00</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu20p</span>
+    <span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu11p</span>
+    <span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu11p</span>
+    <span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu02p</span>
+
+    <span class="k">return</span> <span class="n">cov</span></div>
+
+
+<div class="viewcode-block" id="get_centroid"><a class="viewcode-back" href="../morphology.html#morphology.get_centroid">[docs]</a><span class="k">def</span> <span class="nf">get_centroid</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">M00</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">xbar</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>
+    <span class="n">ybar</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>
+
+    <span class="k">return</span> <span class="n">M00</span><span class="p">,</span> <span class="n">xbar</span><span class="p">,</span> <span class="n">ybar</span></div>
+
+
+<div class="viewcode-block" id="get_eigenvalues"><a class="viewcode-back" href="../morphology.html#morphology.get_eigenvalues">[docs]</a><span class="k">def</span> <span class="nf">get_eigenvalues</span><span class="p">(</span><span class="n">cov</span><span class="p">):</span>
+    <span class="n">eigenvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">eigenvals</span></div>
+
+
+<div class="viewcode-block" id="get_angle"><a class="viewcode-back" href="../morphology.html#morphology.get_angle">[docs]</a><span class="k">def</span> <span class="nf">get_angle</span><span class="p">(</span><span class="n">cov</span><span class="p">):</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]),(</span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">angle</span></div>
+    
+
+<div class="viewcode-block" id="get_elongation"><a class="viewcode-back" href="../morphology.html#morphology.get_elongation">[docs]</a><span class="k">def</span> <span class="nf">get_elongation</span><span class="p">(</span><span class="n">cov</span><span class="p">):</span>
+    <span class="n">eigenvals</span> <span class="o">=</span> <span class="n">get_eigenvalues</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<span class="c1">#    elong = np.sqrt(eigenvals[0]/eigenvals[1])</span>
+    <span class="n">elong</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eigenvals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">eigenvals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">elong</span></div>
+    
+
+<span class="c1">#def make_circle(npix,r,x0=0,y0=0):</span>
+<div class="viewcode-block" id="circle"><a class="viewcode-back" href="../morphology.html#morphology.circle">[docs]</a><span class="k">def</span> <span class="nf">circle</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">npix</span><span class="p">,</span><span class="n">npix</span><span class="p">))</span>
+    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">cpix</span><span class="p">,</span><span class="n">cpix</span><span class="p">,</span><span class="n">npix</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">r</span>
+    <span class="n">I</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="k">return</span> <span class="n">I</span></div>
+
+<span class="c1">#def make_square(npix,a,x0=0,y0=0):</span>
+<div class="viewcode-block" id="square"><a class="viewcode-back" href="../morphology.html#morphology.square">[docs]</a><span class="k">def</span> <span class="nf">square</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">npix</span><span class="p">,</span><span class="n">npix</span><span class="p">))</span>
+    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">cpix</span><span class="p">,</span><span class="n">cpix</span><span class="p">,</span><span class="n">npix</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">a</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">a</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">I</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="k">return</span> <span class="n">I</span></div>
+
+<span class="c1">#def make_rectangle(npix,a,b,x0=0,y0=0):</span>
+<div class="viewcode-block" id="rectangle"><a class="viewcode-back" href="../morphology.html#morphology.rectangle">[docs]</a><span class="k">def</span> <span class="nf">rectangle</span><span class="p">(</span><span class="n">npix</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">x0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">y0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">npix</span><span class="p">,</span><span class="n">npix</span><span class="p">))</span>
+    <span class="n">cpix</span> <span class="o">=</span> <span class="n">npix</span><span class="o">//</span><span class="mi">2</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">cpix</span><span class="p">,</span><span class="n">cpix</span><span class="p">,</span><span class="n">npix</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">a</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">b</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">I</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="k">return</span> <span class="n">I</span></div>
+
+
+<span class="c1">#def moment_raw_upto(img,maxorder=7):</span>
+<span class="c1">#    n = maxorder + 1</span>
+<span class="c1">#    res = np.zeros(n)</span>
+<span class="c1">#    for j in range(n):</span>
+<span class="c1">#        res[j] = moment_raw(img,order=j)</span>
+<span class="c1">#</span>
+<span class="c1">#    return res</span>
+
+<div class="viewcode-block" id="get_hu_moment"><a class="viewcode-back" href="../morphology.html#morphology.get_hu_moment">[docs]</a><span class="k">def</span> <span class="nf">get_hu_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="get_moment"><a class="viewcode-back" href="../morphology.html#morphology.get_moment">[docs]</a><span class="k">def</span> <span class="nf">get_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">,</span><span class="n">central</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">scaleinvariant</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+
+    
+    <span class="k">if</span> <span class="n">central</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">mu00</span> <span class="o">=</span> <span class="n">get_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">xbar</span> <span class="o">=</span> <span class="n">get_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">mu00</span>  <span class="c1"># these seem correct, as the give the correct</span>
+        <span class="n">ybar</span> <span class="o">=</span> <span class="n">get_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">mu00</span>  <span class="c1"># coords of the center of gravity</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xbar</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="n">ybar</span> <span class="o">=</span> <span class="mf">0.</span>
+        
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span><span class="n">lattice</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">xbar</span><span class="p">)</span><span class="o">**</span><span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">ybar</span><span class="p">)</span><span class="o">**</span><span class="n">q</span> <span class="o">*</span> <span class="n">img</span><span class="p">)</span>
+
+<span class="c1">#    if scaleinvariant is True and p&gt;=1 and q&gt;=1:</span>
+    <span class="k">if</span> <span class="n">scaleinvariant</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">p</span><span class="o">+</span><span class="n">q</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">mu00</span> <span class="o">=</span> <span class="n">get_moment</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">mu00</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="n">q</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">aux</span>
+    
+<span class="c1">#    print(mu)</span>
+    
+    <span class="k">return</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="get_moment_raw"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_raw">[docs]</a><span class="k">def</span> <span class="nf">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">,</span><span class="n">xbar</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">ybar</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span><span class="n">lattice</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">X</span><span class="o">-</span><span class="n">xbar</span><span class="p">)</span><span class="o">**</span><span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">ybar</span><span class="p">)</span><span class="o">**</span><span class="n">q</span> <span class="o">*</span> <span class="n">img</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">M</span></div>
+
+
+<div class="viewcode-block" id="get_moment_central"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_central">[docs]</a><span class="k">def</span> <span class="nf">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">):</span>
+
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="n">M00</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">xbar</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>  <span class="c1"># these seem correct, as the give the correct</span>
+    <span class="n">ybar</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">M00</span>  <span class="c1"># coords of the center of gravity</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">,</span><span class="n">xbar</span><span class="o">=</span><span class="n">xbar</span><span class="p">,</span><span class="n">ybar</span><span class="o">=</span><span class="n">ybar</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="get_moment_scaleinvariant"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_scaleinvariant">[docs]</a><span class="k">def</span> <span class="nf">get_moment_scaleinvariant</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">):</span>
+
+    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">orders</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">+</span><span class="n">q</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Moment orders must satisfy p+q&gt;=2&#39;</span><span class="p">)</span>
+
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">orders</span><span class="p">)</span>
+    <span class="n">mu00</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="n">img</span><span class="p">,(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">aux</span> <span class="o">=</span> <span class="n">mu00</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="n">q</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">aux</span>
+
+    <span class="k">return</span> <span class="n">eta</span></div>
+        
+    
+
+<div class="viewcode-block" id="Moment"><a class="viewcode-back" href="../morphology.html#morphology.Moment">[docs]</a><span class="k">class</span> <span class="nc">Moment</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Moment.__init__"><a class="viewcode-back" href="../morphology.html#morphology.Moment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">img</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span><span class="n">lattice</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M00</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ybar</span> <span class="o">=</span> <span class="n">get_centroid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Moment.__call__"><a class="viewcode-back" href="../morphology.html#morphology.Moment.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">get_moment_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">central</span> <span class="o">=</span> <span class="n">get_moment_central</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">))</span> <span class="c1">#,xbar=self.xbar,ybar=self.ybar)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaleinvariant</span> <span class="o">=</span> <span class="n">get_moment_scaleinvariant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Can&#39;t compute scale-invariant moments. p+q&gt;=2 must hold.&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">get_cov_from_moments</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvals</span> <span class="o">=</span> <span class="n">get_eigenvalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elongation</span> <span class="o">=</span> <span class="n">get_elongation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">get_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span> <span class="c1"># angle(largest EV, closest axis)</span></div></div>
+        
+
+<div class="viewcode-block" id="MomentAnalytics"><a class="viewcode-back" href="../morphology.html#morphology.MomentAnalytics">[docs]</a><span class="k">class</span> <span class="nc">MomentAnalytics</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MomentAnalytics.__init__"><a class="viewcode-back" href="../morphology.html#morphology.MomentAnalytics.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">ord</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span> <span class="c1">#,3,4)</span>
+<span class="c1">#        self.orders = list(itertools.product(ord,ord))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orders</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">),(</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span></div>
+
+        
+<div class="viewcode-block" id="MomentAnalytics.__call__"><a class="viewcode-back" href="../morphology.html#morphology.MomentAnalytics.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">xoff</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">yoff</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">theta</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span><span class="n">npix</span><span class="o">=</span><span class="mi">241</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yoff</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span>  <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span><span class="p">,</span> <span class="n">theta</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">model</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">npix</span> <span class="o">=</span> <span class="n">npix</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">xoff</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">yoff</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+<span class="c1">#circle            self.img = func(self.npix,self.a,self.xoff,self.yoff) #circle</span>
+<span class="c1">#            self.img = norm * self.img/self.img.max()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">img</span>
+            
+        <span class="n">dummy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ybar</span> <span class="o">=</span> <span class="n">get_centroid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">orders</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_moment_name</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">get_moment_raw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">)),</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_moment_name</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">get_moment_central</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">)),</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="n">q</span><span class="o">&gt;=</span><span class="mi">2</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_moment_name</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">get_moment_scaleinvariant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">,(</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">)),</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;eta&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">get_cov_from_moments</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eigenvals</span> <span class="o">=</span> <span class="n">get_eigenvalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elongation</span> <span class="o">=</span> <span class="n">get_elongation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="n">get_angle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span> <span class="c1"># angle(largest EV, closest axis)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gini</span> <span class="o">=</span> <span class="n">gini</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span></div>
+                
+<div class="viewcode-block" id="MomentAnalytics.set_moment_name"><a class="viewcode-back" href="../morphology.html#morphology.MomentAnalytics.set_moment_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_moment_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">val</span><span class="p">,</span><span class="n">prefix</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s%d%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">q</span><span class="p">),</span> <span class="n">val</span><span class="p">)</span></div></div>
+        
+
+<span class="c1">#def moment(img,orders=(0,),central=False):</span>
+<span class="c1">#</span>
+<span class="c1">#    if not isinstance(orders,(list,tuple,np.ndarray)):</span>
+<span class="c1">#        orders = (orders,)</span>
+<span class="c1">#        </span>
+<span class="c1">#    moments = np.zeros(len(orders))</span>
+<span class="c1">#</span>
+<span class="c1">#    if central is True:</span>
+<span class="c1">#        pass</span>
+<span class="c1">#    </span>
+<span class="c1">#    lattice = np.arange(img.shape[0])</span>
+<span class="c1">#    X, Y = np.meshgrid(lattice,lattice,indexing=&#39;ij&#39;)</span>
+<span class="c1">#    for j,order in enumerate(orders):</span>
+<span class="c1">#        print(order)</span>
+<span class="c1">#        moments[j] = np.sum(X**order * Y**order * img)</span>
+<span class="c1">#    </span>
+<span class="c1">#    return moments</span>
+
+
+<div class="viewcode-block" id="gini"><a class="viewcode-back" href="../morphology.html#morphology.gini">[docs]</a><span class="k">def</span> <span class="nf">gini</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute Gini coefficient of array `arr`.</span>
+
+<span class="sd">    In mathematical notation, where argument ``arr`` is a discrete</span>
+<span class="sd">    array with values :math:`I_i`:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       G = \\frac{\\sum_i (2 i - n - 1)\\cdot I_i}{n \\sum_i I_i} </span>
+
+<span class="sd">    where the array values :math:`I_i` are sorted in ascending order,</span>
+<span class="sd">    and the :math:`i` are the array indices of the sorted array.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
     <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">size</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">eps</span> <span class="o">=</span> <span class="mf">1.e-10</span>
 
-    <span class="n">min_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="c1"># offset minor negative vales # TODO: should probably yell if MIN is too far away from 0.</span>
+    <span class="n">MIN</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">min_</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="n">arr</span> <span class="o">-=</span> <span class="n">min_</span>
+        <span class="n">arr</span> <span class="o">-=</span> <span class="n">MIN</span>
 
-    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span> <span class="o">+</span> <span class="n">eps</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span> <span class="o">+</span> <span class="n">eps</span>  <span class="c1"># make all pixels non-zero</span>
     <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
-
+    
     <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">idx</span><span class="p">,</span><span class="n">min_</span><span class="p">,</span><span class="n">eps</span><span class="p">,</span><span class="n">arr</span><span class="p">)</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">idx</span><span class="o">-</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">arr</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span>
 
@@ -100,7 +519,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    rvec : arrau\y</span>
+<span class="sd">    rvec : array</span>
 <span class="sd">        Rotated vector.</span>
 
 <span class="sd">    Examples</span>
@@ -411,12 +830,12 @@
 
 
 
-<div class="viewcode-block" id="get_moment"><a class="viewcode-back" href="../morphology.html#morphology.get_moment">[docs]</a><span class="k">def</span> <span class="nf">get_moment</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">angular</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="get_moment_old"><a class="viewcode-back" href="../morphology.html#morphology.get_moment_old">[docs]</a><span class="k">def</span> <span class="nf">get_moment_old</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">radius</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span><span class="n">angular</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="n">m</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 
     <span class="sd">&quot;&quot;&quot;Compute m-th moment of image.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
 <span class="sd">    image : array (or instance of Image?)</span>
 <span class="sd">       2d array (or instance of Image?)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -823,12 +1242,14 @@
         <div class="sphinxsidebarwrapper">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -850,7 +1271,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.2.
     </div>
   </body>
 </html>
