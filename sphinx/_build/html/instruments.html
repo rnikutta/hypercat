@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>instruments module &#8212; HyperCAT API 1.0.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -26,8 +18,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="interferometry module" href="interferometry.html" />
     <link rel="prev" title="imageops module" href="imageops.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -57,7 +48,7 @@
 <dl class="class">
 <dt id="instruments.Instrument">
 <em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Instrument</code><span class="sig-paren">(</span><em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Instrument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Instrument" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for optical observing apparatus of all kinds (e.g. Telescope, Interferometer, etc.)</p>
 <dl class="method">
 <dt id="instruments.Instrument.__init__">
@@ -88,11 +79,11 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sky</strong> (<em>instance</em>) – Instance of <code class="docutils literal"><span class="pre">Image</span></code> class, which is the model image of
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sky</strong> (<em>instance</em>) – Instance of <code class="docutils literal notranslate"><span class="pre">Image</span></code> class, which is the model image of
 the sky, with proper units etc., but not yet processed by
 an instrument (e.g. before PSF convolution etc.)</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>observation</strong> – A copy of the <code class="docutils literal"><span class="pre">sky</span></code> instance, but processed by the given
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>observation</strong> – A copy of the <code class="docutils literal notranslate"><span class="pre">sky</span></code> instance, but processed by the given
 instrument (e.g. PSF-convolved, resampled to detector
 pixelscale, etc.)</td>
 </tr>
@@ -107,9 +98,9 @@ pixelscale, etc.)</td>
 <dl class="class">
 <dt id="instruments.Interferometer">
 <em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Interferometer</code><a class="reference internal" href="_modules/instruments.html#Interferometer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Interferometer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">instruments.Instrument</span></code></a></p>
 <p>Instrument to simulate an optical/IR interferometer.</p>
-<p>Given brightness distribution <code class="docutils literal"><span class="pre">sky</span></code>, perform FFT, and enable
+<p>Given brightness distribution <code class="docutils literal notranslate"><span class="pre">sky</span></code>, perform FFT, and enable
 extraction of correlated fluxes, and of visibilities, given an
 input baseline (BL length and PA).</p>
 <dl class="method">
@@ -127,7 +118,7 @@ input baseline (BL length and PA).</p>
 <dl class="class">
 <dt id="instruments.Telescope">
 <em class="property">class </em><code class="descclassname">instruments.</code><code class="descname">Telescope</code><span class="sig-paren">(</span><em>psfdict={}</em>, <em>pixelscale_detector=None</em>, <em>telescope=''</em>, <em>instrument=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal"><span class="pre">instruments.Instrument</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#instruments.Instrument" title="instruments.Instrument"><code class="xref py py-class docutils literal notranslate"><span class="pre">instruments.Instrument</span></code></a></p>
 <dl class="method">
 <dt id="instruments.Telescope.__call__">
 <code class="descname">__call__</code><span class="sig-paren">(</span><em>sky</em>, <em>snr=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/instruments.html#Telescope.__call__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#instruments.Telescope.__call__" title="Permalink to this definition">¶</a></dt>
@@ -140,60 +131,60 @@ input baseline (BL length and PA).</p>
 attached to it.</p>
 <p>Model a Gaussian+Airy PSF, or load PSF from a FITS file. Apply
 PSF to sky image.</p>
-<p>Resample resulting image to <code class="docutils literal"><span class="pre">pixelscale_detector</span></code>, if not <code class="docutils literal"><span class="pre">None</span></code>.</p>
+<p>Resample resulting image to <code class="docutils literal notranslate"><span class="pre">pixelscale_detector</span></code>, if not <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>psfdict</strong> (<em>dict</em>) – <p>A dictionary with several keys. Key <code class="docutils literal"><span class="pre">psf</span></code> is common to
-all configurations, and must be either: <code class="docutils literal"><span class="pre">None</span></code>, or
-<code class="docutils literal"><span class="pre">'model'</span></code>, or the path to a FITS file that contains an
+<li><strong>psfdict</strong> (<em>dict</em>) – <p>A dictionary with several keys. Key <code class="docutils literal notranslate"><span class="pre">psf</span></code> is common to
+all configurations, and must be either: <code class="docutils literal notranslate"><span class="pre">None</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">'model'</span></code>, or the path to a FITS file that contains an
 image of the PSF to be used.</p>
 <ul>
-<li>If <code class="docutils literal"><span class="pre">psf=None</span></code>, the model image will not be convolved
+<li>If <code class="docutils literal notranslate"><span class="pre">psf=None</span></code>, the model image will not be convolved
 with any PSF.</li>
-<li>If <code class="docutils literal"><span class="pre">psf='model'</span></code>, the PSF will be modeled with a
+<li>If <code class="docutils literal notranslate"><span class="pre">psf='model'</span></code>, the PSF will be modeled with a
 Gaussian+Airy pattern.<div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Reference: John W. Hardy “Adaptive Optics for
 Astronomical Telescopes” Oxford Series in Optical and
 Imaging Sciences, 1998</p>
 </div>
-<p>In this case, <code class="docutils literal"><span class="pre">psfdict</span></code> must also contain the keys
-<code class="docutils literal"><span class="pre">diameter</span></code> and <code class="docutils literal"><span class="pre">strehl</span></code>, and their values.  They are
+<p>In this case, <code class="docutils literal notranslate"><span class="pre">psfdict</span></code> must also contain the keys
+<code class="docutils literal notranslate"><span class="pre">diameter</span></code> and <code class="docutils literal notranslate"><span class="pre">strehl</span></code>, and their values.  They are
 the diameter of the telescope aperture and the strehl
 ratio. E.g.</p>
-<div class="highlight-text"><div class="highlight"><pre><span></span>psfdict = {&#39;psf&#39;:&#39;model&#39;,&#39;diameter&#39;:&#39;30 m&#39;,&#39;strehl&#39;:0.8}
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>psfdict = {&#39;psf&#39;:&#39;model&#39;,&#39;diameter&#39;:&#39;30 m&#39;,&#39;strehl&#39;:0.8}
 </pre></div>
 </div>
 </li>
-<li>If <code class="docutils literal"><span class="pre">psf</span></code> is a string ending with <code class="docutils literal"><span class="pre">'.fits'</span></code>, it is
+<li>If <code class="docutils literal notranslate"><span class="pre">psf</span></code> is a string ending with <code class="docutils literal notranslate"><span class="pre">'.fits'</span></code>, it is
 the path to a FITS file that contains the image of a PSF
 (for instance generated with the WebbPSF tool:
-<a class="reference external" href="http://www.stsci.edu/~mperrin/software/webbpsf.html">http://www.stsci.edu/~mperrin/software/webbpsf.html</a>).<p>In this case, <code class="docutils literal"><span class="pre">psfdict</span></code> must also have the keys and
+<a class="reference external" href="http://www.stsci.edu/~mperrin/software/webbpsf.html">http://www.stsci.edu/~mperrin/software/webbpsf.html</a>).<p>In this case, <code class="docutils literal notranslate"><span class="pre">psfdict</span></code> must also have the keys and
 values for the HDU extension (name or numeric) that
 contains the PSF image (EXT name or HDU number), and the
 name of the keyword containing the PSF’s image pixel
 scale. E.g.:</p>
-<div class="highlight-text"><div class="highlight"><pre><span></span># FITS file containing PSF image made with WebbPSF tool, name/number of HDU, pixelscale keyword
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># FITS file containing PSF image made with WebbPSF tool, name/number of HDU, pixelscale keyword
 psfdict = {&#39;psf&#39;:&#39;PSF_MIRI_F1000W.fits&#39;,&#39;hdukw&#39;:1,&#39;pixelscalekw&#39;:&#39;pixelscl&#39;}
 </pre></div>
 </div>
 </li>
 </ul>
 </li>
-<li><strong>pixelscale_detector</strong> (<em>str | None</em>) – <p>If not <code class="docutils literal"><span class="pre">None</span></code>, then the model image will be resampled
+<li><strong>pixelscale_detector</strong> (<em>str | None</em>) – <p>If not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then the model image will be resampled
 such that the pixelscale of the final image corresponds to
 pixelscale_detector. This will increase or decrease the
 number of pixels in the model image, but the FOV is
-preserved. If <code class="docutils literal"><span class="pre">psf</span></code> is not <code class="docutils literal"><span class="pre">None</span></code>, the resampling will
+preserved. If <code class="docutils literal notranslate"><span class="pre">psf</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, the resampling will
 be performed on the PSF-convolved image.</p>
 <p>The total flux density will also be preserved. You can
-check this by calling <code class="xref py py-func docutils literal"><span class="pre">self.getTotalFluxDensity()</span></code>.</p>
+check this by calling <code class="xref py py-func docutils literal notranslate"><span class="pre">self.getTotalFluxDensity()</span></code>.</p>
 <p>Typical detector pixelscales are e.g.:</p>
-<p>TMT_IRIS:  <code class="docutils literal"><span class="pre">pixelscale_detector='4</span> <span class="pre">mas/pix'</span></code></p>
-<p>TMT_MICHI: <code class="docutils literal"><span class="pre">pixelscale_detector='11.9</span> <span class="pre">mas/pix'</span></code></p>
+<p>TMT_IRIS:  <code class="docutils literal notranslate"><span class="pre">pixelscale_detector='4</span> <span class="pre">mas/pix'</span></code></p>
+<p>TMT_MICHI: <code class="docutils literal notranslate"><span class="pre">pixelscale_detector='11.9</span> <span class="pre">mas/pix'</span></code></p>
 </li>
 </ul>
 </td>
@@ -227,12 +218,14 @@ check this by calling <code class="xref py py-func docutils literal"><span class
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -259,7 +252,7 @@ check this by calling <code class="xref py py-func docutils literal"><span class
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, R. Nikutta.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.2.
     </div>
   </body>
 </html>

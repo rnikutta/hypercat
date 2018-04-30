@@ -18,6 +18,184 @@ import math
 from astropy.modeling.functional_models import Gaussian2D
 
 
+def get_moment_raw_matmul(img,orders):
+
+    r"""Raw image moment via two matrix multiplications.
+
+    This is 14 times faster than the direct summation method.
+
+    Exploits that:
+
+    .. math::
+
+       \sum_i^n \sum_j^m i^p j^q f_{ij} = \left(\vec i^p\right)^T \cdot \vec f \cdot \vec j^q
+
+    with :math:`\vec i^p = (1,2^p,3^p,...,n^p)`, :math:`\vec j^q =
+    (1,2^q,3^q,...,m^q)` and :math:`\cdot` are dot products on the
+    RHS.
+
+    Parameters
+    ----------
+    img : 2-d array
+        (NxM) shaped image array.
+
+    orders : 2-tuple of integers
+        Image moment order to compute. (p,q) type tuple.
+
+    Returns
+    -------
+    Mpq : float
+        Geometric image moment of order p+q.
+
+    Example
+    -------
+    .. code-block:: python
+
+       img = np.eye(2)
+       array([[1., 0.],
+              [0., 1.]])
+
+       # M00, i.e. the sum / mass of the image
+       get_moment_raw_matmul(img,(0,0))
+       2.0
+
+    """
+
+    p, q = orders
+    n, m = img.shape
+    i = np.arange(n)**p
+    j = np.arange(m)**q
+
+    Mpq = np.dot(np.dot(i.T,img),j)
+
+    return Mpq
+
+
+def get_all_moments_raw_matmul(img,pmax=2):
+
+    """All raw image moments up to oder (pmax,pmax).
+
+    Compute all (p+q) orders at once, with :math:`p,q \in [0,pmax]`.
+
+    Parameters
+    ----------
+    img : 2-d array
+        (nxm) shaped image array.
+
+    pmax : int
+        Max p,q moment orders.
+
+    Returns
+    -------
+    M : 2-d array
+        2-d array with shape (pmax+1,pmax+1). Contains all geometric
+        moments from (0,0) up to (pmax,pmax). To access moment (i,j),
+        just index the result array (see Examples).
+
+    Examples
+    --------
+    .. code-block:: python
+
+       img = gaussian(201,5,20) # npix,sigmax,sigmay
+       M = get_all_moments_raw_matmul(img,pmax=2):
+       M
+         array([[9.88438828e-01, 4.94219414e+01, 2.83323273e+03],
+                [4.94219414e+01, 2.47109707e+03, 1.41661637e+05],
+                [2.49580804e+03, 1.24790402e+05, 7.15391265e+06]])
+
+       M[0,0]
+         0.999999497938336
+
+       M[2,0]
+         10024.994966831815
+
+       M[0,2]
+         10399.989518069591
+    """
+    
+    n, m = img.shape
+    maxorder = pmax+1
+    
+    I = np.zeros((n,maxorder))
+    J = np.zeros((m,maxorder))
+
+    for p in range(maxorder):
+        I[:,p] = np.arange(n)**p
+        J[:,p] = np.arange(m)**p
+
+    M = np.dot(np.dot(I.T,img),J)
+
+    return M
+
+
+def get_moment_central_matmul(img,orders):
+
+    r"""Central image moment via two matrix multiplications.
+
+    This is 14 times faster than the direct summation method.
+
+    Exploits that:
+
+    .. math::
+
+       \mu_{pq} = \sum_i^n \sum_j^m (i-\bar i)^p (j-\bar j)^q f_{ij} = \left((\vec i - \bar i)^p\right)^T \cdot \vec f \cdot (\vec j - \bar j)^q
+
+    with :math:`\vec i^p = (1,2^p,3^p,...,n^p)`, :math:`\vec j^q =
+    (1,2^q,3^q,...,m^q)`, :math:`\bar i = M_{01}/M_{00}`, :math:`\bar
+    j = M_{10}/M_{00}`, and :math:`\cdot` are dot products on the RHS.
+
+    Parameters
+    ----------
+    img : 2-d array
+        (NxM) shaped image array.
+
+    orders : 2-tuple of integers
+        Image moment order to compute. (p,q) type tuple.
+
+    Returns
+    -------
+    mupq : float
+        Central image moment of order p+q.
+
+    Example
+    -------
+    .. code-block:: python
+
+       img = np.eye(2)
+         array([[1., 0.],
+                [0., 1.]])
+
+       # mu00, i.e. the sum / mass of the image
+       get_moment_central_matmul(img,(0,0))
+         2.0
+
+       # mu20
+       get_moment_central_matmul(img,(2,0))
+         0.5
+
+       # mu02
+       get_moment_central_matmul(img,(0,2))
+         0.5
+
+    """
+
+    M00 = get_moment_raw_matmul(img,(0,0))
+    ibar = get_moment_raw_matmul(img,(1,0)) / M00
+    jbar = get_moment_raw_matmul(img,(0,1)) / M00
+    
+    p, q = orders
+    n, m = img.shape
+    i = (np.arange(n)-ibar)**p
+    j = (np.arange(m)-jbar)**q
+
+    mupq = np.dot(np.dot(i.T,img),j)
+
+    return mupq
+
+
+
+
+
 def get_cov_from_moments(img):
     mu00 = get_moment_central(img,(0,0))
     mu11p = get_moment_central(img,(1,1)) / mu00
@@ -40,21 +218,76 @@ def get_centroid(img):
     return M00, xbar, ybar
 
 
+def get_rgyr(img):
+
+    m00 = get_moment_central(img,(0,0))
+    m20 = get_moment_central(img,(2,0))
+    m02 = get_moment_central(img,(0,2))
+
+    rgx = np.sqrt(m20/m00)
+    rgy = np.sqrt(m02/m00)
+
+    return rgx, rgy
+
+
 def get_eigenvalues(cov):
     eigenvals = np.linalg.eigvals(cov)
     
     return eigenvals
 
 
-def get_angle(cov):
-    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
+#def get_angle(cov):
+#    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
+#
+#    return angle
+    
+def get_angle(img=None,cov=None):
+
+    """"Compute image position angle.
+
+    At least one of `img' or `cov` must be provided. Works for PA
+    between 0 and 180 degrees (measured E from N),
+    i.e. counter-clockwise from North.
+
+    Parameters
+    ----------
+    img : array or None
+        The image of which to compute the position angle PA.
+
+    cov : 2x2 array or None
+        The covariance matrix of img, of any. If cov os provided, it
+        will be used to compute the PA, even if img is provided as
+        well.
+
+    Returns
+    -------
+    angle : float
+        The position angle of `img` (or of the image represented by
+        `cov`, in degrees East from North.
+
+    """
+
+    if cov is None:
+        if img is not None:
+            cov = get_cov_from_moments(img)
+        else:
+            raise Exception("`cov` is None and `img` is None. One of the two must be provided.")
+
+    else:
+        if img is not None:
+            warnings.warn("Both `img` and `cov` were provided. The position angle will be computed from `cov`.")
+
+    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1])) # TODO: check formula
+
+    angle = 90 - np.degrees(-angle)
 
     return angle
     
 
 def get_elongation(cov):
     eigenvals = get_eigenvalues(cov)
-    elong = np.sqrt(eigenvals[0]/eigenvals[1])
+#    elong = np.sqrt(eigenvals[0]/eigenvals[1])
+    elong = np.sqrt(eigenvals[1]/eigenvals[0])
 
     return elong
     
@@ -84,7 +317,7 @@ def square(npix,a,x0=0,y0=0):
     return I
 
 #def make_rectangle(npix,a,b,x0=0,y0=0):
-def rectangle(npix,a,b,x0=0,y0=0):
+def rectangle(npix,a,b,x0=0,y0=0,theta=0.):
 
     I = np.zeros((npix,npix))
     cpix = npix//2
@@ -198,32 +431,42 @@ class Moment:
 class MomentAnalytics:
 
     def __init__(self):
-        ord = (0,1,2) #,3,4)
-        self.orders = list(itertools.product(ord,ord))
+        ord = (0,1,2,3,4) #,3,4)
+#        self.orders = list(itertools.product(ord,ord))
+        self.orders = ((0,0),(2,0),(0,2),(3,0),(0,3),(4,0),(0,4))
 
+        
     def __call__(self,img=None,a=20,b=10,xoff=0.,yoff=0.,theta=0.,model='gaussian',npix=241,norm=1.,eps=0.3):
 
         if img is None:
             self.a, self.b, self.xoff, self.yoff, self.theta =  a, b, xoff, yoff, theta
             func = globals()[model]
             self.npix = npix
-            self.img = func(self.npix,self.a,self.b,self.xoff,self.yoff,self.theta)
+            self.img = func(self.npix,self.a,self.b,self.xoff,self.yoff,self.theta) #func with 2 args
+#circle            self.img = func(self.npix,self.a,self.xoff,self.yoff) #circle
+#            self.img = norm * self.img/self.img.max()
         else:
             self.img = img
             
-        
         dummy, self.xbar, self.ybar = get_centroid(self.img)
         
         for (p,q) in self.orders:
-            self.set_moment_name(p,q,get_moment_raw(self.img,(p,q)),prefix='M')
-            self.set_moment_name(p,q,get_moment_central(self.img,(p,q)),prefix='m')
-            if (p+q>=2):
-                self.set_moment_name(p,q,get_moment_scaleinvariant(self.img,(p,q)),prefix='eta')
+#slow            self.set_moment_name(p,q,get_moment_raw(self.img,(p,q)),prefix='M')
+#slow            self.set_moment_name(p,q,get_moment_central(self.img,(p,q)),prefix='m')
+            self.set_moment_name(p,q,get_moment_raw_matmul(self.img,(p,q)),prefix='M') #fast
+            self.set_moment_name(p,q,get_moment_central_matmul(self.img,(p,q)),prefix='m') #fast
+#eta            if (p+q>=2):
+#eta                self.set_moment_name(p,q,get_moment_scaleinvariant(self.img,(p,q)),prefix='eta')
 
         self.cov = get_cov_from_moments(self.img)
         self.eigenvals = get_eigenvalues(self.cov)
         self.elongation = get_elongation(self.cov)
         self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
+        self.gini = gini(self.img)
+
+        npix = self.img.shape[0]
+        cpix = npix//2
+        self.fluxasym = np.sum(self.img[:,cpix:])/np.sum(self.img)
                 
     def set_moment_name(self,p,q,val,prefix):
         setattr(self, '%s%d%d' % (prefix,p,q), val)
@@ -250,22 +493,75 @@ class MomentAnalytics:
 
 def gini(arr):
     """Compute Gini coefficient of array `arr`.
-    """
 
+    In mathematical notation, where argument ``arr`` is a discrete
+    array with values :math:`I_i`:
+
+    .. math::
+
+       G = \\frac{\\sum_i (2 i - n - 1)\\cdot I_i}{n \\sum_i I_i} 
+
+    where the array values :math:`I_i` are sorted in ascending order,
+    and the :math:`i` are the array indices of the sorted array.
+
+    """
+    
     arr = arr.flatten()
     n = arr.size
     idx = np.arange(1,n+1)
     eps = 1.e-10
 
-    min_ = np.min(arr)
-    if min_ < 0.:
-        arr -= min_
+    # offset minor negative vales # TODO: should probably yell if MIN is too far away from 0.
+    MIN = np.min(arr)
+    if MIN < 0.:
+        arr -= MIN
 
-    arr = arr + eps
+    arr = arr + eps  # make all pixels non-zero
     arr = np.sort(arr)
-
-    print(n,idx,min_,eps,arr)
+    
+    print(n,idx,MIN,eps,arr)
     G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
+
+    return G
+    
+
+def gini_pure(arr):
+    """Compute Gini coefficient of array `arr`.
+
+    In mathematical notation, where argument ``arr`` is a discrete
+    array with values :math:`I_i`:
+
+    .. math::
+
+       G = \\frac{\\sum_i (2 i - n - 1)\\cdot I_i}{n \\sum_i I_i} 
+
+    where the array values :math:`I_i` are sorted in ascending order,
+    and the :math:`i` are the array indices of the sorted array.
+
+    """
+    
+    arr = arr.flatten()
+    n = arr.size
+    print(n)
+    idx = np.arange(1,n+1)
+    print(n,idx)
+    eps = 1.e-10
+
+    # offset minor negative vales # TODO: should probably yell if MIN is too far away from 0.
+    MIN = np.min(arr)
+    if MIN < 0.:
+        arr -= MIN
+
+#    arr = arr + eps  # make all pixels non-zero
+    arr = np.sort(arr)
+    
+    print(n,idx,MIN,eps,arr)
+#    mean = np.sum(arr)/n
+#    G = np.sum((2*idx-n-1)*arr) / (n*n*mean)
+    G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
+
+    # make it an unbiased estimator
+    G = G * n / (n-1)
 
     return G
     
@@ -285,7 +581,7 @@ def rotateVector(vec,deg=90.):
 
     Returns
     -------
-    rvec : arrau\y
+    rvec : array
         Rotated vector.
 
     Examples
@@ -600,8 +896,8 @@ def get_moment_old(image,radius=1.,angular='a',m=1):
 
     """Compute m-th moment of image.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     image : array (or instance of Image?)
        2d array (or instance of Image?)
     """
