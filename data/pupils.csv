@@ -1,6 +1,6 @@
-Telescope,Pupil_Image
-TMT,psf/TMT_Pupil_Amplitude_Gray_Pixel_Approximated_With_Obscuration.fits
-ELT,psf/M1Pupil_elt.fits
-JWST,psf/jwst_pupil_revW_npix1024.fits
-GMT,psf/GMT_MASK.fits
-KECK,psf/Keck_PupilImage.fits
+Telescope,Diameter,Pupil_Image
+TMT,30.0,psf/TMT_Pupil_Amplitude_Gray_Pixel_Approximated_With_Obscuration.fits
+ELT,39.3,psf/M1Pupil_elt.fits
+JWST,6.6,psf/JWST_PupilImage.fits
+GMT,24.5,psf/GMT_MASK.fits
+KECK,10.0,psf/Keck_PupilImage.fits
