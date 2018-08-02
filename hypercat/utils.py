@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180216'   #yyymmdd
+__version__ = '20180801'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -155,7 +155,7 @@ def arrayify(seq,shape=None,fill=False,direction='x'):
 
 def mirror_axis(cube,axis=-2):
 
-    """Mirror one axis of a cube.
+    """Mirror one axis of an n-cube.
 
     Parameters
     ----------

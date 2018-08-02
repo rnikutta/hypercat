@@ -16,6 +16,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """
 
+import os
 import logging
 import json
 import urwid, urwid.curses_display
@@ -195,7 +196,7 @@ def memmap_hdf5_dataset(hdf5file,dsetpath):
 
     # provide memory-mapped array object (this does not occupy RAM until the array (or part of it) is explicitly read
     dsmemmap = np.memmap(hdf5file, mode='r', shape=shape, offset=offset, dtype=dtype)
-    
+
     return dsmemmap
 
 
@@ -473,6 +474,28 @@ class CheckListSelector:
         self.view.footer = urwid.AttrWrap( urwid.Text(text), 'header')
         
 
+#GOODdef storejson(jsonfile,d):
+#GOOD
+#GOOD    """Store the objects from a dictionary to a human-readable json file.
+#GOOD
+#GOOD    Parameters
+#GOOD    ----------
+#GOOD    jsonfile : str
+#GOOD        Path to json file to be written.
+#GOOD
+#GOOD    d : dict
+#GOOD        Dictionary to be stored in jsonfile.
+#GOOD
+#GOOD    """
+#GOOD
+#GOOD    print("In storejson: d = ", d)
+#GOOD    
+#GOOD    with open(jsonfile,'a') as f:
+#GOOD        json.dump(d,f)
+#GOOD
+#GOOD    logging.info("Saved objects in file {:s}.".format(jsonfile))
+    
+
 def storejson(jsonfile,d):
 
     """Store the objects from a dictionary to a human-readable json file.
@@ -488,9 +511,22 @@ def storejson(jsonfile,d):
     """
 
     print("In storejson: d = ", d)
-    
+
+    if os.path.isfile(jsonfile) and os.path.getsize(jsonfile)>0:
+        d0 = loadjson(jsonfile)
+    else:
+        d0 = {}
+
+    d0.update(d)
+        
+#    for k,v in d.values():
+#        if k in d0:
+#            print("Key '%s' already exists in file '%s'. Skipping." % (k,jsonfile))
+#        else:
+#            d0[k] = v
+
     with open(jsonfile,'w') as f:
-        json.dump(d,f)
+        json.dump(d0,f)
 
     logging.info("Saved objects in file {:s}.".format(jsonfile))
     

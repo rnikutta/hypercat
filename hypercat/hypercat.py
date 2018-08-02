@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180321' #yyyymmdd
+__version__ = '20180801' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -15,6 +15,7 @@ import os
 from collections import OrderedDict
 from operator import itemgetter
 from copy import copy
+import time
 
 # 3rd party
 import numpy as np
@@ -32,6 +33,7 @@ from instruments import *
 from imageops import *
 from utils import *
 
+
 # CLASSES
 
 class ModelCube:
@@ -43,113 +45,37 @@ class ModelCube:
                  omit=('x','y'),\
                  ndinterpolator=True):
 
-        """Model hypercube of CLUMPY images.
-
-        Parameters
-        ----------
-        hdffile : str
-            Path to the model hdf5 file. Default: ``'hypercat_20170714.hdf5'``
-
-        hypercube : str
-            Name of the hypercube within ``hdffile`` to use (currently
-            either ``'imgdata'`` or ``'clddata'``). Default: ``'imgdata'``.
-
-        subcube_selection : str | None
-            ``'interactive'`` or path to a json file containing the
-            indices to select for every axis in the ``hypercube`` in the
-            ``hdffile``.
-
-            If ``'interactive'``, a simple selection dialog will be
-            launched in the terminal/session, allowing to
-            select/unselect entries from every axis (one at a
-            time). Once done, the corresponding list of index lists is
-            created, and the hyper-slab (sub-cube) loaded from disk to
-            RAM. The nested list of selected indices can be
-            conveniently stored into a json file for later re-use (see
-            arg ``subcube_selection_save``).
-
-            If ``subcube_selection`` is the path to a json file, it is
-            a file that can be created with
-            ``subcube_selection='interactive'``. Then also provide as
-            ``subcube_selection_save`` a file path to the to-be-stored
-            json file.
-
-        subcube_selection_save : str | None
-            If not ``None``, it a the path to a json file with the list of
-            index lists that select a subcube from the full
-            ``hypercube``. I.e. a json file with selection indices can
-            be created once, and then the same selection can be
-            repeated any time by simply loading the json file.
-
-        omit : tuple
-            Tuple of parameter names (as strings) to omit from subcube
-            selection. These axes will be automatically handled.
-        
-            .. warning:: 
-
-               This functionality is not fully implemented yet, and is
-               currently meant for the 'x' and 'y' axes only. Best not
-               to touch for now.
-
-        ndinterpolator : bool
-            If ``True`` (default), an interpolation object for
-            N-dimensional interpolation of the hypercube will be
-            instantiated, and accessible via :func:`get_image`.
-
-        Example
-        -------
-        .. code-block:: python
-
-            # instantiate
-            cube = ModelCube()  # all defaults
-
-        """
-
-        
-        
+        self.hdffile = hdffile
         self.omit = omit
+        self.subcube_selection = subcube_selection
 
         logging.info("Opening HDF5 file: {:s} ".format(hdffile))
-        
-        self.h = h5py.File(hdffile,'r')
-        self.group = self.h[hypercube]
+        self.open_hdffile(hdffile)
         self.groupname = hypercube
-        
+        self.get_group()
         logging.info("Loading sampling parameters.")
-#        self.paramnames = self.group['paramnames'].value.tolist()
-        self.paramnames = [e.decode() for e in self.group['paramnames']]
-        self.theta = self.group['theta'].value
-
-        iY = self.paramnames.index('Y')
-        self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
-        iy = self.paramnames.index('y')
-        npix = self.theta[iy].size
-        self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
-        self.eta = self.npix_per_Rd  # alias
-        
-        self.idxes = [list(range(len(t))) for t in self.theta]
+        self.get_cube_layout()
+        self.get_eta()
         logging.info("Closing HDF5 file.")
-        self.h.close()
-       
-        # compute total byte size
-        self.fullcubeshape = [t.size for t in self.theta]
-        self.nvoxels = np.prod(self.fullcubeshape)
-        self.wordsize = 4.
-        self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
-        self.subcubesize = self.fullcubesize
+        self.close_hdffile()
+        self.compute_cubesize() # compute total byte size
+
 
         # SELECT A SUB-HYPERCUBE
-        if subcube_selection is not None:
+        if self.subcube_selection is not None:
 
-            if subcube_selection == 'interactive':
+            if self.subcube_selection == 'interactive':
                 self.theta, self.idxes, self.subcubesize =\
                     bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
 
                 if subcube_selection_save is not None:
                     bfo.storejson(subcube_selection_save,{'idxes':self.idxes})
+
+            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
+                pass
                         
             else:
-                d = bfo.loadjson(subcube_selection)
+                d = bfo.loadjson(self.subcube_selection)
                 self.idxes = d['idxes']
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
@@ -171,116 +97,61 @@ class ModelCube:
             hypercubestr = ''
             
         logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
-        dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
-        self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
-        logging.info("Done.")
-
-        self.x = self.theta[-2]
-        self.y = self.theta[-1]
-        if self.paramnames[-1] == 'wave':
-            self.x = self.theta[-3]
-            self.y = self.theta[-2]
-            self.wave = self.theta[-1]
-
-        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
-        logging.info("Squeezing all dim-1 axes...")
-        sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
-        theta_sel = itemgetter(*sel)(self.theta)
+        self.dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         
-        # instantiate an n-dim interpolator object
-        if ndinterpolator is True:
-            logging.info("Instantiating n-dim interpolation object ...")
-            self.ip = ndiminterpolation.NdimInterpolation(self.data.squeeze(),theta_sel,mode='lin')
+        if subcube_selection != 'minimal':
 
-        logging.info("Done.")
+            # materialize data cube
+            self.data = bfo.get_hyperslab_via_mesh(self.dsmm,self.idxes)
+            logging.info("Done.")
+
+            self.ip = self.make_interpolator()
         
         print("Inspect the loaded hypercube with .print_sampling()\n")
         self.print_sampling()
+
+
+    def __call__(self,vector,full=True):
+
+        """Just a convenience wrapper for :func:`get_image()`."""
+
+        img = self.get_image(vector,full)
+        
+        return img
         
 
-#good    def print_sampling(self,n=11,fmt="%7.3f"):
-#good
-#good        """Print a summary table of the parameters and sampled values in the
-#good        hypercube.
-#good
-#good        Parameters
-#good        ----------
-#good        n : int
-#good            The first `n` sampled elements of every parameter will be
-#good            printed. If the list is shorter than `n`, all of it will
-#good            be printed. Default: 11.
-#good
-#good        fmt : str
-#good            Format string to use for a single value. Default: '%7.3f'
-#good
-#good        Example
-#good        -------
-#good        .. code-block:: python
-#good
-#good            cube.print_sampling(n=5)
-#good
-#good        Prints for instance:
-#good
-#good        .. code-block:: text
-#good
-#good           -------------------------------------------------------
-#good           Parameter  Range                Nvalues  Sampled values
-#good           -------------------------------------------------------
-#good             sig      [ 15.000 -  15.000]  (  1)    15.000
-#good               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
-#good               Y      [ 20.000 -  20.000]  (  1)    20.000
-#good               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
-#good               q      [  0.000 -   0.000]  (  1)     0.000
-#good              tv      [ 40.000 -  40.000]  (  1)    40.000
-#good            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
-#good               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
-#good               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
-#good           -------------------------------------------------------
-#good           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
-#good           Hypercube size: 14.8714 (MB)
-#good        """
-#good
-#good        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
-#good        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
-#good
-#good        header = "Parameter  Range                Nvalues  Sampled values"
-#good        _len = len(header)
-#good        rule = "-"*_len
-#good        print(rule)
-#good        print(header)
-#good        print(rule)
-#good        
-#good        for p,v in zip(self.paramnames,self.theta):
-#good
-#good            srange = "[%s" % fmt % v[0] + " - %s]" % fmt % v[-1]  # range string
-#good            m = min(n,v.size)  # print n elements or all if number of elements smaller than n
-#good
-#good            vals = ["%s" % fmt % val for val in v[:m]]
-#good            svals = ",".join(vals)  # all values to be printed, as a single string
-#good            if v.size > n:
-#good                svals += ', ...'  # continuation indicator, if any
-#good
-#good            # bring everything together
-#good            parstr = maxstr % p
-#good            asterisk = " "
-#good            if (p not in self.omit) and (len(vals) != 1):
-#good                parstr = "\033[1m" + parstr
-#good                asterisk = "*"
-#good                svals = svals  + "\033[0m"
-#good                
-#good            print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
-#good            
-#good        print(rule)
-#good        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
-#good
-#good        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
-#good        print("Hypercube size: %g (%s)" % (prefix, suffix))
-#good
-#good    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
+    def open_hdffile(self,f,mode='r'):
+        self.h = h5py.File(self.hdffile,mode)
+
+    def close_hdffile(self):
+        self.h.close()
+
+    def get_group(self):
+        self.group = self.h[self.groupname]
+
+    def get_cube_layout(self):
+        self.paramnames = [e.decode() for e in self.group['paramnames']]
+        self.theta = self.group['theta'].value
+        self.idxes = [list(range(len(t))) for t in self.theta]
+
+    def get_eta(self):
+        iY = self.paramnames.index('Y')
+        self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
+        iy = self.paramnames.index('y')
+        npix = self.theta[iy].size
+        self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
+        self.eta = self.npix_per_Rd  # alias
+
+    def compute_cubesize(self):
+        # compute total byte size
+        self.fullcubeshape = [t.size for t in self.theta]
+        self.nvoxels = np.prod(self.fullcubeshape)
+        self.wordsize = 4.
+        self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
+        self.subcubesize = self.fullcubesize
                      
     
     def print_sampling(self,n=11,fmt="%7.3f"):
-
 
 #        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
         maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
@@ -323,7 +194,57 @@ class ModelCube:
 
     parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
                      
-    
+
+    def get_minimal_cube(self,vector):
+
+        idxes = []
+        for j in range(len(vector)):
+            t_ = self.theta[j]
+            v_ = vector[j]
+            left = np.digitize(v_,t_).item() - 1
+            if t_[left] == v_:
+                right = left
+                left = left - 1
+            else:
+                right = left + 1
+                
+            idxes.append([left,right])
+
+        idxes.append(list(range(self.theta[-2].size)))
+        idxes.append(list(range(self.theta[-1].size)))
+
+        theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
+        subcubesize = bfo.get_bytesize(idxes)
+
+        # materialize data cube
+        data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
+
+        return idxes,theta,data
+        
+
+    def make_interpolator(self,idxes=None,theta=None,data=None):
+
+        if idxes is None:
+            idxes = self.idxes
+        if theta is None:
+            theta = self.theta
+        if data is None:
+            data = self.data
+        
+        # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
+        logging.info("Squeezing all dim-1 axes...")
+        sel = np.argwhere([len(t)>1 for t in idxes]).flatten().tolist()
+        theta_sel = itemgetter(*sel)(theta)
+        
+        # instantiate an n-dim interpolator object
+        logging.info("Instantiating n-dim interpolation object ...")
+        ip = ndiminterpolation.NdimInterpolation(data.squeeze(),theta_sel,mode='lin')
+
+        logging.info("Done.")
+        
+        return ip
+        
+        
     def get_image(self,vector,full=True):
 
         """Extract hyperslice from the hypercube via N-dim interpolation.
@@ -365,6 +286,12 @@ class ModelCube:
             print(image.shape)
               (4,3,441,441)
         """
+
+        if self.subcube_selection == 'minimal':
+            idxes, theta, data = self.get_minimal_cube(vector)
+            ip = self.make_interpolator(idxes,theta,data)
+        else:
+            ip = self.ip
         
         vec = list(vector)
 
@@ -375,21 +302,444 @@ class ModelCube:
             elif isinstance(v,list):
                 vec[j] = tuple(v)
         
-        vec.append(tuple(self.x.tolist()))
-        vec.append(tuple(self.y.tolist()))
+        vec.append(tuple(self.x_.tolist()))
+        vec.append(tuple(self.y_.tolist()))
         
         vec = tuple(vec)
 
-        image = self.ip(vec)
+        image = ip(vec)
         image = image.squeeze()
 
+        # mirror image (or cube) about the x-axis (axis=-2)
         if full is True:
-            if (2*image.shape[-2] - 1 == image.shape[-1]):
-                image = mirror_axis(image)
-            else:
-                logging.warn("x dimension seems not suitable for mirroring. Try with full=False")
+            image = mirror_axis(image,axis=-2)
             
         return image
+
+
+## normal
+#class ModelCube:
+#
+#    def __init__(self,hdffile='hypercat_20170109.hdf5',\
+#                 hypercube='imgdata',\
+#                 subcube_selection='interactive',\
+#                 subcube_selection_save=None,
+#                 omit=('x','y'),\
+#                 ndinterpolator=True,vector=None):
+#
+#        """Model hypercube of CLUMPY images.
+#
+#        Parameters
+#        ----------
+#        hdffile : str
+#            Path to the model hdf5 file. Default: ``'hypercat_20170714.hdf5'``
+#
+#        hypercube : str
+#            Name of the hypercube within ``hdffile`` to use (currently
+#            either ``'imgdata'`` or ``'clddata'``). Default: ``'imgdata'``.
+#
+#        subcube_selection : str | None
+#            ``'interactive'`` or path to a json file containing the
+#            indices to select for every axis in the ``hypercube`` in the
+#            ``hdffile``.
+#
+#            If ``'interactive'``, a simple selection dialog will be
+#            launched in the terminal/session, allowing to
+#            select/unselect entries from every axis (one at a
+#            time). Once done, the corresponding list of index lists is
+#            created, and the hyper-slab (sub-cube) loaded from disk to
+#            RAM. The nested list of selected indices can be
+#            conveniently stored into a json file for later re-use (see
+#            arg ``subcube_selection_save``).
+#
+#            If ``subcube_selection`` is the path to a json file, it is
+#            a file that can be created with
+#            ``subcube_selection='interactive'``. Then also provide as
+#            ``subcube_selection_save`` a file path to the to-be-stored
+#            json file.
+#
+#        subcube_selection_save : str | None
+#            If not ``None``, it a the path to a json file with the list of
+#            index lists that select a subcube from the full
+#            ``hypercube``. I.e. a json file with selection indices can
+#            be created once, and then the same selection can be
+#            repeated any time by simply loading the json file.
+#
+#        omit : tuple
+#            Tuple of parameter names (as strings) to omit from subcube
+#            selection. These axes will be automatically handled.
+#        
+#            .. warning:: 
+#
+#               This functionality is not fully implemented yet, and is
+#               currently meant for the 'x' and 'y' axes only. Best not
+#               to touch for now.
+#
+#        ndinterpolator : bool
+#            If ``True`` (default), an interpolation object for
+#            N-dimensional interpolation of the hypercube will be
+#            instantiated, and accessible via :func:`get_image`.
+#
+#        Example
+#        -------
+#        .. code-block:: python
+#
+#            # instantiate
+#            cube = ModelCube()  # all defaults
+#
+#        """
+#
+#        
+#        
+#        self.omit = omit
+#        self.subcube_selection = subcube_selection
+#
+#        logging.info("Opening HDF5 file: {:s} ".format(hdffile))
+#        
+#        self.h = h5py.File(hdffile,'r')
+#        self.group = self.h[hypercube]
+#        self.groupname = hypercube
+#        
+#        logging.info("Loading sampling parameters.")
+##        self.paramnames = self.group['paramnames'].value.tolist()
+#        self.paramnames = [e.decode() for e in self.group['paramnames']]
+#        self.theta = self.group['theta'].value
+#
+#        iY = self.paramnames.index('Y')
+#        self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
+#        iy = self.paramnames.index('y')
+#        npix = self.theta[iy].size
+#        self.npix_per_Rd = (npix-1)/(2.*float(self.Ymax))
+#        self.eta = self.npix_per_Rd  # alias
+#        
+#        self.idxes = [list(range(len(t))) for t in self.theta]
+#        logging.info("Closing HDF5 file.")
+#        self.h.close()
+#       
+#        # compute total byte size
+#        self.fullcubeshape = [t.size for t in self.theta]
+#        self.nvoxels = np.prod(self.fullcubeshape)
+#        self.wordsize = 4.
+#        self.fullcubesize = self.nvoxels * self.wordsize #/ 1024.**3
+#        self.subcubesize = self.fullcubesize
+#
+#        # SELECT A SUB-HYPERCUBE
+#        if self.subcube_selection is not None:
+#
+#            if self.subcube_selection == 'interactive':
+#                self.theta, self.idxes, self.subcubesize =\
+#                    bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
+#
+#                if subcube_selection_save is not None:
+#                    bfo.storejson(subcube_selection_save,{'idxes':self.idxes})
+#
+#            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
+#                pass
+##                self.idxes = []
+##                for j in range(len(vector)):
+##                    t_ = self.theta[j]
+##                    v_ = vector[j]
+##                    left = np.digitize(v_,t_).item()-1
+##                    if t_[left] == v_:
+##                        right = left
+##                        left = left - 1
+##                    else:
+##                        right = left + 1
+##                        
+##                    self.idxes.append([left,right])
+##
+##                self.idxes.append(list(range(self.theta[-2].size)))
+##                self.idxes.append(list(range(self.theta[-1].size)))
+##
+##                self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
+##                self.subcubesize = bfo.get_bytesize(self.idxes)
+#                        
+#            else:
+#                d = bfo.loadjson(self.subcube_selection)
+#                self.idxes = d['idxes']
+#                self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
+#                self.subcubesize = bfo.get_bytesize(self.idxes)
+#
+#        if not isinstance(self.theta,np.ndarray):
+#            self.theta = np.array(self.theta)
+#            
+#        # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
+#        for j,pn in enumerate(self.paramnames):
+#            setattr(self,pn+'_',self.theta[j])
+#
+#        self.theta_full = copy(self.theta)
+#                
+#        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+#            
+#        if self.subcubesize != self.fullcubesize:
+#            hypercubestr = 'hyperslab [shape: ({:s})] from'.format(seq2str([len(_) for _ in self.theta]))
+#        else:
+#            hypercubestr = ''
+#            
+#        logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
+#        dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
+#        if subcube_selection != 'minimal':
+#            self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
+#            logging.info("Done.")
+#
+#            self.x = self.theta[-2]
+#            self.y = self.theta[-1]
+#            if self.paramnames[-1] == 'wave':
+#                self.x = self.theta[-3]
+#                self.y = self.theta[-2]
+#                self.wave = self.theta[-1]
+#
+#            # find axes with dim=1, squeeze subcube, remove the corresponding paramnames
+#            logging.info("Squeezing all dim-1 axes...")
+#            sel = np.argwhere([len(t)>1 for t in self.idxes]).flatten().tolist()
+#            theta_sel = itemgetter(*sel)(self.theta)
+#        
+#            # instantiate an n-dim interpolator object
+#            if ndinterpolator is True:
+#                logging.info("Instantiating n-dim interpolation object ...")
+#                self.ip = ndiminterpolation.NdimInterpolation(self.data.squeeze(),theta_sel,mode='lin')
+#
+#            logging.info("Done.")
+#        
+#        print("Inspect the loaded hypercube with .print_sampling()\n")
+#        self.print_sampling()
+#        
+#
+##good    def print_sampling(self,n=11,fmt="%7.3f"):
+##good
+##good        """Print a summary table of the parameters and sampled values in the
+##good        hypercube.
+##good
+##good        Parameters
+##good        ----------
+##good        n : int
+##good            The first `n` sampled elements of every parameter will be
+##good            printed. If the list is shorter than `n`, all of it will
+##good            be printed. Default: 11.
+##good
+##good        fmt : str
+##good            Format string to use for a single value. Default: '%7.3f'
+##good
+##good        Example
+##good        -------
+##good        .. code-block:: python
+##good
+##good            cube.print_sampling(n=5)
+##good
+##good        Prints for instance:
+##good
+##good        .. code-block:: text
+##good
+##good           -------------------------------------------------------
+##good           Parameter  Range                Nvalues  Sampled values
+##good           -------------------------------------------------------
+##good             sig      [ 15.000 -  15.000]  (  1)    15.000
+##good               i *    [  0.000 -  45.573]  (  4)     0.000, 25.842, 36.870, 45.573
+##good               Y      [ 20.000 -  20.000]  (  1)    20.000
+##good               N *    [  4.000 -   5.000]  (  2)     4.000,  5.000
+##good               q      [  0.000 -   0.000]  (  1)     0.000
+##good              tv      [ 40.000 -  40.000]  (  1)    40.000
+##good            wave *    [  2.200 -  18.500]  (  5)     2.200,  4.800, 10.000, 12.000, 18.500
+##good               x      [  0.000 - 220.000]  (221)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+##good               y      [  0.000 - 440.000]  (441)     0.000,  1.000,  2.000,  3.000,  4.000, ...
+##good           -------------------------------------------------------
+##good           Parameters printed in bold and/or marked with an asterisk (*) are interpolable.
+##good           Hypercube size: 14.8714 (MB)
+##good        """
+##good
+##good        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+##good        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
+##good
+##good        header = "Parameter  Range                Nvalues  Sampled values"
+##good        _len = len(header)
+##good        rule = "-"*_len
+##good        print(rule)
+##good        print(header)
+##good        print(rule)
+##good        
+##good        for p,v in zip(self.paramnames,self.theta):
+##good
+##good            srange = "[%s" % fmt % v[0] + " - %s]" % fmt % v[-1]  # range string
+##good            m = min(n,v.size)  # print n elements or all if number of elements smaller than n
+##good
+##good            vals = ["%s" % fmt % val for val in v[:m]]
+##good            svals = ",".join(vals)  # all values to be printed, as a single string
+##good            if v.size > n:
+##good                svals += ', ...'  # continuation indicator, if any
+##good
+##good            # bring everything together
+##good            parstr = maxstr % p
+##good            asterisk = " "
+##good            if (p not in self.omit) and (len(vals) != 1):
+##good                parstr = "\033[1m" + parstr
+##good                asterisk = "*"
+##good                svals = svals  + "\033[0m"
+##good                
+##good            print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
+##good            
+##good        print(rule)
+##good        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+##good
+##good        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+##good        print("Hypercube size: %g (%s)" % (prefix, suffix))
+##good
+##good    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
+#                     
+#    
+#    def print_sampling(self,n=11,fmt="%7.3f"):
+#
+#
+##        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+#        maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
+#        maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
+#
+#        header = "Parameter  Range                Nvalues  Sampled values"
+#        _len = len(header)
+#        rule = "-"*_len
+#        print(rule)
+#        print(header)
+#        print(rule)
+#
+#        for p,v in zip(self.paramnames,self.theta):
+#
+#            srange = "[%s" % fmt % v[0] + " - %s]" % fmt % v[-1]  # range string
+#            m = min(n,v.size)  # print n elements or all if number of elements smaller than n
+#
+#            vals = ["%s" % fmt % val for val in v[:m]]
+#            svals = ",".join(vals)  # all values to be printed, as a single string
+#            if v.size > n:
+#                svals += ', ...'  # continuation indicator, if any
+#
+#            # bring everything together
+##            parstr = maxstr % p
+#            parstr = '%%%ds' % maxlen % p
+##Py3            parstr = "{{:>{:d}s}}".format(maxlen).format(p)
+#            asterisk = " "
+#            if (p not in self.omit) and (len(vals) != 1):
+#                parstr = "\033[1m" + parstr
+#                asterisk = "*"
+#                svals = svals  + "\033[0m"
+#                
+#            print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
+#            
+#        print(rule)
+#        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+#
+#        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+#        print("Hypercube size: %g (%s)" % (prefix, suffix))
+#
+#    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
+#                     
+#
+#    def get_minimal_cube(self,vector):
+#
+#        self.x = self.theta[-2]
+#        self.y = self.theta[-1]
+#        if self.paramnames[-1] == 'wave':
+#            self.x = self.theta[-3]
+#            self.y = self.theta[-2]
+#            self.wave = self.theta[-1]
+#
+#        
+#        self.idxes = []
+#        for j in range(len(vector)):
+#            t_ = self.theta[j]
+#            v_ = vector[j]
+#            left = np.digitize(v_,t_).item() - 1
+#            if t_[left] == v_:
+#                right = left
+#                left = left - 1
+#            else:
+#                right = left + 1
+#                
+#            self.idxes.append([left,right])
+#
+#        self.idxes.append(list(range(self.theta[-2].size)))
+#        self.idxes.append(list(range(self.theta[-1].size)))
+#
+#        self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
+#        self.subcubesize = bfo.get_bytesize(self.idxes)
+#
+#        
+#        # instantiate an n-dim interpolator object
+##        if ndinterpolator is True:
+#        logging.info("Instantiating n-dim interpolation object ...")
+#        self.ip = ndiminterpolation.NdimInterpolation(self.data.squeeze(),theta_sel,mode='lin')
+#
+#
+#    
+#    def get_image(self,vector,full=True):
+#
+#        """Extract hyperslice from the hypercube via N-dim interpolation.
+#
+#        Parameters
+#        ----------
+#        vector : seq
+#            A vector of model parameter values at which the image
+#            should be interpolated. This is very flexible and can
+#            return variously-shaped arrays, from standard 2D images
+#            (x,y) to multi-dimensional hyper-slices of the CLUMPY
+#            hypercube. See `Examples` below.
+#
+#        full : bool
+#            If ``True`` (default), the extracted image (which by
+#            default is a half-image due to CLUMPY's inherent axial
+#            symmetry) is left-right mirrored, and a full-sized
+#            (square) image is returned.
+#
+#        Examples
+#        --------
+#        .. code:: python
+#
+#            # vector of parameter values; pixel axes are implicit (i.e. don't specify them)
+#            theta = (30,0,3,0,20,9.7) # here: (sig,i,N0,q,tauv,lambda)
+#            image = cube.get_image(theta)
+#            print(image.shape)
+#              (441,441)   # (x,y)
+#
+#            # multi-wavelength cube
+#            theta = (30,0,3,0,20,(2.2,9.7,12.)) # 3 lambda values
+#            image = cube.get_image(theta)
+#            print(image.shape)
+#              (3,441,441)   # (x,y,lambda)
+#            
+#            # multi-wavelength and multi-viewing angle
+#            theta = (30,(0,30,60,90),3,0,20,(2.2,9.7,12.)) # 4 viewing angles, 3 lambdas
+#            image = cube.get_image(theta)
+#            print(image.shape)
+#              (4,3,441,441)
+#        """
+#
+#        if self.subcube_selection == 'minimal':
+#            self.get_minimal_cube(vector)
+#
+#        
+#        vec = list(vector)
+#
+#        # sub-vectors can be arrays or lists; convert to tuples
+#        for j,v in enumerate(vec):
+#            if isinstance(v,np.ndarray):
+#                vec[j] = tuple(v.tolist())
+#            elif isinstance(v,list):
+#                vec[j] = tuple(v)
+#        
+#        vec.append(tuple(self.x.tolist()))
+#        vec.append(tuple(self.y.tolist()))
+#        
+#        vec = tuple(vec)
+#
+#        image = self.ip(vec)
+#        image = image.squeeze()
+#
+#        if full is True:
+#            if (2*image.shape[-2] - 1 == image.shape[-1]):
+#                image = mirror_axis(image)
+#            else:
+#                logging.warn("x dimension seems not suitable for mirroring. Try with full=False")
+#            
+#        return image
+#
+
 
 
 class Source:
@@ -717,5 +1067,4 @@ def mirror_all_fitsfiles(d,suffix='.fits',hdus=('IMGDATA','CLDDATA')):
         mirror_fitsfile(f,hdus=hdus)
     
     logging.info("All files mirrored.")
-
 
