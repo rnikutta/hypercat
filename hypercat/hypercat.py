@@ -63,22 +63,22 @@ class ModelCube:
 
         # SELECT A SUB-HYPERCUBE
         if self.subcube_selection is not None:
-
+            
             if self.subcube_selection == 'interactive':
                 self.theta, self.idxes, self.subcubesize =\
                     bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
 
                 if subcube_selection_save is not None:
-                    bfo.storejson(subcube_selection_save,{'idxes':self.idxes})
+                    bfo.storejson(subcube_selection_save,{self.groupname : self.idxes})
 
-            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
-                pass
-                        
-            else:
+            elif os.path.isfile(self.subcube_selection):
                 d = bfo.loadjson(self.subcube_selection)
-                self.idxes = d['idxes']
+                self.idxes = d[self.groupname]
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = bfo.get_bytesize(self.idxes)
+                
+            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
+                pass
 
         if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
