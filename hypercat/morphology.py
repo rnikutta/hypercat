@@ -528,7 +528,7 @@ class MomentAnalytics:
             self.a, self.b, self.xoff, self.yoff, self.theta =  a, b, xoff, yoff, theta
             func = globals()[model]
             self.npix = npix
-            self.img = func(self.npix,self.a,self.b,self.xoff,self.yoff,self.theta) #func with 2 args
+            self.img = func(self.npix,self.a,self.b,self.xoff,self.yoff,self.theta)
 #circle            self.img = func(self.npix,self.a,self.xoff,self.yoff) #circle
 #            self.img = norm * self.img/self.img.max()
         else:
@@ -606,6 +606,7 @@ def gini(arr):
     arr = np.sort(arr)
     
     print(n,idx,MIN,eps,arr)
+    
     G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
 
     return G
@@ -644,6 +645,7 @@ def gini_pure(arr):
     print(n,idx,MIN,eps,arr)
 #    mean = np.sum(arr)/n
 #    G = np.sum((2*idx-n-1)*arr) / (n*n*mean)
+
     G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
 
     # make it an unbiased estimator

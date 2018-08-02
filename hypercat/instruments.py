@@ -7,8 +7,13 @@ from astropy.coordinates import name_resolve
 from utils import *
 from imageops import add_noise, measure_snr
 
+import astropy.io.ascii as ascii
+
 __version__ = '20180202' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
+
+__version__ = '20180503' #yyyymmdd
+__author__ = 'Enrique Lopez-Rodriguez<enloro@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
 
@@ -37,7 +42,6 @@ class Instrument:
         self.instrument = instrument
         self.type = self.__class__.__name__
 
-#    def observe(self,sky,snr=None):
     def observe(self,sky,**kwargs):
 
         """'Observe' the sky with an instrument, i.e. return an image of the
@@ -67,7 +71,7 @@ class Instrument:
 class Telescope(Instrument):
 
 #TODO:go this route    def __init__(self,psf='model', diameter=None,strehl=None, hdukw=None,    pixelscale_detector=None,telescope='',instrument=''):
-    def __init__(self,psfdict={},pixelscale_detector=None,telescope='',instrument=''):
+    def __init__(self,psfdict={},pixelscale_detector='',telescope='',instrument=''):
 
         """Simulate the effects of a single-dish telescope with a pixel camera
         attached to it.
@@ -143,12 +147,14 @@ class Telescope(Instrument):
         
         self.psfdict = psfdict
         self.pixelscale_detector = pixelscale_detector
-        if pixelscale_detector is not None:
-            self.pixelscale_detector = getQuantity(self.pixelscale_detector,UNITS['CUNITS'])
-#        self.name = name
         
+        #if pixelscale_detector is 'Nyquist':
+        #    self.pixelscale_detector = 'Nyquist'
 
-#    def __call__(self,sky):  # __call__ is invoked by Instrument.observe()
+        #if pixelscale_detector is not 'Nyquist':
+        #    self.pixelscale_detector = getQuantity(self.pixelscale_detector,UNITS['CUNITS'])
+       
+
     def __call__(self,sky,snr=None):  # __call__ is invoked by Instrument.observe()
         
         # do all the deeds a single-dish observation does
@@ -158,16 +164,38 @@ class Telescope(Instrument):
         
         if 'psf' in self.psfdict:
             PSF = psf.getPSF(self.psfdict,image)  # instance of 'PSF' class, which itself is instance of 'Image'
-            if self.psfdict['psf'] != 'model':
-                PSF.rotate(str(image.pa))
+            print('PSF: Computed pixelscale from pupil = ',PSF.pixelscale,' [mas/px]' )
+            PSF_resample = copy(PSF)
+            #PSF with the same FOV of the image
+            if PSF.FOV != image.FOV:
+                PSF.changeFOV(str(image.FOV))
+                PSF_resample.changeFOV(str(image.FOV))
+            #PSF with the same pixelscale as the image
+            PSF.resample(image.pixelscale)
+            #Model-PSF
+            if self.psfdict['psf'] == 'model':
+                _unit = image.data.unit
+                image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
+                image.resample(self.pixelscale_detector)
+                PSF_resample.resample(self.pixelscale_detector)
+            #Pupil-PSF
+            if self.psfdict['psf'] == 'pupil':
+                DIR = '/Users/elopezro/Documents/GitHub/hypercat/'
+                pupilfile = DIR+'data/pupils.csv'
+                pupil_info = ascii.read(pupilfile)
+                #Nyqueit Sampling
+                if self.pixelscale_detector == 'Nyquist':
+                    pupil_diameter = pupil_info['Diameter'][pupil_info['Telescope'] == image.telescope][0]
+                    self.pixelscale_detector =  ((206265*image.wave.to(u.m).value/pupil_diameter)*1000) * u.mas
+                #user-defined detector pixelscale    
+                #if self.pixelscale_detector != 'Nyquist':
+                    
+                _unit = image.data.unit
+                image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
+                image.resample(self.pixelscale_detector)
+                PSF_resample.resample(self.pixelscale_detector)
+                
             
-            _unit = image.data.unit
-            image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
-
-        if self.pixelscale_detector is not None:
-            image.resample(self.pixelscale_detector)
-            # TODO: also resample self.psf image?
-
         # TEST
         if snr is not None:
             "In Telescope.__call__(): adding noise"
@@ -177,8 +205,8 @@ class Telescope(Instrument):
         # END TEST
 
 
-        if PSF.FOV != image.FOV:
-            PSF.changeFOV(str(image.FOV))
+        #if PSF.FOV != image.FOV:
+            #PSF.changeFOV(str(image.FOV))
 
         wcs = get_wcs(image)
         if wcs is not None:
@@ -186,7 +214,7 @@ class Telescope(Instrument):
 
         # return a convenient instance
         if 'psf' in self.psfdict:
-            return image, PSF
+            return image, PSF, PSF_resample
         else:
             return image
 
