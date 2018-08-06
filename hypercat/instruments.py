@@ -12,7 +12,7 @@ import astropy.io.ascii as ascii
 __version__ = '20180202' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
-__version__ = '20180503' #yyyymmdd
+__version__ = '20180624' #yyyymmdd
 __author__ = 'Enrique Lopez-Rodriguez<enloro@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -67,7 +67,27 @@ class Instrument:
 
         return observation
 
+    def pupilpsf(self,wavelength,**kwargs):
 
+        """'Obtain the Pupil image of a telescope and the PSF image
+            at a given wavelength.
+
+        Parameters
+        ----------
+        wavelength : float
+             wavelength with units usign atropy
+
+        Returns
+        -------
+        observation : instance
+            Pupil and PSf image with theur pixel scales.
+
+        """
+
+        instrument_pupilpsf = self.__call__(wavelength,**kwargs)
+
+        return instrument_pupilpsf
+    
 class Telescope(Instrument):
 
 #TODO:go this route    def __init__(self,psf='model', diameter=None,strehl=None, hdukw=None,    pixelscale_detector=None,telescope='',instrument=''):
@@ -172,12 +192,19 @@ class Telescope(Instrument):
                 PSF_resample.changeFOV(str(image.FOV))
             #PSF with the same pixelscale as the image
             PSF.resample(image.pixelscale)
+            
             #Model-PSF
             if self.psfdict['psf'] == 'model':
                 _unit = image.data.unit
                 image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
+                if self.pixelscale_detector == 'Nyquist':
+                    pupil_diameter = self.psfdict['diameter'].value
+                    self.pixelscale_detector =  ((206265*image.wave.to(u.m).value/pupil_diameter/2.)*1000) * u.mas
+                _unit = image.data.unit
+                image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
                 image.resample(self.pixelscale_detector)
                 PSF_resample.resample(self.pixelscale_detector)
+                
             #Pupil-PSF
             if self.psfdict['psf'] == 'pupil':
                 DIR = '/Users/elopezro/Documents/GitHub/hypercat/'
@@ -186,10 +213,9 @@ class Telescope(Instrument):
                 #Nyqueit Sampling
                 if self.pixelscale_detector == 'Nyquist':
                     pupil_diameter = pupil_info['Diameter'][pupil_info['Telescope'] == image.telescope][0]
-                    self.pixelscale_detector =  ((206265*image.wave.to(u.m).value/pupil_diameter)*1000) * u.mas
+                    self.pixelscale_detector =  ((206265*image.wave.to(u.m).value/pupil_diameter/2.)*1000) * u.mas
                 #user-defined detector pixelscale    
                 #if self.pixelscale_detector != 'Nyquist':
-                    
                 _unit = image.data.unit
                 image.data = PSF.convolve(image.data.value) * _unit  # psf image pixels have no units attached
                 image.resample(self.pixelscale_detector)
@@ -217,6 +243,30 @@ class Telescope(Instrument):
             return image, PSF, PSF_resample
         else:
             return image
+
+
+class PupilPSF(Instrument):
+
+    def __init__(self,psfdict={},pixelscale_detector='',telescope='',instrument=''):
+
+       
+        Instrument.__init__(self,telescope=telescope,instrument=instrument)
+        
+        self.psfdict = psfdict
+        self.pixelscale_detector = pixelscale_detector
+        
+        if pixelscale_detector is 'Nyquist':
+            self.pixelscale_detector = 'Nyquist'
+
+        if pixelscale_detector is not 'Nyquist':
+            self.pixelscale_detector = getQuantity(self.pixelscale_detector,UNITS['CUNITS'])
+       
+
+    def __call__(self,wavelength):  # __call__ is invoked by Instrument.pupilpsf()
+        pupil_fits, image_psf, pixelscale_pupil, pixelscale_psf = psf.getPupil(self.psfdict,wavelength) 
+        return pupil_fits[0].data, image_psf, pixelscale_pupil, pixelscale_psf
+
+
 
         
 class Interferometer(Instrument):
