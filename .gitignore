@@ -1,12 +1,3 @@
-
-examples/.DS_Store
+*.DS_Store*
 *.pyc
-.ipynb_checkpoints/hypercat-checkpoint.ipynb
-.ipynb_checkpoints/Untitled-checkpoint.ipynb
-examples/.ipynb_checkpoints/Draw_TorusImage_Burtscher13-checkpoint.ipynb
-examples/.ipynb_checkpoints/HyperCAT_interferometry-checkpoint.ipynb
-examples/.ipynb_checkpoints/NGC1068_Interferometry-checkpoint.ipynb
-examples/.ipynb_checkpoints/Tutorial_PSF_Convolution_using_30m_Telescope_PSF-checkpoint.ipynb
-examples/.ipynb_checkpoints/Untitled-checkpoint.ipynb
-.DS_Store
-.DS_Store
+*.ipynb_checkpoints*
