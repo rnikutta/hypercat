@@ -316,6 +316,43 @@ class ModelCube:
             
         return image
 
+    
+#    def get_sed(self,vec):
+#
+#        """Get raw SED for all sample wavelengths in the cube.
+#
+#        Parameters
+#        ----------
+#        vec : tuple
+#            Tuple of all model parameters in the loaded cube, _except_
+#            wavelength (will be taken from cube as-is). Only single
+#            values per parameter please.
+#        """
+#        
+#        waves = self.wave_ # list of wavelengths
+#        vec = tuple(list(vec) + [waves])
+#        images = self(vec) # get hyperslab
+#        sed = [ images[j,...].sum() for j in range(waves.size)] # flux per slice
+#
+#        return waves, sed
+
+    def get_sed(self,vec):
+
+        """Get raw SED for all sample wavelengths in the cube.
+
+        Parameters
+        ----------
+        vec : tuple
+            Tuple of all model parameters in the loaded cube, _except_
+            wavelength (will be taken from cube as-is). Only single
+            values per parameter please.
+        """
+        
+        waves = self.wave_ # list of wavelengths
+        sed = [ self(tuple(list(vec)+[wave])).sum() for wave in waves]
+
+        return waves, sed
+
 
 ## normal
 #class ModelCube:

@@ -142,7 +142,7 @@ def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
 
         # slightly more complex attrs
         if hasattr(image_,'pa'):
-            header['PA'] = (image_.pa.value, 'position angle ({:s} from N)'.format(image_.pa.unit.to_string()))
+            header['PA'] = (image_.pa.value, 'position angle ({:s} E from N)'.format(image_.pa.unit.to_string()))
             
         if hasattr(image_,'wave'):
             header['wave'] = (image_.wave.value, 'wavelength ({:s})'.format(image_.wave.unit.to_string()))
