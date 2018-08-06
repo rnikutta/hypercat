@@ -7,7 +7,7 @@ import itertools
 import warnings
 from copy import copy
 import numpy as np
-from scipy import ndimage, integrate
+from scipy import ndimage, integrate, optimize
 import scipy.signal as signal
 
 import ndiminterpolation as ndi
@@ -17,6 +17,92 @@ import math
 
 from astropy.modeling.functional_models import Gaussian2D
 
+from copy import copy
+
+
+def halflight_radius(img,center=''):
+
+    """
+    
+    Parameters
+    ----------
+
+    center : str
+        One of: peak, centroid, origin
+
+    """
+
+    npix = img.shape[0]
+    cpix = npix // 2
+    x = np.linspace(-cpix,cpix,npix)
+    X,Y = np.meshgrid(x,x,indexing='ij')
+
+    if center == 'origin':
+#        R = np.sqrt(X**2+Y**2)
+        x0, y0 = 0, 0
+    elif center == 'centroid':
+        Ftot, xbar, ybar = get_centroid(img)
+#        Rcentroid = np.sqrt((X-xbar+cpix)**2+(Y-ybar+cpix)**2)
+        x0 = xbar - cpix
+        y0 = ybar - cpix
+    elif center == 'peak':
+        xpeak, ypeak = np.unravel_index(np.argmax(img[:,cpix:]),img[:,cpix:].shape)
+        ypeak += cpix
+#        R = np.sqrt((X-cpix+cpix)**2+(Y-ypeak+cpix)**2)
+        x0 = 0
+        y0 = ypeak - cpix
+
+    Ftot = img.sum()
+    R = np.sqrt((X-x0)**2+(Y-y0)**2)
+    
+    def halflight(r,R_):
+        mask = (R_<=r)
+        F = img[mask].sum()
+        aux = F/Ftot - 0.5
+        
+        return aux
+
+#    Rhl = optimize.brentq(halflight,0,100,args=(R)) # find root of halflight function
+    Rhl = optimize.brentq(halflight,0,cpix,args=(R)) # find root of halflight function
+
+    return Rhl
+
+
+def mask_outside_square(img,frac=0.1,x0=0,y0=0):
+
+    
+    I = copy(img)
+
+    npix = I.shape[0]
+    cpix = npix//2
+    a = int(np.ceil(npix*frac))
+
+    x = np.linspace(-cpix,cpix,npix)
+    X,Y = np.meshgrid(x,x,indexing='ij')
+    
+    mask = (np.abs(X-x0) <= a//2) & (np.abs(Y-y0) <= a//2)
+    I[~mask] = 0.
+
+    return I
+    
+    
+
+def get_cutout(img,frac=0.1):
+
+    npix = img.shape[0]
+    cpix = npix//2
+
+    a = int(np.ceil(npix*frac))
+#    l = cpix - a//2
+#    r = cpix + a//2
+#    cutout = img[l:r,l:r]
+
+#    cutout = img[cpix-a//2,cpix+1+a//2]
+#    cutout = img[cpix+1-a//2:cpix+a//2]
+    cutout = img[cpix-a//2:cpix+1+a//2,cpix-a//2:cpix+1+a//2]
+
+    return cutout
+    
 
 def get_moment_raw_matmul(img,orders):
 
