@@ -12,7 +12,7 @@ from imageops import checkOdd
 from units import *
 import astropy.io.ascii as ascii
 from scipy import ndimage
-
+from skimage import restoration
 
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
@@ -48,10 +48,7 @@ def fft_pxscale(ima,wave,telescope):
     #size of the image. This should be taken from the header.
     gridsize = ima[0].header['NAXIS1']
     #pixel scale of the image. This should be taken from the header.
-    if telescope == 'JWST':
-            pxscale_mod = ima[0].header['PUPLSCAL']    #in meters
-    if telescope != 'JWST':
-            pxscale_mod = ima[0].header['PIXSCALE']    #in meters
+    pxscale_mod = ima[0].header['PIXSCALE']    #in meters
     #1D FFT of the gridsize.
     fft_freq=np.fft.fftfreq(gridsize,pxscale_mod)
     #wavelength of the desires psf. This is a input of the user, wavelength in microns
@@ -104,9 +101,30 @@ class PSF(ImageFrame):
             convolved_image = PSF_conv(image,psf)
         """
 
-        result = convolve_fft(image,self.data,normalize_kernel=True,allow_huge=True)
+        result = convolve_fft(image,self.data/self.data.max(),normalize_kernel=True,allow_huge=True)
 
         return result
+
+    def deconvolve(self,image):
+        ima = image.data/image.data.max()
+        psf = np.abs(self.data)/self.data.max()
+        result = restoration.richardson_lucy(ima, psf, iterations=50)
+        return result[::-1,::-1]
+
+def getPupil(psfdict,wavelength):
+    #Obtain Pupil
+    DIR = '/Users/elopezro/Documents/GitHub/hypercat/'
+    pupilfile = DIR+'data/pupils.csv'
+    pupil_info = ascii.read(pupilfile)
+    pupil_fitsfile = pupil_info['Pupil_Image'][pupil_info['Telescope'] == psfdict['telescope']][0]
+    pupil_fits  = pyfits.open(DIR+pupil_fitsfile)
+    pixelscale_pupil = pupil_fits[0].header['PIXSCALE']    #in meters
+    #Compute PSF and obtain PSF pixelscale
+    pixelscale_psf = fft_pxscale(pupil_fits,wavelength,psfdict['telescope'])  #mas/px
+    image_psf = np.abs(np.fft.fftshift(np.fft.fft2(pupil_fits[0].data)))
+    image_psf = image_psf/np.max(image_psf)
+
+    return pupil_fits, image_psf, pixelscale_pupil, pixelscale_psf
 
 
 def getPSF(psfdict,image):
@@ -131,11 +149,11 @@ def getPSF(psfdict,image):
     #Model-PSF
     if psfobj == 'model':
         npix = image.data.shape[-1]
-        diameter = psfdict['diameter']
-        strehl = psfdict['strehl']
-        image_psf = modelPSF(npix,wavelength=wavelength,\
-                             diameter=diameter,strehl=strehl,\
-                             pixelscale=pixelscale)
+        image_psf = modelPSF(npix,wavelength=psfdict['wavelength'],\
+                             diameter=psfdict['diameter'],\
+                             strehl=psfdict['strehl'],\
+                             pixelscale=psfdict['pixelscale'])
+        pixelscale_psf = psfdict['pixelscale'].to(u.mas).value
         
     #Pupil-PSF
     if psfobj == 'pupil':
@@ -151,14 +169,14 @@ def getPSF(psfdict,image):
         #Re-sample PSF to the sky image pixelscale
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
         #image_psf.changeFOV(FOV)
-        image_psf = image_psf.I
+        image_psf = image_psf.I / np.max(image_psf.I)
                
     #Image-PSF
     if psfobj.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCALE
         image_psf, pixelscale_psf = loadPSFfromFITS(psfobj,psfdict)
         #image_psf, _newfactor, aux = resampleImage(image_psf,pixelscale_psf/pixelscale)
 
-    return PSF(image_psf,str(pixelscale_psf * u.mas))
+    return PSF(image_psf,str(pixelscale_psf*u.mas))
 
 
 def loadPSFfromFITS(fitsfile,psfdict):
@@ -174,7 +192,7 @@ def loadPSFfromFITS(fitsfile,psfdict):
     return image_psf, pixelscale_psf
 
         
-def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale='0.01 arcsec'):
+def modelPSF(npix,wavelength=2.2*u.um,diameter=30.*u.m,strehl=0.8,pixelscale=0.01*u.arcsec):
 
     """PSF modeling of CLUMPY images given a specific telescope and wavelength
 
@@ -204,18 +222,23 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
 
     # checks and units conversion
     checkOdd(npix)
-    
-    wavelength = (getQuantity(wavelength,recognized_units=UNITS['WAVE']))
-    diameter = (getQuantity(diameter,recognized_units=UNITS['LINEAR']))
-    pixelscale = (getQuantity(pixelscale,recognized_units=UNITS['ANGULAR']))
+
+   
+    #wavelength = (getQuantity(wavelength,recognized_units=UNITS['WAVE']))
+    #diameter = (getQuantity(diameter,recognized_units=UNITS['LINEAR']))
+    #pixelscale = (getQuantity(pixelscale,recognized_units=UNITS['ANGULAR']))
+
+    wavelength = wavelength.to(u.m).value
+    diameter   = diameter.to(u.m).value
+    pixelscale = pixelscale.to(u.arcsec).value
     
     # Position of Gaussian at the center of the array. Coordinates, x_mean, y_mean,
     # must be loaded from Hypercat to be equal to the dimensions of the clumpy models
     y, x = np.mgrid[:npix, :npix] # this should be the dimension of the hypercat array
 
     # 2D AiryDisk: Halo of PSF
-    radius = ((1.22 * wavelength/diameter)*u.radian) # Radius is the radius of the first zero 1.22 l/D in arcsec
-    radius = (radius/pixelscale).decompose() # Core diameter in px
+    radius = (206206*(wavelength/diameter)) # Radius is the radius of the first zero l/D in arcsec
+    radius = (radius/pixelscale) # Core diameter in px
     
     sigma_p_dl = 0.0745                    # Typical diffraction-limited aberration level or Strehl = 0.8
     S_dl = 0.8                             # Diffraction-limited Strengthl of 0.8 to normalize
@@ -228,13 +251,13 @@ def modelPSF(npix,wavelength='1.25 micron',diameter='30 m',strehl=0.8,pixelscale
     a2D = a2D(x,y) # evaluate the 2D Airy disk
 
     # 2D Gaussian: Core of PSF
-    C = get_normalization() # use defaults (r_0 = 0.15m at 0.5um) --> C = 5461692.609078237 m^(-1/5)
+    C = get_normalization().value # use defaults (r_0 = 0.15m at 0.5um) --> C = 5461692.609078237 m^(-1/5)
     r_o = C * wavelength**(6./5.) # r_o is now normalized assuming r_o = 0.15m at 0.5um
 
     rho_o = r_o * (1. + 0.37*(r_o/diameter)**(1./3.)) # rho_o for short exposures
 
-    rad_H = ((1.22*(wavelength/diameter) * np.sqrt(1. + (diameter/rho_o)**2.))*u.radian)
-    rad_H = (rad_H/pixelscale).decompose() # Halo diameter in px
+    rad_H = (((wavelength/diameter) * np.sqrt(1. + (diameter/rho_o)**2.)))
+    rad_H = (rad_H/pixelscale) # Halo diameter in px
 
     # Intensity of the 2D Gaussian
     gI = (1-aI) / (1. + (diameter/rho_o)**2)            
