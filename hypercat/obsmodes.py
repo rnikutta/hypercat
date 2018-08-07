@@ -6,6 +6,7 @@ from units import *
 from astropy.coordinates import name_resolve
 from utils import *
 from imageops import add_noise, measure_snr
+import interferometry
 
 import astropy.io.ascii as ascii
 
@@ -195,6 +196,8 @@ class Imaging(ObsMode):
         # pixelate image.data and the PSF_resampled to detector pixelscale
         target_pixelscale = self.psfdict['pixelscale_detector']
         if target_pixelscale == 'Nyquist':
+            pupil_ima, pupil_header = getPupil(self.psfdict)
+            pupil_diameter = header['NAXIS1']*header['PIXSCALE']*u.m
             pupil_diameter = getQuantity(self.psfdict['diameter'],UNITS['CUNITS'])
             target_pixelscale = ((image.wave/pupil_diameter)*u.rad).to('mas')/2
 
@@ -372,8 +375,6 @@ class Imaging(ObsMode):
 #            return image
 
 
-
-
 class Interferometry(ObsMode):
 
     """Instrument to simulate an optical/IR interferometer.
@@ -383,8 +384,25 @@ class Interferometry(ObsMode):
     input baseline (BL length and PA).
     """
 
-    def __init__(self):
-        Instrument.__init__(self)
+    def __init__(self,name=''):
 
-    def __call__(self):
-        pass # do all the deeds an interferometer does
+        self.name = name
+
+    def __call__(self,sky,uvfilename):  # __call__ is invoked by Instrument.observe()
+
+        image = copy(sky)
+
+        #Create 2D FFT of clumpy torus image
+        ori_fft = interferometry.ima2fft(image)
+        #Obtain pixel scale
+        fftscale = interferometry.fft_pxscale(image)
+        #Obtain uv points
+        u,v = interferometry.uvload(uvfilename)
+        #Obtain correlated flux
+        corrflux, BL, Phi = interferometry.correlatedflux(ori_fft,u,v)
+        #obtain image fom fft
+        ori_ifft = interferometry.ima_ifft(ori_fft,u,v)
+        #Plots
+        #plot_inter(sky,ori_fft,ori_ifft,u,v,fftscale,corrflux,BL,Phi)
+
+        return ori_fft,fftscale,u,v,corrflux,BL,Phi,ori_ifft
