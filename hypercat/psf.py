@@ -13,45 +13,47 @@ from units import *
 import astropy.io.ascii as ascii
 from scipy import ndimage
 from skimage import restoration
+import json
 
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
 __version__ = '20180216' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
-    
+
     .. automodule:: PSF_modeling
 """
 
-def fft_pxscale(ima,wave,telescope):
-    
+def fft_pxscale(header,wave,telescope):
+
     """Compute conversion scale from telescope space to sky space.
-        
+
        Parameters
        ----------
        ima : array
            2D Telescope pupil model.
-        
+
        Returns
        -------
        fftscale : float
            The frequency scale in sky space.
-        
+
        Example
        -------
        .. code-block:: python
-        
+
           fftscale = fft_pxscale(ima)
-        
+
     """
-    
+
     #size of the image. This should be taken from the header.
-    gridsize = ima[0].header['NAXIS1']
+    gridsize = header['NAXIS1']
     #pixel scale of the image. This should be taken from the header.
-    pxscale_mod = ima[0].header['PIXSCALE']    #in meters
+    pxscale_mod = header['PIXSCALE']    #in meters
     #1D FFT of the gridsize.
     fft_freq=np.fft.fftfreq(gridsize,pxscale_mod)
     #wavelength of the desires psf. This is a input of the user, wavelength in microns
+    wave = (getQuantity(wave,recognized_units=UNITS['WAVE']))
     lam = wave.to(u.m)                 #in meters
     #re-orginizing the 1D FFT to match with the grid.
     roll=np.floor(gridsize//2).astype("int")
@@ -81,23 +83,23 @@ class PSF(ImageFrame):
 
         ImageFrame.__init__(self,image,pixelscale=pixelscale)
 
-        
+
     def convolve(self,image):
         """ Convolution of the model PSF with a CUMPY image
-        
+
         Parameters
         ----------
-        
+
         image : float array (2D)
             Array obtained from hypercat using get_image module
-        
+
         psf : float array (2D)
             Array of the model PSF obtained with PSF_modeling()
-        
+
         Example
         -------
         .. code-block:: python
-        
+
             convolved_image = PSF_conv(image,psf)
         """
 
@@ -111,68 +113,51 @@ class PSF(ImageFrame):
         result = restoration.richardson_lucy(ima, psf, iterations=50)
         return result[::-1,::-1]
 
-def getPupil(psfdict,wavelength):
-    #Obtain Pupil
-    DIR = '/Users/elopezro/Documents/GitHub/hypercat/'
-    pupilfile = DIR+'data/pupils.csv'
-    pupil_info = ascii.read(pupilfile)
-    pupil_fitsfile = pupil_info['Pupil_Image'][pupil_info['Telescope'] == psfdict['telescope']][0]
-    pupil_fits  = pyfits.open(DIR+pupil_fitsfile)
-    pixelscale_pupil = pupil_fits[0].header['PIXSCALE']    #in meters
-    #Compute PSF and obtain PSF pixelscale
-    pixelscale_psf = fft_pxscale(pupil_fits,wavelength,psfdict['telescope'])  #mas/px
-    image_psf = np.abs(np.fft.fftshift(np.fft.fft2(pupil_fits[0].data)))
-    image_psf = image_psf/np.max(image_psf)
-
-    return pupil_fits, image_psf, pixelscale_pupil, pixelscale_psf
+def getPupil(psfdict):
+    pupilfile = '../data/pupils.json'
+    with open(pupilfile,'r') as f:
+        pupildict = json.load(f)
+    pupil_fitsfile = pupildict[psfdict['telescope']]['file']
+    data, header = pyfits.getdata('../'+pupil_fitsfile,header=True)
+    return data, header
 
 
-def getPSF(psfdict,image):
-
+def getPSF(psfdict):
 
     """Model or load from file a PSF suitable for `image`.
 
     Parameters
     ----------
-    image : instance
-        `Image` instance.
-
     psfdict : dict
-    
+
     """
 
-    pixelscale = image.pixelscale
-    wavelength = image.wave
-
-    psfobj = psfdict['psf']
+    psfmode = psfdict['psfmode']
 
     #Model-PSF
-    if psfobj == 'model':
-        npix = image.data.shape[-1]
-        image_psf = modelPSF(npix,wavelength=psfdict['wavelength'],\
+    if psfmode == 'model':
+        image_psf = modelPSF(npix = psfdict['npix'],\
+                             wavelength=psfdict['wavelength'],\
                              diameter=psfdict['diameter'],\
                              strehl=psfdict['strehl'],\
                              pixelscale=psfdict['pixelscale'])
-        pixelscale_psf = psfdict['pixelscale'].to(u.mas).value
-        
+        pixelscale = (getQuantity(psfdict['pixelscale'],recognized_units=UNITS['ANGULAR']))
+        pixelscale_psf = pixelscale.to(u.mas).value
+
     #Pupil-PSF
-    if psfobj == 'pupil':
+    if psfmode == 'pupil':
         #Obtain Pupil
-        DIR = '/Users/elopezro/Documents/GitHub/hypercat/'
-        pupilfile = DIR+'data/pupils.csv'
-        pupil_info = ascii.read(pupilfile)
-        pupil_fitsfile = pupil_info['Pupil_Image'][pupil_info['Telescope'] == psfdict['telescope']][0]
-        pupil_fits  = pyfits.open(DIR+pupil_fitsfile)
+        data, header = getPupil(psfdict)
         #Compute PSF and obtain PSF pixelscale
-        pixelscale_psf = fft_pxscale(pupil_fits,wavelength,psfdict['telescope'])  #mas/px
-        image_psf = np.abs(np.fft.fftshift(np.fft.fft2(pupil_fits[0].data)))
-        #Re-sample PSF to the sky image pixelscale
+        pixelscale_psf = fft_pxscale(header,psfdict['wavelength'],psfdict['telescope'])  #mas/px
+        image_psf = np.abs(np.fft.fftshift(np.fft.fft2(data)))
+        #PSF with the pixelscale
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
-        #image_psf.changeFOV(FOV)
+        #Normalization of the PSF
         image_psf = image_psf.I / np.max(image_psf.I)
-               
+
     #Image-PSF
-    if psfobj.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCALE
+    if psfmode.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCALE
         image_psf, pixelscale_psf = loadPSFfromFITS(psfobj,psfdict)
         #image_psf, _newfactor, aux = resampleImage(image_psf,pixelscale_psf/pixelscale)
 
@@ -182,17 +167,17 @@ def getPSF(psfdict,image):
 def loadPSFfromFITS(fitsfile,psfdict):
 
     hdukw = psfdict['hdukw']
-    pixelscalekw = psfdict['pixelscalekw']
-    
+    pixelscalekw = psfdict['pixelscale']
+
     header = pyfits.getheader(fitsfile,hdukw)
     pixelscale_psf = header[pixelscalekw]  # currently assuming that pixelscale in the FITS file is in arcsec
-        
+
     image_psf = pyfits.getdata(fitsfile,hdukw)
 
     return image_psf, pixelscale_psf
 
-        
-def modelPSF(npix,wavelength=2.2*u.um,diameter=30.*u.m,strehl=0.8,pixelscale=0.01*u.arcsec):
+
+def modelPSF(npix=241,wavelength='2.2 micron',diameter='30 m',strehl=0.8,pixelscale='1 mas'):
 
     """PSF modeling of CLUMPY images given a specific telescope and wavelength
 
@@ -212,26 +197,26 @@ def modelPSF(npix,wavelength=2.2*u.um,diameter=30.*u.m,strehl=0.8,pixelscale=0.0
 
     strehl: float
         Strehl ratio of the model PSF.
-        
+
     pixelscale: str | instance
         Angular scale of the instrument, per pixel, e.g. '0.1 arcsec'
         (the 'per pixel' is assumed implicitly). Can also be instance
         of :class:`astropy.units.quantity.Quantity`
-        
+
     """
 
     # checks and units conversion
     checkOdd(npix)
 
-   
-    #wavelength = (getQuantity(wavelength,recognized_units=UNITS['WAVE']))
-    #diameter = (getQuantity(diameter,recognized_units=UNITS['LINEAR']))
-    #pixelscale = (getQuantity(pixelscale,recognized_units=UNITS['ANGULAR']))
+
+    wavelength = (getQuantity(wavelength,recognized_units=UNITS['WAVE']))
+    diameter = (getQuantity(diameter,recognized_units=UNITS['LINEAR']))
+    pixelscale = (getQuantity(pixelscale,recognized_units=UNITS['ANGULAR']))
 
     wavelength = wavelength.to(u.m).value
     diameter   = diameter.to(u.m).value
     pixelscale = pixelscale.to(u.arcsec).value
-    
+
     # Position of Gaussian at the center of the array. Coordinates, x_mean, y_mean,
     # must be loaded from Hypercat to be equal to the dimensions of the clumpy models
     y, x = np.mgrid[:npix, :npix] # this should be the dimension of the hypercat array
@@ -239,11 +224,11 @@ def modelPSF(npix,wavelength=2.2*u.um,diameter=30.*u.m,strehl=0.8,pixelscale=0.0
     # 2D AiryDisk: Halo of PSF
     radius = (206206*(wavelength/diameter)) # Radius is the radius of the first zero l/D in arcsec
     radius = (radius/pixelscale) # Core diameter in px
-    
+
     sigma_p_dl = 0.0745                    # Typical diffraction-limited aberration level or Strehl = 0.8
     S_dl = 0.8                             # Diffraction-limited Strengthl of 0.8 to normalize
     sigma_p =   (sigma_p_dl / S_dl) / strehl # normalization of the aberration level
-    
+
     # Intensity of the 2D Airy Disk
     aI = np.exp(-sigma_p**2.)
 
@@ -260,7 +245,7 @@ def modelPSF(npix,wavelength=2.2*u.um,diameter=30.*u.m,strehl=0.8,pixelscale=0.0
     rad_H = (rad_H/pixelscale) # Halo diameter in px
 
     # Intensity of the 2D Gaussian
-    gI = (1-aI) / (1. + (diameter/rho_o)**2)            
+    gI = (1-aI) / (1. + (diameter/rho_o)**2)
 
     g2D = Gaussian2D(amplitude=gI,x_mean=npix//2,y_mean=npix//2,x_stddev=rad_H,y_stddev=rad_H,theta=0.)
     g2D = g2D(x,y) # evaluate the 2D Gaussian
@@ -298,7 +283,7 @@ def get_normalization(r_0='0.15 m',wave='0.5 micron'):
 
     r_0 = getQuantity(r_0,recognized_units=UNITS['LINEAR'])
     wave = getQuantity(wave,recognized_units=UNITS['WAVE'])
-    
+
     C = r_0 / (wave**(6./5.))  # with defaults: C = 5461692.609078237 m^(-1/5)
 
     return C
