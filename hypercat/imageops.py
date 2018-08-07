@@ -497,10 +497,9 @@ class Image(ImageFrame):
 
 # HIGH-LEVEL HELPERS
 
-def add_noise(image,snr,mode='max'):
+def add_noise(image,snr,fraction=1.0):
 
-    """Add Gaussian noise to ``image`` such that SNR is ``snr``.
-
+    """Add Gaussian noise to ``image`` such that SNR is ``snr`` at the peak pixel (or a ``fraction`` of it).
 
     Parameters
     ----------
@@ -508,21 +507,16 @@ def add_noise(image,snr,mode='max'):
         Noise-free image.
 
     snr : float
-        The desired SNR of image+noise_pattern.
+        The desired SNR of image+noise_pattern at peak pixel value.
 
-    mode : str
-        Either 'max' (default) or 'mean'. If a source is very bright
-        in comparison with the background, as is the case with CLUMPY
-        images, the standard definition :math:`SNR = \\mu(image) /
-        \\sigma(background)` may underestimate the noise level
-        necessary to produce the requested SNR. ``mode='max'`` is
-        therefore the default way in HyperCAT, and determines SNR
-        using the brightest pixel.
+    fraction : float
+        Fraction of peak pixel. Must be 0 > fraction >= 1.0. By
+        default, the target SNR of the noisy image is estimated at the
+        max (peak) pixel value, i.e. at fraction=1.0.
 
     Returns
     -------
     noisy_image, noise_pattern : 2-d arrays
-    
         The noisy image (image + noise_pattern), and the noise_pattern
         image itself.
 
@@ -534,47 +528,38 @@ def add_noise(image,snr,mode='max'):
     --------
     .. code-block:: python
 
-        img = cube.get_image(vec) # with appropriate parameter vector
-        img.shape
-          (241,241)
-        noisy_image, noise_pattern = add_noise(img,1.,mode='max') # requesting SNR=1
+        img = cube(vec) # with appropriate parameter vector
+        noisy_image, noise_pattern = add_noise(img,1.) # requesting SNR=1
         import plotting
         # source in noisy_image should be almost indiscernible
         plotting.multiplot((img,noisy_image,noise_pattern),titles=('image','image+noise','noise'))
 
     """
 
-    mapping = {'max' : np.max, 'mean': np.mean}
-    try:
-        func = mapping[mode]
-    except KeyError:
-        logging.error("'mode' must be either 'max' or 'mean'.")
-        raise
-        
+    if fraction <= 0. or fraction > 1.0:
+        raise Exception("'fraction' must be > 0.0 and <= 1.0")
+
     # compute noise pattern with correct amplitude distribution
     mu = 0.0
-    sigma = func(image) / float(snr)
+    sigma = np.max(image) / float(snr)
     noise_pattern = np.random.normal(mu,sigma,size=image.shape)
 
     # noisy image
     noisy_image = image + noise_pattern
 
     # normalize
-    if mode == 'mean':
-        noisy_image = noisy_image / np.sum(noisy_image) * np.sum(image)
-    elif mode == 'max':
-        noisy_image = noisy_image / np.max(noisy_image) * np.max(image)
+    noisy_image = noisy_image / (fraction*np.max(noisy_image)) * np.max(image)
     
     return noisy_image, noise_pattern
 
 
-def measure_snr(noisy_image,noise_pattern,mode='max'):
+def measure_snr(noisy_image,noise_pattern,fraction=1.0):
 
     """Measure the effective SNR of a noisy image.
 
     Assuming that noisy_image has had (Gaussian) noise _pattern added
-    to the signal, measures the effective SNR. Two modes are
-    implemented (see :func:`add_noise()`.
+    to the signal, measures the effective SNR at the peak pixel value
+    (or a fraction of it).
 
     Parameters
     ----------
@@ -584,15 +569,15 @@ def measure_snr(noisy_image,noise_pattern,mode='max'):
     noise_pattern : 2-d array
         The noise image that was added to image to create noisy_image.
 
-    mode : str
-        Either 'max' (default) or 'mean'. See see :func:`add_noise()`.
+    fraction : float
+        Fraction of peak pixel. Must be 0 > fraction >= 1.0. By
+        default, the target SNR of the noisy image is estimated at the
+        max (peak) pixel value, i.e. at fraction=1.0.
 
     Returns
     -------
     snr : float
-        The measured SNR of noisy_image.
-
-        If mode == 'max':  SNR = max(signal) / std(noise)
+        SNR = max(signal) / std(noise)
         If mode == 'mean': SNR = mean(signal) / std(noise)
 
     See also
@@ -602,20 +587,16 @@ def measure_snr(noisy_image,noise_pattern,mode='max'):
     Examples
     --------
     .. code-block:: python
-        noisy_image, noise_pattern = add_noise(img,10.,mode='max') # requesting SNR=10
-        measure_snr(noisy_image, noise_pattern, mode='max')
-          10.0048
+        noisy_image, noise_pattern = add_noise(img,10.) # requesting SNR=10
+        measure_snr(noisy_image, noise_pattern)
+          10.013
 
     """
 
-    mapping = {'max' : np.max, 'mean': np.mean}
-    try:
-        func = mapping[mode]
-    except KeyError:
-        logging.error("'mode' must be either 'max' or 'mean'.")
-        raise
-        
-    snr = func(noisy_image) / np.std(noise_pattern)
+    if fraction <= 0. or fraction > 1.0:
+        raise Exception("'fraction' must be > 0.0 and <= 1.0")
+
+    snr = fraction*np.max(noisy_image) / np.std(noise_pattern)
    
     return snr
 
