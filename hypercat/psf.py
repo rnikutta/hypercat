@@ -24,7 +24,7 @@ __version__ = '20180216' #yyyymmdd
     .. automodule:: PSF_modeling
 """
 
-def fft_pxscale(header,wave,telescope):
+def fft_pxscale(header,wave):
 
     """Compute conversion scale from telescope space to sky space.
 
@@ -49,7 +49,7 @@ def fft_pxscale(header,wave,telescope):
     #size of the image. This should be taken from the header.
     gridsize = header['NAXIS1']
     #pixel scale of the image. This should be taken from the header.
-    pxscale_mod = header['PIXSCALE']    #in meters
+    pxscale_mod = header['PIXSCALE']    #in meters/px
     #1D FFT of the gridsize.
     fft_freq=np.fft.fftfreq(gridsize,pxscale_mod)
     #wavelength of the desires psf. This is a input of the user, wavelength in microns
@@ -63,7 +63,7 @@ def fft_pxscale(header,wave,telescope):
     fftscale=np.diff(freq)[0]           ## cycles / mas per pixel in FFT image
     mas2rad=np.deg2rad(1./3600000.)     ## mas per rad
     fftscale = fftscale/mas2rad * lam   ## meters baseline per px in FFT image at a given wavelength
-    #print("Pixel scale in PSF image is: ", fftscale, " mas per pixel")
+    print("Pixel scale in PSF image is: ", fftscale.value, " mas per pixel")
     return fftscale.value
 
 
@@ -151,7 +151,7 @@ def getPSF(psfdict):
         #Obtain Pupil
         data, header = getPupil(psfdict)
         #Compute PSF and obtain PSF pixelscale
-        pixelscale_psf = fft_pxscale(header,psfdict['wavelength'],psfdict['telescope'])  #mas/px
+        pixelscale_psf = fft_pxscale(header,psfdict['wavelength'])  #mas/px
         image_psf = np.abs(np.fft.fftshift(np.fft.fft2(data)))
         #PSF with the pixelscale
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
