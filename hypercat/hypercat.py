@@ -29,7 +29,7 @@ import h5py
 from loggers import *
 import ndiminterpolation
 import bigfileops as bfo
-from instruments import *
+from obsmodes import *
 from imageops import *
 from utils import *
 

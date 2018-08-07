@@ -174,6 +174,7 @@ class Imaging(ObsMode):
 
         # get PSF (on of 3 modes)
         if psfdict is not None:
+            self.psfdict = psfdict
             self.PSF = psf.getPSF(self.psfdict)
 
         print('self.PSF: Computed pixelscale from pupil = ',self.PSF.pixelscale,' [mas/px]' )

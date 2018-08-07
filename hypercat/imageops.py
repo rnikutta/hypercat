@@ -651,6 +651,31 @@ def rotateImage(image,angle,direction='NE'):
     return rotimage
 
 
+def makepositive(image):
+
+    res = copy(image)
+    gtzero = (image>0.)
+    MIN = image[gtzero].min()
+    res[~gtzero] = MIN
+    
+    return res
+
+
+def thresholding(image,where='below',thresh=0.,cfill=0.,):
+
+    if where == 'below':
+        mask = (image <= thresh)
+    elif where == 'above':
+        mask = (image >= thresh)
+    else:
+        raise Exception("'where' must be either 'above' or 'below'")
+
+    image[mask] = cfill
+
+    return image
+    
+    
+
 def resampleImage(image,resamplingfactor,conserve=True):
 
     """Resample an image by `resamplingfactor`.
@@ -690,6 +715,7 @@ def resampleImage(image,resamplingfactor,conserve=True):
     total = image.sum()
     newsize_int, newfactor = computeIntCorrections(npix,resamplingfactor)
     newimage = ndimage.zoom(image,newfactor)
+    newimage = makepositive(newimage)
     npix = checkImage(newimage,returnsize=True)
 
     if conserve is True:
@@ -697,6 +723,7 @@ def resampleImage(image,resamplingfactor,conserve=True):
         newimage *= (total / newtotal)
     
     return newimage, newfactor, npix
+
     
 # LOW-LEVEL HELPERS
 def checkInt(x):
