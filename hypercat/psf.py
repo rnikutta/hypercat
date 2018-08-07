@@ -113,6 +113,7 @@ class PSF(ImageFrame):
         result = restoration.richardson_lucy(ima, psf, iterations=50)
         return result[::-1,::-1]
 
+    
 def getPupil(psfdict):
     pupilfile = '../data/pupils.json'
     with open(pupilfile,'r') as f:
@@ -143,6 +144,7 @@ def getPSF(psfdict):
                              pixelscale=psfdict['pixelscale'])
         pixelscale = (getQuantity(psfdict['pixelscale'],recognized_units=UNITS['ANGULAR']))
         pixelscale_psf = pixelscale.to(u.mas).value
+        wave = psfdict['wavelength']
 
     #Pupil-PSF
     if psfmode == 'pupil':
@@ -155,26 +157,28 @@ def getPSF(psfdict):
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
         #Normalization of the PSF
         image_psf = image_psf.I / np.max(image_psf.I)
+        wave = psfdict['wavelength']
 
     #Image-PSF
     if psfmode.endswith('.fits'): # PSF model from fits file; must have keyword PIXELSCALE
-        image_psf, pixelscale_psf = loadPSFfromFITS(psfobj,psfdict)
+        # TODO: get the below to work
+        image_psf, header = loadPSFfromFITS(psfobj,psfdict)
         #image_psf, _newfactor, aux = resampleImage(image_psf,pixelscale_psf/pixelscale)
+        wave = header['wave']
 
-    return PSF(image_psf,str(pixelscale_psf*u.mas))
+    psf_ = PSF(image_psf,str(pixelscale_psf*u.mas))
+    psf_.wave = wave
+        
+    return psf_
 
 
 def loadPSFfromFITS(fitsfile,psfdict):
 
     hdukw = psfdict['hdukw']
     pixelscalekw = psfdict['pixelscale']
+    image_psf, header = pyfits.getdata(fitsfile,hdukw,header=True)
 
-    header = pyfits.getheader(fitsfile,hdukw)
-    pixelscale_psf = header[pixelscalekw]  # currently assuming that pixelscale in the FITS file is in arcsec
-
-    image_psf = pyfits.getdata(fitsfile,hdukw)
-
-    return image_psf, pixelscale_psf
+    return image_psf, header
 
 
 def modelPSF(npix=241,wavelength='2.2 micron',diameter='30 m',strehl=0.8,pixelscale='1 mas'):
