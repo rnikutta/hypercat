@@ -39,7 +39,7 @@ class ObsMode:
         """
 
         self.name = name
-        
+
 #        self.telescope = telescope
 #        self.instrument = instrument
 #        self.type = self.__class__.__name__
@@ -80,7 +80,7 @@ class Imaging(ObsMode):
 #        fitsMode: fitsfilepath
 
 
-        
+
         """Simulate the effects of a single-dish telescope with a pixel camera
         attached to it.
 
@@ -157,7 +157,7 @@ class Imaging(ObsMode):
 
         self.PSF = psf.getPSF(self.psfdict) # TODO
         self.wave = self.PSF.wave
-        
+
         #if pixelscale_detector is 'Nyquist':
         #    self.pixelscale_detector = 'Nyquist'
 
@@ -177,20 +177,20 @@ class Imaging(ObsMode):
             self.PSF = psf.getPSF(self.psfdict)
 
         print('self.PSF: Computed pixelscale from pupil = ',self.PSF.pixelscale,' [mas/px]' )
-        
+
         #PSF with the same FOV of the image
         if self.PSF.FOV != image.FOV:
             self.PSF.changeFOV(str(image.FOV))
+            self.PSF.resample(image.pixelscale)
 
         #PSF with the same pixelscale as the image
         PSF_resampled = copy(self.PSF)
-        PSF_resampled.resample(image.pixelscale)
 
         # convolve image with resampled PSF
         _unit = image.data.unit
         image.data = PSF_resampled.convolve(image.data.value) * _unit  # psf image pixels have no units attached
-        
-        
+
+
         # pixelate image.data and the PSF_resampled to detector pixelscale
         target_pixelscale = self.psfdict['pixelscale_detector']
         if target_pixelscale == 'Nyquist':
@@ -214,7 +214,7 @@ class Imaging(ObsMode):
         return image, self.PSF, PSF_resampled
 
 
-    
+
 #class Telescope(Instrument):
 #
 #    def __init__(self,psfdict={}):
