@@ -113,7 +113,7 @@ class PSF(ImageFrame):
         result = restoration.richardson_lucy(ima, psf, iterations=50)
         return result[::-1,::-1]
 
-    
+
 def getPupil(psfdict):
     pupilfile = '../data/pupils.json'
     with open(pupilfile,'r') as f:
@@ -168,7 +168,7 @@ def getPSF(psfdict):
 
     psf_ = PSF(image_psf,str(pixelscale_psf*u.mas))
     psf_.wave = wave
-        
+
     return psf_
 
 
