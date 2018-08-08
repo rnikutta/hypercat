@@ -1,0 +1,7 @@
+{
+ "TMT": {"diameter": 30, "file": "data/pupils/TMT.fits"},
+ "ELT": {"diameter": 39.3, "file": "data/pupils/ELT.fits"},
+ "JWST": {"diameter": 6.6, "file": "data/pupils/JWST.fits"},
+ "GMT": {"diameter": 24.5, "file": "data/pupils/GMT.fits"},
+ "Keck": {"diameter": 10.0, "file": "data/pupils/Keck.fits"}
+}

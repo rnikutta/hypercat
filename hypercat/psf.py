@@ -13,7 +13,8 @@ import astropy.io.ascii as ascii
 from scipy import ndimage
 from skimage import restoration
 import json
-
+from utils import get_rootdir
+rootdir = get_rootdir()
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
 __version__ = '20180808' #yyyymmdd
@@ -114,11 +115,11 @@ class PSF(ImageFrame):
 
 
 def getPupil(psfdict):
-    pupilfile = '../data/pupils.json'
+    pupilfile = rootdir+'data/pupils.json'
     with open(pupilfile,'r') as f:
         pupildict = json.load(f)
     pupil_fitsfile = pupildict[psfdict['telescope']]['file']
-    data, header = pyfits.getdata('../'+pupil_fitsfile,header=True)
+    data, header = pyfits.getdata(rootdir+pupil_fitsfile,header=True)
     return data, header
 
 
@@ -168,6 +169,8 @@ def getPSF(psfdict):
         image_psf, header = loadPSFfromFITS(psfobj,psfdict)
         #image_psf, _newfactor, aux = resampleImage(image_psf,pixelscale_psf/pixelscale)
         wave = header['wave']
+
+    #image_psf = force_ood(image_psf)
 
     psf_ = PSF(image_psf,str(pixelscale_psf*u.mas))
     psf_.wave = wave

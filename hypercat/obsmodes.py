@@ -7,6 +7,8 @@ from astropy.coordinates import name_resolve
 from utils import *
 from imageops import add_noise, measure_snr
 import interferometry
+import psf
+import imageops
 
 import astropy.io.ascii as ascii
 
@@ -196,9 +198,9 @@ class Imaging(ObsMode):
         # pixelate image.data and the PSF_resampled to detector pixelscale
         target_pixelscale = self.psfdict['pixelscale_detector']
         if target_pixelscale == 'Nyquist':
-            pupil_ima, pupil_header = getPupil(self.psfdict)
-            pupil_diameter = header['NAXIS1']*header['PIXSCALE']*u.m
-            pupil_diameter = getQuantity(self.psfdict['diameter'],UNITS['CUNITS'])
+            pupil_ima, pupil_header = psf.getPupil(self.psfdict)
+            pupil_diameter = pupil_header['NAXIS1']*pupil_header['PIXSCALE']*u.m
+            #pupil_diameter = getQuantity(self.psfdict['diameter'],UNITS['CUNITS'])
             target_pixelscale = ((image.wave/pupil_diameter)*u.rad).to('mas')/2
 
         image.resample(target_pixelscale)
