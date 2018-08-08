@@ -8,10 +8,17 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: utils
 """
 
+import os
 import numpy as np
 from astropy.coordinates import name_resolve
 from astropy import wcs
 import logging
+
+
+def get_rootdir():
+    cwd = os.path.realpath('.')
+    rootdir = cwd[:cwd.find('hypercat')]+'hypercat/'
+    return rootdir
 
 
 def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
