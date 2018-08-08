@@ -108,8 +108,8 @@ class PSF(ImageFrame):
         return result
 
     def deconvolve(self,image):
-        ima = image.data
-        psf = np.abs(self.data)
+        ima = image.data/np.sum(image.data)
+        psf = self.data//np.sum(self.data)
         result = restoration.richardson_lucy(ima, psf, iterations=10)
         return result[::-1,::-1]
 
