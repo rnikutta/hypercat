@@ -108,9 +108,9 @@ class PSF(ImageFrame):
         return result
 
     def deconvolve(self,image):
-        ima = image.data/image.data.max()
-        psf = np.abs(self.data)/self.data.max()
-        result = restoration.richardson_lucy(ima, psf, iterations=50)
+        ima = image.data
+        psf = np.abs(self.data)
+        result = restoration.richardson_lucy(ima, psf, iterations=10)
         return result[::-1,::-1]
 
 
@@ -156,7 +156,7 @@ def getPSF(psfdict):
 
         # trim image_psf array to be an odd-dimensioned square with the highest pixel value at the exact center pixel
         image_psf = trim_square_odd(image_psf)
-        
+
         #PSF with the pixelscale
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
         #Normalization of the PSF

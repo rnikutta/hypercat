@@ -22,7 +22,7 @@ class ImageFrame:
 
         # SANITY CHECKS
         self.npix = checkImage(image,returnsize=True)
-        
+
         # PIXELSCALE
         if pixelscale is not None:
             self.setPixelscale(pixelscale=pixelscale,distance=distance)
@@ -33,7 +33,7 @@ class ImageFrame:
         self.data = image * u.Quantity(1)   # will rescale this array in setBrightness()
 #        print("At init: self.data.value.std() =", self.data.value.std())
 
-        
+
     def setPixelscale(self,pixelscale='1 arcsec',distance=None):
 
         """Set size and area of a pixel from user input.
@@ -88,17 +88,17 @@ class ImageFrame:
                 raise
 
             self.pixelscale = np.arctan2(self.pixelscale,self.distance).to('arcsec')
-            
+
 
         self.__computePixelarea()
         self.__computeFOV()
 
-        
+
     def __computeFOV(self):
 
         self.FOV = self.npix * self.pixelscale
-        
-        
+
+
     def __computePixelarea(self):
 
         self.pixelarea = self.pixelscale**2
@@ -116,7 +116,7 @@ class ImageFrame:
         consecutive application of :func:`resample` to the same image
         can yield inexact results due to accumulated interpolation
         errors.
-        
+
         Because resampling is performed by spline interpolation, the
         total flux in the image may change slightly. This function
         thus renormalizes the resampled image to the previous total
@@ -164,17 +164,17 @@ class ImageFrame:
         """
 
         newpixelscale = getQuantity(newpixelscale,recognized_units=UNITS['ANGULAR'])
-        
+
         resamplingfactor = (self.pixelscale / newpixelscale).decompose().value
         newimage, newfactor, self.npix = resampleImage(self.data.value,resamplingfactor,conserve=True)
-        
+
         self.data = newimage * self.data.unit
-        
+
         self.setPixelscale(pixelscale=self.pixelscale/newfactor)
         if newfactor != resamplingfactor:
             logging.warning("The requested resampling to pixel scale ({:g} {:s}) was slightly adjusted due to discretization (now {:g} {:s}). This is to preserve sizes on the sky.".format(\
                             newpixelscale.value,newpixelscale.unit,self.pixelscale.value,self.pixelscale.unit))
-            
+
 
     def rotate(self,angle,direction='NE',returnimage=False):
 
@@ -184,7 +184,7 @@ class ImageFrame:
         See docstring of :func:`rotateImage()`
 
         """
-        
+
         self.data = rotateImage(self.data.value,angle=angle,direction=direction) * self.data.unit
         logging.info("Rotated image (see self.data) by {:s} in direction '{:s}'.".format(str(angle),direction))
 
@@ -233,7 +233,7 @@ class ImageFrame:
         self.__computePixelarea()
         self.__computeFOV()
 
-        
+
     def changeFOV(self,fov):
 
         """Embed ``self.data`` in a larger field of view, or crop to a smaller one.
@@ -261,7 +261,7 @@ class ImageFrame:
         unchanged!
 
         """
-        
+
         FOV = getQuantity(fov,UNITS['ANGULAR'])
         factor = (FOV/self.FOV).decompose().value
         newsize_int, newfactor = computeIntCorrections(self.npix,factor)
@@ -269,17 +269,17 @@ class ImageFrame:
 
         def get_newimage(image):
             return nddata.extract_array(image,(newsize_int,newsize_int),(cpix,cpix),fill_value=0.)
-        
+
         if hasattr(self.data,'value'):
             newimage = get_newimage(self.data.value)
         else:
             newimage = get_newimage(self.data)
-            
+
         if hasattr(self.data,'unit'):
             self.data = newimage * self.data.unit
         else:
             self.data = newimage
-            
+
         # updates
         self.npix = self.data.shape[0]
         self.__computeFOV()
@@ -360,7 +360,7 @@ class Image(ImageFrame):
               3.0 mJy / pix
 
         """
-        
+
         if total_flux_density is not None:
             self.setBrightness(total_flux_density)
 
@@ -368,7 +368,7 @@ class Image(ImageFrame):
 #        if brightness_units is not None:
 #            self.data = self.getBrightness(brightness_units)
 #        # TEST
-            
+
 
         if not isinstance(pa,astropy.units.quantity.Quantity):
             pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])
@@ -383,11 +383,11 @@ class Image(ImageFrame):
             noisy_image, noise_pattern = add_noise(copy(self.data.value),snr)
             self.data = noisy_image * self.data.unit
             print("After add_noise:: self.data.value.std() =", self.data.value.std())
-        
+
             print("SNR_meas = {:.2f}".format(measure_snr(noisy_image, noise_pattern)))
 
     def setBrightness(self,total_flux_density='1 Jy'):
-        
+
         """Scale the brightness of the image such that total flux is ``total_flux_density``.
 
         This does not touch the ``self.pixelsize`` and
@@ -419,8 +419,8 @@ class Image(ImageFrame):
 
         total_flux_density = getQuantity(total_flux_density,recognized_units=UNITS['FLUXDENSITY'])
         self.data = (self.data/self.data.sum()) * total_flux_density / u.pix
-        
-        
+
+
     def getBrightness(self,units='Jy/arcsec^2'):
 
         """Compute the image brightness in the requested 'units'
@@ -446,7 +446,7 @@ class Image(ImageFrame):
                0.003 Jy / arcsec2
 
         """
-        
+
         try:
 #            brightness =  (self.data / self.pixelarea).to(units)
             brightness =  (u.pix * self.data / self.pixelarea).to(units)
@@ -455,7 +455,7 @@ class Image(ImageFrame):
             raise
 
         return brightness
-    
+
 
     def getTotalFluxDensity(self,units='Jy'):
 
@@ -489,9 +489,9 @@ class Image(ImageFrame):
         """
 
         val, unit = getValueUnit(units,UNITS['FLUXDENSITY'])  # val is dummy here, since no actual value
-        
+
         return (self.getBrightness('Jy/mas^2').sum() * self.pixelarea).to(unit)
-    
+
     F = property(getTotalFluxDensity) #: Property alias for :func:`getTotalFluxDensity`
 
 
@@ -549,7 +549,7 @@ def add_noise(image,snr,fraction=1.0):
 
     # normalize
     noisy_image = noisy_image / (fraction*np.max(noisy_image)) * np.max(image)
-    
+
     return noisy_image, noise_pattern
 
 
@@ -597,7 +597,7 @@ def measure_snr(noisy_image,noise_pattern,fraction=1.0):
         raise Exception("'fraction' must be > 0.0 and <= 1.0")
 
     snr = fraction*np.max(noisy_image) / np.std(noise_pattern)
-   
+
     return snr
 
 
@@ -638,7 +638,7 @@ def rotateImage(image,angle,direction='NE'):
     checkImage(image,returnsize=False)
 
     angle = getQuantity(angle,recognized_units=UNITS['ANGULAR'])
-    
+
     if direction == 'NW':
         angle = -angle
 
@@ -657,7 +657,7 @@ def makepositive(image):
     gtzero = (image>0.)
     MIN = image[gtzero].min()
     res[~gtzero] = MIN
-    
+
     return res
 
 
@@ -673,8 +673,8 @@ def thresholding(image,where='below',thresh=0.,cfill=0.,):
     image[mask] = cfill
 
     return image
-    
-    
+
+
 
 def resampleImage(image,resamplingfactor,conserve=True):
 
@@ -695,7 +695,7 @@ def resampleImage(image,resamplingfactor,conserve=True):
         If True (default), the resampled image will be renormalized
         such that the total flux between the original and the
         resampled images is preserved.
-    
+
     Returns
     -------
     newimage : 2d array
@@ -710,7 +710,7 @@ def resampleImage(image,resamplingfactor,conserve=True):
         Number of pixels along one axis of ``newimage``.
 
     """
-    
+
     npix = checkImage(image,returnsize=True)
     total = image.sum()
     newsize_int, newfactor = computeIntCorrections(npix,resamplingfactor)
@@ -721,39 +721,39 @@ def resampleImage(image,resamplingfactor,conserve=True):
     if conserve is True:
         newtotal = newimage.sum()
         newimage *= (total / newtotal)
-    
+
     return newimage, newfactor, npix
 
-    
+
 # LOW-LEVEL HELPERS
 def checkInt(x):
-    
+
     """Check whether x is integer."""
-    
+
     if not isinstance(x,int):
         raise TypeError('x is not integer.')
 
-    
+
 def checkOdd(x):
 
     """Check whether x is integer and odd."""
-    
+
     checkInt(x)
-        
+
     if x % 2 == 0:
         raise ValueError('x is not odd.')
 
-    
+
 def checkEven(x):
 
     """Check whether x is integer and odd."""
-    
+
     checkInt(x)
-        
+
     if x % 2 != 0:
         raise ValueError('x is not even.')
 
-    
+
 def check2d(image):
     if image.ndim != 2:
         raise ValueError("'image' is not 2-d.")
@@ -763,8 +763,8 @@ def checkSquare(image):
     nx, ny = image.shape[-2:]
     if (nx != ny):
         raise ValueError("'image' is not square (nx=ny)")
-    
-    
+
+
 def checkImage(image,returnsize=True,enforce2d=True):
 
     """Make a few common assertions for ``image``.
@@ -822,7 +822,7 @@ def checkImage(image,returnsize=True,enforce2d=True):
             raise ValueError("'image' must be 2D.")
 
     nx, ny = image.shape[-2:]
-    
+
     if (nx != ny):
         raise ValueError("'image' must be square (nx=ny)")
 
@@ -875,7 +875,7 @@ def computeIntCorrections(npix,factor):
           (7, 0.46667)  # factor was corrected
 
     """
-    
+
     checkOdd(npix)
     newnpix = npix*factor
     newnpix = np.int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
@@ -983,7 +983,7 @@ def trim_square_odd(image):
       [[1.]]
 
     """
-    
+
     check2d(image) # test if image is indeed a 2-d array
     ny, nx = image.shape
 
@@ -999,7 +999,7 @@ def trim_square_odd(image):
 
     # trim
     trimmed = image[cy-d:cy+d+1,cx-d:cx+d+1]
-    
+
     return trimmed
 
 
@@ -1029,13 +1029,24 @@ def trim_square(img):
     aux = np.argwhere(img>0.)
     xmin,ymin = np.min(aux,axis=0)
     xmax,ymax = np.max(aux,axis=0)
-    
+
     MIN = min(xmin,ymin)
     MAX = max(xmax,ymax)
 
     img = img[MIN:MAX,MIN:MAX]
 
     return img
+
+def radial_profile(data, center):
+    y, x = np.indices((data.shape))
+    r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
+    r = r.astype(np.int)
+
+    tbin = np.bincount(r.ravel(), data.ravel())
+    nr = np.bincount(r.ravel())
+    radialprofile = tbin / nr
+    return radialprofile
+
 
 
 def resample_image(img,factor=None,npixout=None):
@@ -1086,10 +1097,10 @@ def resample_image(img,factor=None,npixout=None):
           factor =  0.7029702970297029
           (71, 71)
     """
-    
+
     if factor is None:
         pass
-    
+
     if npixout is not None:
         npixin = img.shape[0]
         factor = npixout / npixin
@@ -1101,5 +1112,5 @@ def resample_image(img,factor=None,npixout=None):
     print("factor = ", factor)
     res = ndimage.zoom(img,factor)
     res = make_binary(res)
-    
+
     return res
