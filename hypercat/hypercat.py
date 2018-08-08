@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180801' #yyyymmdd
+__version__ = '20180808' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -28,11 +28,11 @@ import h5py
 # own
 from loggers import *
 import ndiminterpolation
-import bigfileops as bfo
+#import bigfileops as bfo
 from obsmodes import *
 from imageops import *
 from utils import *
-
+from ioops import *
 
 # CLASSES
 
@@ -66,16 +66,16 @@ class ModelCube:
             
             if self.subcube_selection == 'interactive':
                 self.theta, self.idxes, self.subcubesize =\
-                    bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
+                    getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
 
                 if subcube_selection_save is not None:
-                    bfo.storejson(subcube_selection_save,{self.groupname : self.idxes})
+                    storejson(subcube_selection_save,{self.groupname : self.idxes})
 
             elif os.path.isfile(self.subcube_selection):
-                d = bfo.loadjson(self.subcube_selection)
+                d = loadjson(self.subcube_selection)
                 self.idxes = d[self.groupname]
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
-                self.subcubesize = bfo.get_bytesize(self.idxes)
+                self.subcubesize = get_bytesize(self.idxes)
                 
             elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
                 pass
@@ -89,7 +89,7 @@ class ModelCube:
 
         self.theta_full = copy(self.theta)
                 
-        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+        prefix, suffix = get_bytes_human(self.subcubesize)
             
         if self.subcubesize != self.fullcubesize:
             hypercubestr = 'hyperslab [shape: ({:s})] from'.format(seq2str([len(_) for _ in self.theta]))
@@ -97,12 +97,12 @@ class ModelCube:
             hypercubestr = ''
             
         logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
-        self.dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
+        self.dsmm = memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         
         if subcube_selection != 'minimal':
 
             # materialize data cube
-            self.data = bfo.get_hyperslab_via_mesh(self.dsmm,self.idxes)
+            self.data = get_hyperslab_via_mesh(self.dsmm,self.idxes)
             logging.info("Done.")
 
             self.ip = self.make_interpolator()
@@ -189,7 +189,7 @@ class ModelCube:
         print(rule)
         print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
 
-        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+        prefix, suffix = get_bytes_human(self.subcubesize)
         print("Hypercube size: %g (%s)" % (prefix, suffix))
 
     parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
@@ -214,10 +214,10 @@ class ModelCube:
 #        idxes.append(list(range(self.theta[-1].size)))
 #
 #        theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-#        subcubesize = bfo.get_bytesize(idxes)
+#        subcubesize = get_bytesize(idxes)
 #
 #        # materialize data cube
-#        data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
+#        data = get_hyperslab_via_mesh(self.dsmm,idxes)
 #
 #        return idxes,theta,data
         
@@ -242,10 +242,10 @@ class ModelCube:
         idxes.append(list(range(self.theta[-1].size)))
 
         theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-        print("Loading a subcube of %g %s into RAM." % (bfo.get_bytes_human(bfo.get_bytesize(idxes))))
+        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
 
         # materialize data cube
-        data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
+        data = get_hyperslab_via_mesh(self.dsmm,idxes)
 
         return idxes,theta,data
 
@@ -493,10 +493,10 @@ class ModelCube:
 #
 #            if self.subcube_selection == 'interactive':
 #                self.theta, self.idxes, self.subcubesize =\
-#                    bfo.getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
+#                    getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
 #
 #                if subcube_selection_save is not None:
-#                    bfo.storejson(subcube_selection_save,{'idxes':self.idxes})
+#                    storejson(subcube_selection_save,{'idxes':self.idxes})
 #
 #            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
 #                pass
@@ -517,13 +517,13 @@ class ModelCube:
 ##                self.idxes.append(list(range(self.theta[-1].size)))
 ##
 ##                self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
-##                self.subcubesize = bfo.get_bytesize(self.idxes)
+##                self.subcubesize = get_bytesize(self.idxes)
 #                        
 #            else:
-#                d = bfo.loadjson(self.subcube_selection)
+#                d = loadjson(self.subcube_selection)
 #                self.idxes = d['idxes']
 #                self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
-#                self.subcubesize = bfo.get_bytesize(self.idxes)
+#                self.subcubesize = get_bytesize(self.idxes)
 #
 #        if not isinstance(self.theta,np.ndarray):
 #            self.theta = np.array(self.theta)
@@ -534,7 +534,7 @@ class ModelCube:
 #
 #        self.theta_full = copy(self.theta)
 #                
-#        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+#        prefix, suffix = get_bytes_human(self.subcubesize)
 #            
 #        if self.subcubesize != self.fullcubesize:
 #            hypercubestr = 'hyperslab [shape: ({:s})] from'.format(seq2str([len(_) for _ in self.theta]))
@@ -542,9 +542,9 @@ class ModelCube:
 #            hypercubestr = ''
 #            
 #        logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
-#        dsmm = bfo.memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
+#        dsmm = memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
 #        if subcube_selection != 'minimal':
-#            self.data = bfo.get_hyperslab_via_mesh(dsmm,self.idxes)
+#            self.data = get_hyperslab_via_mesh(dsmm,self.idxes)
 #            logging.info("Done.")
 #
 #            self.x = self.theta[-2]
@@ -645,7 +645,7 @@ class ModelCube:
 ##good        print(rule)
 ##good        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
 ##good
-##good        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+##good        prefix, suffix = get_bytes_human(self.subcubesize)
 ##good        print("Hypercube size: %g (%s)" % (prefix, suffix))
 ##good
 ##good    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
@@ -690,7 +690,7 @@ class ModelCube:
 #        print(rule)
 #        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
 #
-#        prefix, suffix = bfo.get_bytes_human(self.subcubesize)
+#        prefix, suffix = get_bytes_human(self.subcubesize)
 #        print("Hypercube size: %g (%s)" % (prefix, suffix))
 #
 #    parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
@@ -723,7 +723,7 @@ class ModelCube:
 #        self.idxes.append(list(range(self.theta[-1].size)))
 #
 #        self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
-#        self.subcubesize = bfo.get_bytesize(self.idxes)
+#        self.subcubesize = get_bytesize(self.idxes)
 #
 #        
 #        # instantiate an n-dim interpolator object
