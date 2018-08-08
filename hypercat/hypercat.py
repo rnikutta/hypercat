@@ -195,63 +195,21 @@ class ModelCube:
     parameter_values = property(print_sampling) #: Property alias for :func:`print_sampling`
                      
 
-    def get_minimal_cube(self,vector):
-
-        idxes = []
-        for j in range(len(vector)):
-            t_ = self.theta[j]
-            v_ = vector[j]
-            left = np.digitize(v_,t_).item() - 1
-            if t_[left] == v_:
-                right = left
-                left = left - 1
-            else:
-                right = left + 1
-                
-            idxes.append([left,right])
-
-        idxes.append(list(range(self.theta[-2].size)))
-        idxes.append(list(range(self.theta[-1].size)))
-
-        theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-        subcubesize = bfo.get_bytesize(idxes)
-
-        # materialize data cube
-        data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
-
-        return idxes,theta,data
-        
-
-#    def get_minimal_cube_multi_1(self,vector):
+#    def get_minimal_cube_single(self,vector):
 #
 #        idxes = []
 #        for j in range(len(vector)):
 #            t_ = self.theta[j]
 #            v_ = vector[j]
-##P            print("t_, v_ = ", t_, v_)
-#            if not isinstance(v_,tuple):
-#                v_ = tuple([v_])
+#            left = np.digitize(v_,t_).item() - 1
+#            if t_[left] == v_:
+#                right = left
+#                left = left - 1
+#            else:
+#                right = left + 1
+#                
+#            idxes.append([left,right])
 #
-#            lefts, rights = [], []
-#            for _ in v_:
-#                left = np.digitize(_,t_).item() - 1
-#                if t_[left] == _:
-#                    right = left
-#                    left = left - 1
-#                else:
-#                    right = left + 1
-#
-##P                print("_, v_, left, right = ", _, v_, left, right)
-#                lefts.append(left)
-#                rights.append(right)
-##P            print("lefts, rights = ", lefts, rights)
-#
-#            LEFT = min(lefts)
-#            RIGHT = max(rights)
-##P            print("LEFT, RIGHT = ", LEFT, RIGHT)
-#            idxes_ = list(range(LEFT,RIGHT+1))
-#            idxes.append(idxes_)
-#            
 #        idxes.append(list(range(self.theta[-2].size)))
 #        idxes.append(list(range(self.theta[-1].size)))
 #
@@ -260,14 +218,11 @@ class ModelCube:
 #
 #        # materialize data cube
 #        data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
-#        print("data.dtype: ", data.dtype)
-#        print("data.size = ", data.size)
-#        print("subcube size = %.2f MB" % (data.size*4/1024.**2))
 #
 #        return idxes,theta,data
+        
 
-    
-    def get_minimal_cubeNEW(self,vector):
+    def get_minimal_cube(self,vector):
 
         idxes = []
         for j in range(len(vector)):
@@ -276,20 +231,10 @@ class ModelCube:
             if not isinstance(v_,tuple):
                 v_ = tuple([v_])
                 
-            print("  t_, v_, len(v_) = ", t_, v_, len(v_))
-
-#            digits = np.digitize(waves,aux,right=True)
             digits = np.digitize(v_,t_,right=True)
             left = max((min(digits)-1,0))
-#            right = max((max(digits)+1,1))
             right = max((max(digits)+1,2))           
 
-            print(digits,t_[left:right])
-
-
-
-#            print("v_, digits, left, right,    t_[left],t_[right] = ", v_, digits, left, right,t_[left],t_[right])
-            print()
             idxes_ = list(range(left,right))
             idxes.append(idxes_)
             
@@ -297,16 +242,10 @@ class ModelCube:
         idxes.append(list(range(self.theta[-1].size)))
 
         theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-        print("theta[:-2] = ", theta[:-2])
-        print("idxes[:-2] = ", idxes[:-2])
-        subcubesize = bfo.get_bytesize(idxes)
+        print("Loading a subcube of %g %s into RAM." % (bfo.get_bytes_human(bfo.get_bytesize(idxes))))
 
         # materialize data cube
         data = bfo.get_hyperslab_via_mesh(self.dsmm,idxes)
-        print("data.shape: ", data.shape)
-        print("data.dtype: ", data.dtype)
-        print("data.size = ", data.size)
-        print("subcube size = %.2f MB" % (data.size*4/1024.**2))
 
         return idxes,theta,data
 

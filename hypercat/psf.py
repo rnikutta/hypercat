@@ -8,7 +8,6 @@ from astropy.modeling.models import AiryDisk2D, Gaussian2D
 from astropy.convolution import convolve, convolve_fft
 import astropy.io.fits as pyfits
 from imageops import *
-from imageops import checkOdd
 from units import *
 import astropy.io.ascii as ascii
 from scipy import ndimage
@@ -17,7 +16,7 @@ import json
 
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180216' #yyyymmdd
+__version__ = '20180808' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 
@@ -153,6 +152,10 @@ def getPSF(psfdict):
         #Compute PSF and obtain PSF pixelscale
         pixelscale_psf = fft_pxscale(header,psfdict['wavelength'])  #mas/px
         image_psf = np.abs(np.fft.fftshift(np.fft.fft2(data)))
+
+        # trim image_psf array to be an odd-dimensioned square with the highest pixel value at the exact center pixel
+        image_psf = trim_square_odd(image_psf)
+        
         #PSF with the pixelscale
         image_psf = Image(image_psf,pixelscale=np.str(pixelscale_psf)+' mas')
         #Normalization of the PSF

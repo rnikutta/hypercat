@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180321'   #yyymmdd
+__version__ = '20180808'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -733,6 +733,7 @@ def checkInt(x):
     if not isinstance(x,int):
         raise TypeError('x is not integer.')
 
+    
 def checkOdd(x):
 
     """Check whether x is integer and odd."""
@@ -742,6 +743,28 @@ def checkOdd(x):
     if x % 2 == 0:
         raise ValueError('x is not odd.')
 
+    
+def checkEven(x):
+
+    """Check whether x is integer and odd."""
+    
+    checkInt(x)
+        
+    if x % 2 != 0:
+        raise ValueError('x is not even.')
+
+    
+def check2d(image):
+    if image.ndim != 2:
+        raise ValueError("'image' is not 2-d.")
+
+
+def checkSquare(image):
+    nx, ny = image.shape[-2:]
+    if (nx != ny):
+        raise ValueError("'image' is not square (nx=ny)")
+    
+    
 def checkImage(image,returnsize=True,enforce2d=True):
 
     """Make a few common assertions for ``image``.
@@ -910,6 +933,75 @@ def make_binary(img,eps=0.3):
     img[np.abs(img-0.)<eps] = 0.
 
     return img
+
+
+def trim_square_odd(image):
+
+    """Given a 2-d image, find the brightest pixel and trim the image to
+       the largest possible square around it that has odd number of
+       pixels along the axes.
+
+    Parameters
+    ----------
+    image : 2-d array
+        Input image. Need not be square, any rectangle is fine. Must
+        have one brightest pixel.
+
+    Returns
+    -------
+    trimmed : 2-d array
+        A square 2-d array with odd npix (=nx=ny), with the brightest
+        pixel from `image` in its center pixel. npix is the maximal
+        size for a square inscribed within `image`.
+
+    Examples
+    --------
+
+    # Start with an even-by-even square
+    image = np.zeros((4,4))
+    image[1,1] = 1
+    print(image)
+      [[0. 0. 0. 0.]
+       [0. 1. 0. 0.]
+       [0. 0. 0. 0.]
+       [0. 0. 0. 0.]]
+    trimmed = trim_square_odd(image)
+    print(trimmed)
+      [[0. 0. 0.]
+       [0. 1. 0.]
+       [0. 0. 0.]]
+
+    # Try a rectangle, and have the brightest pixel at the edge
+    image = np.zeros((3,4))
+    image[0,1] = 1
+    print(image)
+      [[0. 1. 0. 0.]
+       [0. 0. 0. 0.]
+       [0. 0. 0. 0.]]
+    trimmed = trim_square_odd(image)
+    print(trimmed)
+      [[1.]]
+
+    """
+    
+    check2d(image) # test if image is indeed a 2-d array
+    ny, nx = image.shape
+
+    # find 2-index of the brightest pixel
+    idxpeak1d = np.argmax(image)
+    idx2d = np.unravel_index(idxpeak1d,image.shape)
+    cy, cx = idx2d
+
+    # find max margins around the central pixel
+    dx = min((cx,nx-cx-1))
+    dy = min((cy,ny-cy-1))
+    d = min((dx,dy))
+
+    # trim
+    trimmed = image[cy-d:cy+d+1,cx-d:cx+d+1]
+    
+    return trimmed
+
 
 
 def trim_square(img):

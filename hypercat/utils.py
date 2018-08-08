@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180801'   #yyymmdd
+__version__ = '20180808'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -16,6 +16,19 @@ import logging
 
 
 def get_rootdir():
+
+    """Construct Hypercat rootdir.
+
+    Only assumes that the current working directory is somewhere below
+    FOO/hypercat/.
+
+    Returns
+    -------
+    rootdir : str
+        Root directory of Hypercat, terminating in 'hypercat/'.
+
+    """
+    
     cwd = os.path.realpath('.')
     rootdir = cwd[:cwd.find('hypercat')]+'hypercat/'
     return rootdir
