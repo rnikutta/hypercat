@@ -54,6 +54,9 @@ def uvload(filename):
        Returns
        -------
        u, v: uv points
+       cf, cferr: correlated flux and errors
+       pa, paerr: PA and errors
+       amp, amperr: visibility amplitude and errors
 
        Example
        -------
@@ -66,7 +69,7 @@ def uvload(filename):
 
     ff = io.FitsFile(filename)
 
-    #get uv points
+    ###get uv points
     v = ff.getdata(4,'vcoord')
     u = ff.getdata(4,'ucoord')
 
@@ -78,7 +81,22 @@ def uvload(filename):
     u = np.concatenate([u_rev,u])
     v = np.concatenate([v_rev,v])
 
-    return u,v
+    ##get correlated flux from observations
+    cf = ff.getdata(4,'CFLUX')
+    cferr = ff.getdata(4,'CFLUXERR')
+
+    ## get PA from observations
+    pa = ff.getdata(4,'VISPHI')
+    paerr = ff.getdata(4,'VISPHIERR')
+
+    ## get PA from observations
+    amp = ff.getdata(4,'VISAMP')
+    amperr = ff.getdata(4,'VISAMPERR')
+
+    ##get wavelength
+    wave = ff.getdata(3,'EFF_WAVE')
+
+    return u, v, cf, cferr, pa, paerr, amp, amperr, wave
 
 
 def ima2fft(ima):
@@ -201,7 +219,7 @@ def correlatedflux(ima_fft,u,v):
     BL = np.sqrt(u**2+v**2)
     Phi = np.rad2deg(np.arctan(u/v))
 
-    return corrflux, BL, Phi
+    return corrflux*1E3, BL, Phi
 
 
 
@@ -219,6 +237,16 @@ def ima_ifft(ima_fft,u,v):
     ima_ifft = np.abs(np.fft.ifft2(a))
 
     return ima_ifft
+
+def getObsPerWave(u,v,mag,magerr,wavearray,wave):
+
+    m = np.zeros(len(u))
+    merr = np.zeros(len(v))
+    for ii in range(len(u)):
+        m[ii] = mag[ii][np.where(wavearray <= wave*1E-6)[0][0]]
+        merr[ii] = magerr[ii][np.where(wavearray <= wave*1E-6)[0][0]]
+    return m, merr
+
 
 
 ################ Plotting functions ###########

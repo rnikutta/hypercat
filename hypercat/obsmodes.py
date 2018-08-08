@@ -385,10 +385,9 @@ class Interferometry(ObsMode):
     """
 
     def __init__(self,name=''):
+        ObsMode.__init__(self,name=name)
 
-        self.name = name
-
-    def __call__(self,sky,uvfilename):  # __call__ is invoked by Instrument.observe()
+    def __call__(self,sky,oifilename):  # __call__ is invoked by Instrument.observe()
 
         image = copy(sky)
 
@@ -396,8 +395,9 @@ class Interferometry(ObsMode):
         ori_fft = interferometry.ima2fft(image)
         #Obtain pixel scale
         fftscale = interferometry.fft_pxscale(image)
-        #Obtain uv points
-        u,v = interferometry.uvload(uvfilename)
+        #Obtain observational data from oifile
+        u,v, cf_obs, cferr_obs, pa_obs, paerrr_obs, \
+        amp_obs, amperr_obs, wave = interferometry.uvload(oifilename)
         #Obtain correlated flux
         corrflux, BL, Phi = interferometry.correlatedflux(ori_fft,u,v)
         #obtain image fom fft
