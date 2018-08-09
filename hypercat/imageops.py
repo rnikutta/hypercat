@@ -541,7 +541,7 @@ def add_noise(image,snr,fraction=1.0):
 
     # compute noise pattern with correct amplitude distribution
     mu = 0.0
-    sigma = np.max(image) / float(snr)
+    sigma = fraction*np.max(image) / float(snr)
     noise_pattern = np.random.normal(mu,sigma,size=image.shape)
 
     # noisy image
@@ -596,7 +596,7 @@ def measure_snr(noisy_image,noise_pattern,fraction=1.0):
     if fraction <= 0. or fraction > 1.0:
         raise Exception("'fraction' must be > 0.0 and <= 1.0")
 
-    snr = fraction*np.max(noisy_image) / np.std(noise_pattern)
+    snr = fraction**2.*np.max(noisy_image) / np.std(noise_pattern)
 
     return snr
 
