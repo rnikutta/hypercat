@@ -6,17 +6,14 @@ from units import *
 from astropy.coordinates import name_resolve
 from utils import *
 from imageops import add_noise, measure_snr
-import interferometry
+from interferometry import *
 import psf
 import imageops
 
 import astropy.io.ascii as ascii
 
-__version__ = '20180202' #yyyymmdd
-__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
-
-__version__ = '20180806' #yyyymmdd
-__author__ = 'Enrique Lopez-Rodriguez<enloro@gmail.com>'
+__version__ = '20180808' #yyyymmdd
+__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
 
@@ -393,18 +390,23 @@ class Interferometry(ObsMode):
 
         image = copy(sky)
 
-        #Create 2D FFT of clumpy torus image
+        # Create 2D FFT of clumpy torus image
         ori_fft = interferometry.ima2fft(image)
-        #Obtain pixel scale
+        
+        # get pixelscale
         fftscale = interferometry.fft_pxscale(image)
-        #Obtain observational data from oifile
+        
+        # Obtain observational data from oifile
         u,v, cf_obs, cferr_obs, pa_obs, paerrr_obs, \
         amp_obs, amperr_obs, wave = interferometry.uvload(oifilename)
-        #Obtain correlated flux
+        
+        # Obtain correlated flux
         corrflux, BL, Phi = interferometry.correlatedflux(ori_fft,u,v)
-        #obtain image fom fft
+        
+        # obtain image fom fft
         ori_ifft = interferometry.ima_ifft(ori_fft,u,v)
-        #Plots
+        
+        # Plots
         #plot_inter(sky,ori_fft,ori_ifft,u,v,fftscale,corrflux,BL,Phi)
 
         return ori_fft,fftscale,u,v,corrflux,BL,Phi,ori_ifft
