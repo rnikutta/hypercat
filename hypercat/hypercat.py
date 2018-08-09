@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180808' #yyyymmdd
+__version__ = '20180809' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -22,13 +22,12 @@ import numpy as np
 from astropy import units as u
 from units import *
 from astropy import wcs
-from astropy.io import fits as pyfits
+from astropy.io import fits
 import h5py
 
 # own
 from loggers import *
 import ndiminterpolation
-#import bigfileops as bfo
 from obsmodes import *
 from imageops import *
 from utils import *
@@ -38,13 +37,79 @@ from ioops import *
 
 class ModelCube:
 
-    def __init__(self,hdffile='hypercat_20170109.hdf5',\
+    def __init__(self,hdffile='hypercat_20180417.hdf5',\
                  hypercube='imgdata',\
-                 subcube_selection='interactive',\
+                 subcube_selection='onthefly',\
                  subcube_selection_save=None,
-                 omit=('x','y'),\
-                 ndinterpolator=True):
+                 omit=('x','y')):
 
+        """Model hypercube of CLUMPY images. Can be generalized to any hypercube.
+
+        Parameters
+        ----------
+        hdffile : str
+            Path to the model hdf5 file. Default: ``'hypercat_20180417.hdf5'``
+
+        hypercube : str
+            Name of the hypercube within ``hdffile`` to use (currently
+            either ``'imgdata'`` or ``'clddata'``). Default: ``'imgdata'``.
+
+        subcube_selection : str | None
+
+            ``'onthefly'``, ``'interactive'`` or path to a `.json`
+            file containing the indices to select for every axis in
+            the ``hypercube`` in the ``hdffile``.
+
+            If ``'onthefly'``, the hypercube will be memory-mapped,
+            but not yet loaded into RAM (it's too large anyway). When
+            called the instance of :class:`ModelCube` with a parameter
+            vector, a minimal cube spanning all parameter sub-vectors
+            will be computed and then loaded into memory. `onthefly`
+            is the default mode, as it is the most convenient. It is
+            also the slowest (~400ms per image if selecting from the
+            full hypercube).
+
+            If ``'interactive'``, a simple selection dialog will be
+            launched in the terminal/session, allowing to
+            select/unselect entries from every axis (one at a
+            time). Once done, the corresponding list of index lists is
+            created, and the hyper-slab (sub-cube) loaded from disk to
+            RAM. The nested list of selected indices can be
+            conveniently stored into a json file for later re-use (see
+            arg ``subcube_selection_save``).
+
+            If ``subcube_selection`` is the path to a json file, it is
+            a file that can be created with
+            ``subcube_selection='interactive'``. Then also provide as
+            ``subcube_selection_save`` a file path to the to-be-stored
+            json file.
+
+        subcube_selection_save : str | None
+            If not ``None``, it a the path to a json file with the list of
+            index lists that select a subcube from the full
+            ``hypercube``. I.e. a json file with selection indices can
+            be created once, and then the same selection can be
+            repeated any time by simply loading the json file.
+
+        omit : tuple
+            Tuple of parameter names (as strings) to omit from subcube
+            selection. These axes will be automatically handled.
+        
+            .. warning:: 
+
+               This functionality is not fully implemented yet, and is
+               currently meant for the 'x' and 'y' axes only. Best not
+               to touch for now.
+
+        Example
+        -------
+        .. code-block:: python
+
+            # instantiate
+            cube = ModelCube()  # all defaults (i.e. default hdf5 file, 'imgdata' hypercube, 'onthefly' mode
+
+        """
+        
         self.hdffile = hdffile
         self.omit = omit
         self.subcube_selection = subcube_selection
@@ -77,8 +142,11 @@ class ModelCube:
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = get_bytesize(self.idxes)
                 
-            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
+            elif self.subcube_selection == 'onthefly': # single-values per parameter; load minimal hyperslab around that
                 pass
+
+            else:
+                raise Exception("Unknown mode for 'subcube_selection'. Must be either of 'onthefly', 'interactive', or a '.json' file containing selecting indices.")
 
         if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
@@ -99,7 +167,7 @@ class ModelCube:
         logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
         self.dsmm = memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         
-        if subcube_selection != 'minimal':
+        if subcube_selection != 'onthefly':
 
             # materialize data cube
             self.data = get_hyperslab_via_mesh(self.dsmm,self.idxes)
@@ -315,7 +383,7 @@ class ModelCube:
               (4,3,441,441)
         """
 
-        if self.subcube_selection == 'minimal':
+        if self.subcube_selection == 'onthefly':
             idxes, theta, data = self.get_minimal_cube(vector)
             ip = self.make_interpolator(idxes,theta,data)
         else:
@@ -1029,9 +1097,9 @@ def get_sed_from_fitsfile(fitsfile):
 
     """
 
-    header = pyfits.getheader(fitsfile)
+    header = fits.getheader(fitsfile)
     wave = np.array([v for k,v in header.items() if k.startswith('LAMB')])  # in micron
-    data = pyfits.getdata(fitsfile)  # uses first HDU by default
+    data = fits.getdata(fitsfile)  # uses first HDU by default
     sed = np.sum(data,axis=(1,2)) * header['CDELT1']**2   # \int I(x,y) dx dy
 
     return wave, sed
@@ -1069,7 +1137,7 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
 
     logging.info("Opening FITS file: {:s} ".format(fitsfile))
 
-    hdulist = pyfits.open(fitsfile,mode='update',save_backup=save_backup)
+    hdulist = fits.open(fitsfile,mode='update',save_backup=save_backup)
 
     hdunames = [h.name for h in hdulist]
     

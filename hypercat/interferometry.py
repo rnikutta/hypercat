@@ -23,26 +23,7 @@ import ndiminterpolation
 
 # HELPER FUNCTIONS
 
-def interferometry(sky,uvfilename):
-
-    #Create 2D FFT of clumpy torus image
-    ori_fft = ima2fft(sky)
-    #Obtain pixel scale
-    fftscale = fft_pxscale(sky)
-    #Obtain uv points
-    u,v = uvload(uvfilename)
-    #Obtain correlated flux
-    corrflux, BL, Phi = correlatedflux(ori_fft,u,v)
-    #obtain image fom fft
-    ori_ifft = ima_ifft(ori_fft,u,v)
-    #Plots
-    plot_inter(sky,ori_fft,ori_ifft,u,v,fftscale,corrflux,BL,Phi)
-
-    return ori_fft,fftscale,u,v,corrflux,BL,Phi,ori_ifft
-
-
-
-def uvload(filename):
+def uvload(filename,hdu=4):
 
     """Read uv points from a iofits file.
 
@@ -70,28 +51,28 @@ def uvload(filename):
     ff = io.FitsFile(filename)
 
     ###get uv points
-    v = ff.getdata(4,'vcoord')
-    u = ff.getdata(4,'ucoord')
+    v = ff.getdata(hdu,'vcoord')
+    u = ff.getdata(hdu,'ucoord')
 
     # create the center-symmetric points
-    u_rev=-u
-    v_rev=-v
+    u_rev = -u
+    v_rev = -v
 
     #combine the data set of uv points
     u = np.concatenate([u_rev,u])
     v = np.concatenate([v_rev,v])
 
     ##get correlated flux from observations
-    cf = ff.getdata(4,'CFLUX')
-    cferr = ff.getdata(4,'CFLUXERR')
+    cf = ff.getdata(hdu,'CFLUX')
+    cferr = ff.getdata(hdu,'CFLUXERR')
 
     ## get PA from observations
     pa = ff.getdata(4,'VISPHI')
-    paerr = ff.getdata(4,'VISPHIERR')
+    paerr = ff.getdata(hdu,'VISPHIERR')
 
     ## get PA from observations
-    amp = ff.getdata(4,'VISAMP')
-    amperr = ff.getdata(4,'VISAMPERR')
+    amp = ff.getdata(hdu,'VISAMP')
+    amperr = ff.getdata(hdu,'VISAMPERR')
 
     ##get wavelength
     wave = ff.getdata(3,'EFF_WAVE')
