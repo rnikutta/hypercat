@@ -18,7 +18,7 @@ import datetime
 # 3rd party
 import numpy as np
 import h5py
-from import astropy.io import fits
+from astropy.io import fits
 from astropy import wcs
 from astropy.coordinates import name_resolve
 import urwid, urwid.curses_display

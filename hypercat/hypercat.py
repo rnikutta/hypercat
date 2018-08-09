@@ -37,13 +37,79 @@ from ioops import *
 
 class ModelCube:
 
-    def __init__(self,hdffile='hypercat_20170109.hdf5',\
+    def __init__(self,hdffile='hypercat_20180417.hdf5',\
                  hypercube='imgdata',\
-                 subcube_selection='interactive',\
+                 subcube_selection='onthefly',\
                  subcube_selection_save=None,
-                 omit=('x','y'),\
-                 ndinterpolator=True):
+                 omit=('x','y')):
 
+        """Model hypercube of CLUMPY images. Can be generalized to any hypercube.
+
+        Parameters
+        ----------
+        hdffile : str
+            Path to the model hdf5 file. Default: ``'hypercat_20180417.hdf5'``
+
+        hypercube : str
+            Name of the hypercube within ``hdffile`` to use (currently
+            either ``'imgdata'`` or ``'clddata'``). Default: ``'imgdata'``.
+
+        subcube_selection : str | None
+
+            ``'onthefly'``, ``'interactive'`` or path to a `.json`
+            file containing the indices to select for every axis in
+            the ``hypercube`` in the ``hdffile``.
+
+            If ``'onthefly'``, the hypercube will be memory-mapped,
+            but not yet loaded into RAM (it's too large anyway). When
+            called the instance of :class:`ModelCube` with a parameter
+            vector, a minimal cube spanning all parameter sub-vectors
+            will be computed and then loaded into memory. `onthefly`
+            is the default mode, as it is the most convenient. It is
+            also the slowest (~400ms per image if selecting from the
+            full hypercube).
+
+            If ``'interactive'``, a simple selection dialog will be
+            launched in the terminal/session, allowing to
+            select/unselect entries from every axis (one at a
+            time). Once done, the corresponding list of index lists is
+            created, and the hyper-slab (sub-cube) loaded from disk to
+            RAM. The nested list of selected indices can be
+            conveniently stored into a json file for later re-use (see
+            arg ``subcube_selection_save``).
+
+            If ``subcube_selection`` is the path to a json file, it is
+            a file that can be created with
+            ``subcube_selection='interactive'``. Then also provide as
+            ``subcube_selection_save`` a file path to the to-be-stored
+            json file.
+
+        subcube_selection_save : str | None
+            If not ``None``, it a the path to a json file with the list of
+            index lists that select a subcube from the full
+            ``hypercube``. I.e. a json file with selection indices can
+            be created once, and then the same selection can be
+            repeated any time by simply loading the json file.
+
+        omit : tuple
+            Tuple of parameter names (as strings) to omit from subcube
+            selection. These axes will be automatically handled.
+        
+            .. warning:: 
+
+               This functionality is not fully implemented yet, and is
+               currently meant for the 'x' and 'y' axes only. Best not
+               to touch for now.
+
+        Example
+        -------
+        .. code-block:: python
+
+            # instantiate
+            cube = ModelCube()  # all defaults (i.e. default hdf5 file, 'imgdata' hypercube, 'onthefly' mode
+
+        """
+        
         self.hdffile = hdffile
         self.omit = omit
         self.subcube_selection = subcube_selection
@@ -78,6 +144,9 @@ class ModelCube:
                 
             elif self.subcube_selection == 'onthefly': # single-values per parameter; load minimal hyperslab around that
                 pass
+
+            else:
+                raise Exception("Unknown mode for 'subcube_selection'. Must be either of 'onthefly', 'interactive', or a '.json' file containing selecting indices.")
 
         if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
