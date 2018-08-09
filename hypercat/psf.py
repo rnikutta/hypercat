@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 import numpy as np
 from astropy.modeling.models import AiryDisk2D, Gaussian2D
 from astropy.convolution import convolve, convolve_fft
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from imageops import *
 from units import *
 import astropy.io.ascii as ascii
@@ -17,7 +17,7 @@ from utils import get_rootdir
 rootdir = get_rootdir()
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180808' #yyyymmdd
+__version__ = '20180809' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 
@@ -119,7 +119,7 @@ def getPupil(psfdict):
     with open(pupilfile,'r') as f:
         pupildict = json.load(f)
     pupil_fitsfile = pupildict[psfdict['telescope']]['file']
-    data, header = pyfits.getdata(rootdir+pupil_fitsfile,header=True)
+    data, header = fits.getdata(rootdir+pupil_fitsfile,header=True)
     return data, header
 
 
@@ -182,7 +182,7 @@ def loadPSFfromFITS(fitsfile,psfdict):
 
     hdukw = psfdict['hdukw']
     pixelscalekw = psfdict['pixelscale']
-    image_psf, header = pyfits.getdata(fitsfile,hdukw,header=True)
+    image_psf, header = fits.getdata(fitsfile,hdukw,header=True)
 
     return image_psf, header
 

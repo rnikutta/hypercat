@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180808' #yyyymmdd
+__version__ = '20180809' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -22,13 +22,12 @@ import numpy as np
 from astropy import units as u
 from units import *
 from astropy import wcs
-from astropy.io import fits as pyfits
+from astropy.io import fits
 import h5py
 
 # own
 from loggers import *
 import ndiminterpolation
-#import bigfileops as bfo
 from obsmodes import *
 from imageops import *
 from utils import *
@@ -77,7 +76,7 @@ class ModelCube:
                 self.theta = [self.theta[j][self.idxes[j]] for j in range(len(self.theta))]
                 self.subcubesize = get_bytesize(self.idxes)
                 
-            elif self.subcube_selection == 'minimal': # single-values per parameter; load minimal hyperslab around that
+            elif self.subcube_selection == 'onthefly': # single-values per parameter; load minimal hyperslab around that
                 pass
 
         if not isinstance(self.theta,np.ndarray):
@@ -99,7 +98,7 @@ class ModelCube:
         logging.info("Loading {:s} hypercube '{:s}' [shape: ({:s})] to RAM ({:.2f} {:s} required) ...".format(hypercubestr,hypercube,seq2str(self.fullcubeshape),prefix,suffix))
         self.dsmm = memmap_hdf5_dataset(hdffile,hypercube+'/hypercube')
         
-        if subcube_selection != 'minimal':
+        if subcube_selection != 'onthefly':
 
             # materialize data cube
             self.data = get_hyperslab_via_mesh(self.dsmm,self.idxes)
@@ -315,7 +314,7 @@ class ModelCube:
               (4,3,441,441)
         """
 
-        if self.subcube_selection == 'minimal':
+        if self.subcube_selection == 'onthefly':
             idxes, theta, data = self.get_minimal_cube(vector)
             ip = self.make_interpolator(idxes,theta,data)
         else:
@@ -1029,9 +1028,9 @@ def get_sed_from_fitsfile(fitsfile):
 
     """
 
-    header = pyfits.getheader(fitsfile)
+    header = fits.getheader(fitsfile)
     wave = np.array([v for k,v in header.items() if k.startswith('LAMB')])  # in micron
-    data = pyfits.getdata(fitsfile)  # uses first HDU by default
+    data = fits.getdata(fitsfile)  # uses first HDU by default
     sed = np.sum(data,axis=(1,2)) * header['CDELT1']**2   # \int I(x,y) dx dy
 
     return wave, sed
@@ -1069,7 +1068,7 @@ def mirror_fitsfile(fitsfile,hdus=('IMGDATA','CLDDATA'),save_backup=True):
 
     logging.info("Opening FITS file: {:s} ".format(fitsfile))
 
-    hdulist = pyfits.open(fitsfile,mode='update',save_backup=save_backup)
+    hdulist = fits.open(fitsfile,mode='update',save_backup=save_backup)
 
     hdunames = [h.name for h in hdulist]
     
