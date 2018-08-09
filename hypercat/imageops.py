@@ -548,7 +548,6 @@ def add_noise(image,snr,fraction=1.0):
     noisy_image = image + noise_pattern
 
     # normalize
-    noisy_image = noisy_image / (fraction*np.max(noisy_image)) * np.max(image)
 
     return noisy_image, noise_pattern
 
