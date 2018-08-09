@@ -181,8 +181,10 @@ class Imaging(ObsMode):
 
         #PSF with the same FOV of the image
         if self.PSF.FOV != image.FOV:
-            self.PSF.changeFOV(str(image.FOV))
+            newFOV = getQuantity(image.FOV,UNITS['CUNITS'])*1.2
+            self.PSF.changeFOV(str(newFOV))
             self.PSF.resample(image.pixelscale)
+            self.PSF.changeFOV(str(image.FOV))
 
         #PSF with the same pixelscale as the image
         PSF_resampled = copy(self.PSF)
@@ -197,7 +199,6 @@ class Imaging(ObsMode):
         if target_pixelscale == 'Nyquist':
             pupil_ima, pupil_header = psf.getPupil(self.psfdict)
             pupil_diameter = pupil_header['NAXIS1']*pupil_header['PIXSCALE']*u.m
-            #pupil_diameter = getQuantity(self.psfdict['diameter'],UNITS['CUNITS'])
             target_pixelscale = ((image.wave/pupil_diameter)*u.rad).to('mas')/2
 
         image.resample(target_pixelscale)
