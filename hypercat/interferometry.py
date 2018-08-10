@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170207'   #yyymmdd
+__version__ = '20170810'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.
@@ -16,12 +16,47 @@ from astropy.modeling import models
 import matplotlib.pyplot as plt
 from copy import copy
 import numpy.ma as ma
+from astropy import units as u
 
 #HyperCAT
 import ioops as io
 import ndiminterpolation
+import imageops
+import units
 
 # HELPER FUNCTIONS
+
+def load_uv(oifilename,hdu=4):
+
+    ff = io.FitsFile(oifilename)
+
+    # get uv points
+    v = ff.getdata(hdu,'vcoord')
+    u = ff.getdata(hdu,'ucoord')
+
+    # create the center-symmetric points
+    u_rev = -u
+    v_rev = -v
+
+    #combine the data set of uv points
+    u = np.concatenate([u_rev,u])
+    v = np.concatenate([v_rev,v])
+
+    return u, v
+
+
+def get_BLPhi(u,v):
+    
+    BL = np.sqrt(u**2 + v**2)
+    Phi = -np.rad2deg(np.arctan2(u,v)) # minus for physical/astronomical way of measuring angles (positive in anti-clockwise direction)
+
+    return BL, Phi
+
+
+
+
+
+
 
 def uvload(filename,hdu=4):
 
@@ -54,13 +89,13 @@ def uvload(filename,hdu=4):
     v = ff.getdata(hdu,'vcoord')
     u = ff.getdata(hdu,'ucoord')
 
-    # create the center-symmetric points
-    u_rev = -u
-    v_rev = -v
-
-    #combine the data set of uv points
-    u = np.concatenate([u_rev,u])
-    v = np.concatenate([v_rev,v])
+#TMP    # create the center-symmetric points
+#TMP    u_rev = -u
+#TMP    v_rev = -v
+#TMP
+#TMP    #combine the data set of uv points
+#TMP    u = np.concatenate([u_rev,u])
+#TMP    v = np.concatenate([v_rev,v])
 
     ##get correlated flux from observations
     cf = ff.getdata(hdu,'CFLUX')
@@ -80,7 +115,7 @@ def uvload(filename,hdu=4):
     return u, v, cf, cferr, pa, paerr, amp, amperr, wave
 
 
-def ima2fft(ima):
+def ima2fft(ima,fliplr=True):
 
     """Compute 2-d FFT of an image.
 
@@ -106,12 +141,26 @@ def ima2fft(ima):
 
     """
 
-    #The 2D FFT is shifted to reconstruct the image at the central position of the array.
-    ima = ima.data
+    # The 2D FFT is shifted to reconstruct the image at the central position of the array.
 
-    ima_fft = np.fft.fftshift(np.fft.fft2(ima))
 
-    return ima_fft
+    
+#    if ima.__class__ is imageops.Image:
+#        ima = ima.data.T
+#    elif .__class__ is numpy.ndarray:
+#        ima = ima
+#    else:
+#        raise Exception("The image provided to ima2fft must be either
+#        a 2-d array or an instance of the `Image` class")
+
+    # do 2-d FFT
+    units = ima.data.unit
+    imafft = np.fft.fftshift(np.fft.fft2(ima.data))
+
+    if fliplr is True:
+        imafft = np.fliplr(imafft)
+
+    return imafft*units
 
 
 def fft_pxscale(ima):
@@ -157,13 +206,128 @@ def fft_pxscale(ima):
     return fftscale
 
 
-def correlatedflux(ima_fft,u,v):
+
+#def gauss2cf():
+#
+#    import imageops
+#    import obsmodes
+#    import pylab as plt
+#    import matplotlib
+#    from astropy.modeling import models
+#    
+#    npix = 241
+#    x = np.linspace(-npix//2,npix//2,npix)
+#    X,Y = np.meshgrid(x,x,indexing='xy')
+#    G = models.Gaussian2D
+#    g = G.evaluate(X,Y,1,0,0,15,15,0)
+#    g = 16*u.Jay * (g/g.max())
+#    gsky = imageops.Image(g,pixelscale='1 mas',total_flux_density='1.5 Jy')
+#    gsky.wave = wave
+#    cf,bl,fftscale = vlti.observe(gsky,oifilename='../docs/notebooks/NGC1068.oifits')
+#    u,v = vlti.u, vlti.v
+##    u = np.concatenate((u,[-1,1]))
+##    v = np.concatenate((v,[1,-1]))
+#    cf,bl,fftscale = vlti.observe(gsky,uv=(u,v))
+#    FOVm = gsky.npix * fftscale
+#    ex = FOVm/2
+#    
+#    ax1.imshow(gsky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex])
+#    
+#    ax2.imshow(np.abs(vlti.imafft.value),extent=[-ex,ex,-ex,ex],origin='lower',norm=matplotlib.colors.LogNorm())
+#    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='orange',ms=2)
+#    
+#    idx1 = np.argsort(bl)
+#    ax3.plot(bl[idx1],cf[idx1],'b-')
+
+
+def sky2cf():
+    import hypercat
+    import obsmodes
+    import pylab as plt
+    import matplotlib
+
+    # get cube and sky
+    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
+    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
+#    ngc1068 = hypercat.Source(cube,luminosity='3e44 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
+    vec = (43,75,18,4,0.08,70,12)
+    sky = ngc1068(vec,total_flux_density='16 Jy')
+
+    # get cf from oifiltsfile
+    u_, v_, cf_, cferr_, pa_, paerr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
+    wave_ *= 1e6
+    sel = (wave_ > 11.5) & (wave_ < 12.5)
+    cfs = cf_[:,sel].mean(axis=1)
+    cferrs = cferr_[:,sel].mean(axis=1)
+    
+    # siumlate interferometric observations
+    vlti = obsmodes.Interferometry()
+    cf,bl,fftscale = vlti.observe(sky,oifilename='../docs/notebooks/NGC1068.oifits') # use u,v points from oifitsfile
+    print("XXXXXXXXXXXXXXXXXX cf = ", cf)
+    bl = bl[:len(bl)//2]
+    
+    # plotting
+    fig,(ax1,ax2,ax3) = plt.subplots(1,3,figsize=(10,3))
+    ex = sky.FOV.value/2
+    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.jet)
+    ax1.axvline(0);ax1.axhline(0)
+    ax1.set_xlabel('mas')
+    ax1.set_ylabel('mas')
+
+    ex = (fftscale*u.m * sky.npix).value/2
+    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[ex,-ex,-ex,ex],norm=matplotlib.colors.LogNorm(),cmap=matplotlib.cm.jet)
+    ax2.axvline(0); ax2.axhline(0)
+    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
+    ax2.set_xlim(130,-130)
+    ax2.set_ylim(-130,130)
+    ax2.set_xlabel('m')
+    ax2.set_ylabel('m')
+
+    idx1 = np.argsort(bl)
+#    print("idx1 ",idx1,len(idx1))
+#    print("bl ",bl,len(bl))
+#    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
+
+    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+    selps = (bl>120.)
+    cfsps = cfs[selps]
+
+    Fps = np.mean(cfsps)*u.Jy
+    print("Fps = ", Fps)
+    Ftot = sky.getTotalFluxDensity()
+
+    cf = cf * u.pix
+    
+#    cf = (Ftot-Fps) * (cf/cf.max()) + Fps
+
+    print("=============== Ftot,Fps,cf = ",Ftot,Fps,cf)
+    cf = (Ftot-Fps) * (cf/Ftot) + Fps
+
+    ax3.plot(bl[idx1],cf[idx1],'b-')
+    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
+    
+    ax2.set_xlabel('BL (m)')
+    ax2.set_ylabel('corr. flux (Jy)')
+
+    return vlti
+
+
+
+def fft_pixelscale(image):
+
+    fftscale = image.npix * image.pixelscale # mas 
+    fftscale = image.wave.to('m') / fftscale.to('rad').value
+
+    return fftscale
+
+
+def correlatedflux(imafft,fftscale,u,v):
 
     """Compute 2D correlated flux, baseline and position angle map from a 2-d FFT map.
 
        Parameters
        ----------
-       ima_fft : array
+       imafft : array
            2D FFT of the clumpy torus model from ima2fft
 
        u_px, v_px : array
@@ -189,18 +353,16 @@ def correlatedflux(ima_fft,u,v):
 
     """
 
-    ima_fft = np.abs(ima_fft)
+    imafft = np.abs(imafft)
 
-    x  = np.arange(ima_fft.shape[0])
-    ip = ndiminterpolation.NdimInterpolation(ima_fft,[x,x])
-    uu = u + ima_fft.shape[0]//2
-    vv = v + ima_fft.shape[0]//2
-    corrflux = ip(np.dstack((uu,vv)))
+    npix = imafft.shape[0]
+    size = npix * fftscale # total image plae size in meters
+    x = np.linspace(-size//2,size//2,npix)
+    unit = imafft.unit
+    ip = ndiminterpolation.NdimInterpolation(imafft.value,[x,x])
+    corrflux = ip(np.dstack((u,v)))
 
-    BL = np.sqrt(u**2+v**2)
-    Phi = np.rad2deg(np.arctan(u/v))
-
-    return corrflux*1E3, BL, Phi
+    return corrflux*unit
 
 
 

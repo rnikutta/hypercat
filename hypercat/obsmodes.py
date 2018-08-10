@@ -9,6 +9,7 @@ from imageops import add_noise, measure_snr
 from interferometry import *
 import psf
 import imageops
+import ioops
 
 import astropy.io.ascii as ascii
 
@@ -387,27 +388,51 @@ class Interferometry(ObsMode):
     def __init__(self,name=''):
         ObsMode.__init__(self,name=name)
 
-    def __call__(self,sky,oifilename):  # __call__ is invoked by Instrument.observe()
+    def check_uvpoints(self):
+        if self.uv is not None:
+            self.u, self.v = self.uv
+        elif self.oifilename is not None:
+            self.u, self.v = load_uv(self.oifilename)
+        else:
+            raise Exception('No u,v points provided. Give them either directly or from an oifits file.')
 
-        image = copy(sky)
+        
+    def __call__(self,sky,uv=None,oifilename=None,fliplr=True):  # __call__ is invoked by Instrument.observe()
+
+        self.uv = uv
+        self.oifilename = oifilename
+        self.check_uvpoints()
+
+        self.image = copy(sky)
 
         # Create 2D FFT of clumpy torus image
-        ori_fft = interferometry.ima2fft(image)
+        self.imafft = ima2fft(self.image,fliplr=fliplr)
+
+        BL, Phi = get_BLPhi(self.u,self.v)
         
         # get pixelscale
-        fftscale = interferometry.fft_pxscale(image)
-        
-        # Obtain observational data from oifile
-        u,v, cf_obs, cferr_obs, pa_obs, paerrr_obs, \
-        amp_obs, amperr_obs, wave = interferometry.uvload(oifilename)
-        
-        # Obtain correlated flux
-        corrflux, BL, Phi = interferometry.correlatedflux(ori_fft,u,v)
-        
-        # obtain image fom fft
-        ori_ifft = interferometry.ima_ifft(ori_fft,u,v)
-        
-        # Plots
-        #plot_inter(sky,ori_fft,ori_ifft,u,v,fftscale,corrflux,BL,Phi)
+        fftscale = fft_pxscale(self.image)
+        print("fftscale = ",fftscale)
 
-        return ori_fft,fftscale,u,v,corrflux,BL,Phi,ori_ifft
+#        # Obtain observational data from oifile
+#        u,v, cf_obs, cferr_obs, pa_obs, paerrr_obs, \
+#        amp_obs, amperr_obs, wave = interferometry.uvload(oifilename)
+#        
+        # Obtain correlated flux
+        corrflux = correlatedflux(self.imafft,fftscale,self.u,self.v)
+        return corrflux, BL, fftscale
+        
+#        # obtain image fom fft
+#        ori_ifft = interferometry.ima_ifft(ori_fft,u,v)
+#        
+#        # Plots
+#        #plot_inter(sky,ori_fft,ori_ifft,u,v,fftscale,corrflux,BL,Phi)
+#
+#        return ori_fft,fftscale,corrflux  u,v,BL,Phi,     ori_ifft
+
+
+#     inp uv --> BL , Phi
+#       inp image --> fftscale
+#         do FFT --> ofi_fft
+#         extract CF(u,v) --> corrflux
+         
