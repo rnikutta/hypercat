@@ -1,17 +1,17 @@
 from __future__ import print_function
 
+import os
 from copy import copy
-import psf
-from units import *
 from astropy.coordinates import name_resolve
+import astropy.io.ascii as ascii
+
+from units import *
 from utils import *
 from imageops import add_noise, measure_snr
 from interferometry import *
 import psf
 import imageops
 import ioops
-
-import astropy.io.ascii as ascii
 
 __version__ = '20180808' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
@@ -385,23 +385,39 @@ class Interferometry(ObsMode):
     input baseline (BL length and PA).
     """
 
-    def __init__(self,name=''):
+    def __init__(self,name='',uv=None):
         ObsMode.__init__(self,name=name)
 
-    def check_uvpoints(self):
-        if self.uv is not None:
-            self.u, self.v = self.uv
-        elif self.oifilename is not None:
-            self.u, self.v = load_uv(self.oifilename)
+        if uv is not None:
+            self.set_uv_points(uv)
+        
+
+    def set_uv_points(self,uv):
+
+        if os.path.isfile(uv) and uv.endswith('.oifits'):
+            self.u, self.v = load_uv(uv)
+        elif istance(uv,(tuple,list)):
+            self.u, self.v = uv  # e-elements sequence, (u,v), where each is a 1-d sequence
         else:
             raise Exception('No u,v points provided. Give them either directly or from an oifits file.')
 
+    def check_uv_points(self):
+        if self.u is None or self.v is None:
+            raise Excaption("No (u,v) points set. Set explicitly via set_uv_points(uv) or when calling the instance.")
         
-    def __call__(self,sky,uv=None,oifilename=None,fliplr=True):  # __call__ is invoked by Instrument.observe()
+        
+        
+#    def __call__(self,sky,uv=None,oifilename=None,fliplr=True):  # __call__ is invoked by Instrument.observe()
+    def __call__(self,sky,uv=None,fliplr=True):  # __call__ is invoked by Instrument.observe()
 
-        self.uv = uv
-        self.oifilename = oifilename
-        self.check_uvpoints()
+        if uv is not None:
+            self.set_uv_points(uv)
+
+        self.check_uv_points()
+        
+#        self.uv = uv
+#        self.oifilename = oifilename
+#        self.check_uvpoints()
 
         self.image = copy(sky)
 

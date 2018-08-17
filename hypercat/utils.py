@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180808'   #yyymmdd
+__version__ = '20180811'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -9,10 +9,28 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 """
 
 import os
+from tkinter import Tk, filedialog
 import numpy as np
 from astropy.coordinates import name_resolve
 from astropy import wcs
 import logging
+
+
+def pickfile():
+    """Ask user to select a local file in a pop-up window.
+
+    Returns the selected file path as a string. Works in a local
+    Jupyter.
+
+    """
+    
+    root = Tk()
+    filename = filedialog.askopenfilename(title="Select a file")
+    root.destroy()
+    print("File %s selected." % filename)
+    
+    return filename
+
 
 
 def get_rootdir():

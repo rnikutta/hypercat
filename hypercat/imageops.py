@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180808'   #yyymmdd
+__version__ = '20180813'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -8,13 +8,18 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 .. automodule:: imageops
 """
 
+# std dev
 import logging
+from copy import copy
+
+# 3rd party
 import numpy as np
 from scipy import ndimage
-from units import *
 import astropy
 from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
-from copy import copy
+
+# hypercat
+from units import *
 
 class ImageFrame:
 

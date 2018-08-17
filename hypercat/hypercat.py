@@ -20,7 +20,6 @@ import time
 # 3rd party
 import numpy as np
 from astropy import units as u
-from units import *
 from astropy import wcs
 from astropy.io import fits
 import h5py
@@ -32,6 +31,7 @@ from obsmodes import *
 from imageops import *
 from utils import *
 from ioops import *
+from units import *
 
 # CLASSES
 
@@ -176,7 +176,7 @@ class ModelCube:
             self.ip = self.make_interpolator()
         
         print("Inspect the loaded hypercube with .print_sampling()\n")
-        self.print_sampling()
+        self.print_sampling(8) # print first 8 sampled values
 
 
     def __call__(self,vector,full=True):

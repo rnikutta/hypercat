@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20170810'   #yyymmdd
+__version__ = '20170813'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.
@@ -19,6 +19,9 @@ import numpy.ma as ma
 from astropy import units as u
 
 #HyperCAT
+#import ioops as io
+#import ndiminterpolation
+
 import ioops as io
 import ndiminterpolation
 import imageops
@@ -34,13 +37,13 @@ def load_uv(oifilename,hdu=4):
     v = ff.getdata(hdu,'vcoord')
     u = ff.getdata(hdu,'ucoord')
 
-    # create the center-symmetric points
-    u_rev = -u
-    v_rev = -v
-
-    #combine the data set of uv points
-    u = np.concatenate([u_rev,u])
-    v = np.concatenate([v_rev,v])
+#    # create the center-symmetric points
+#    u_rev = -u
+#    v_rev = -v
+#
+#    #combine the data set of uv points
+#    u = np.concatenate([u_rev,u])
+#    v = np.concatenate([v_rev,v])
 
     return u, v
 
@@ -240,7 +243,84 @@ def fft_pxscale(ima):
 #    ax3.plot(bl[idx1],cf[idx1],'b-')
 
 
-def sky2cf():
+#def sky2cf():
+#    import hypercat
+#    import obsmodes
+#    import pylab as plt
+#    import matplotlib
+#
+#    # get cube and sky
+#    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
+#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
+##    ngc1068 = hypercat.Source(cube,luminosity='3e44 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
+##    vec = (43,75,18,4,0.08,70,12)
+#
+##    sig, i, Y, N0, q, tv, wave = 30,80,8,4,0.08,70,12
+#    sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
+#    vec = (sig, i, Y, N0, q, tv, wave)
+#    sky = ngc1068(vec,total_flux_density='16 Jy')
+#
+#    # get cf from oifiltsfile
+#    u_, v_, cf_, cferr_, pa_, paerr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
+#    wave_ *= 1e6
+#    sel = (wave_ > 11.5) & (wave_ < 12.5)
+#    cfs = cf_[:,sel].mean(axis=1)
+#    cferrs = cferr_[:,sel].mean(axis=1)
+#    
+#    # siumlate interferometric observations
+#    vlti = obsmodes.Interferometry()
+#    cf,bl,fftscale = vlti.observe(sky,uv='../docs/notebooks/NGC1068.oifits') # use u,v points from oifitsfile
+#    print("XXXXXXXXXXXXXXXXXX cf = ", cf)
+##    bl = bl[:len(bl)//2]
+#    
+#    # plotting
+#    fig,(ax1,ax2,ax3) = plt.subplots(1,3,figsize=(10,3))
+#    ex = sky.FOV.value/2
+#    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.viridis)
+#    ax1.axvline(0);ax1.axhline(0)
+#    ax1.set_xlabel('mas')
+#    ax1.set_ylabel('mas')
+#
+#    ex = (fftscale*u.m * sky.npix).value/2
+#    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[ex,-ex,-ex,ex],norm=matplotlib.colors.LogNorm(),cmap=matplotlib.cm.jet)
+#    ax2.axvline(0); ax2.axhline(0)
+#    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
+#    ax2.set_xlim(130,-130)
+#    ax2.set_ylim(-130,130)
+#    ax2.set_xlabel('m')
+#    ax2.set_ylabel('m')
+#    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + vec.__repr__())
+#
+#    idx1 = np.argsort(bl)
+##    print("idx1 ",idx1,len(idx1))
+##    print("bl ",bl,len(bl))
+##    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
+#
+#    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+#    selps = (bl>70.)
+#    cfsps = cfs[selps]
+#
+#    Fps = np.mean(cfsps)*u.Jy
+#    print("Fps = ", Fps)
+#    Ftot = sky.getTotalFluxDensity()
+#
+#    cf = cf * u.pix
+#    
+##    cf = (Ftot-Fps) * (cf/cf.max()) + Fps
+#
+#    print("=============== Ftot,Fps,cf = ",Ftot,Fps,cf)
+#    cf = (Ftot-Fps) * (cf/Ftot) + Fps
+#
+#    ax3.plot(bl[idx1],cf[idx1],'bo-',ms=2,lw=1)
+#    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
+#    ax3.set_xlim(0,130)
+#    ax3.set_xlabel('BL (m)')
+#    ax3.set_ylabel('corr. flux (Jy)')
+#    
+#    return vlti, fig
+
+
+def sky2cf(vec=None):
     import hypercat
     import obsmodes
     import pylab as plt
@@ -248,33 +328,54 @@ def sky2cf():
 
     # get cube and sky
     cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
-    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
-#    ngc1068 = hypercat.Source(cube,luminosity='3e44 erg/s',distance='14.4 Mpc',pa='42 deg',objectname='ngc1068')                          
-    vec = (43,75,18,4,0.08,70,12)
-    sky = ngc1068(vec,total_flux_density='16 Jy')
+    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
 
-    # get cf from oifiltsfile
+    # obs data
     u_, v_, cf_, cferr_, pa_, paerr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
+    bl = np.sqrt(u_**2 + v_**2)
     wave_ *= 1e6
     sel = (wave_ > 11.5) & (wave_ < 12.5)
     cfs = cf_[:,sel].mean(axis=1)
     cferrs = cferr_[:,sel].mean(axis=1)
     
-    # siumlate interferometric observations
-    vlti = obsmodes.Interferometry()
-    cf,bl,fftscale = vlti.observe(sky,oifilename='../docs/notebooks/NGC1068.oifits') # use u,v points from oifitsfile
-    print("XXXXXXXXXXXXXXXXXX cf = ", cf)
-    bl = bl[:len(bl)//2]
+    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+    selps = (bl>70.)
+    cfsps = cfs[selps]
+    Fps = np.mean(cfsps)*u.Jy
+    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
+    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
+
+    
+#    cfs = cfs*t.vector('cfs')
+#    cferrs = cfs*t.vector('cferrs')
+
+    
+    # instrument
+    vlti = obsmodes.Interferometry(uv='../docs/notebooks/NGC1068.oifits')
+
+
+    if vec is None:
+#    sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
+        sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
+        vec = (sig, i, Y, N0, q, tv, wave)
+        
+    sky = ngc1068(vec,total_flux_density='16 Jy')
+
+    CF,BL,FFTSCALE = vlti.observe(sky,fliplr=True) # use u,v points from oifitsfile
+    CF = S * CF*u.pix + Fps
+    CF = CF.value.astype('float64')
+
+#    bl = bl[:len(bl)//2]
     
     # plotting
     fig,(ax1,ax2,ax3) = plt.subplots(1,3,figsize=(10,3))
     ex = sky.FOV.value/2
-    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.jet)
+    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.viridis)
     ax1.axvline(0);ax1.axhline(0)
     ax1.set_xlabel('mas')
     ax1.set_ylabel('mas')
 
-    ex = (fftscale*u.m * sky.npix).value/2
+    ex = (FFTSCALE*u.m * sky.npix).value/2
     ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[ex,-ex,-ex,ex],norm=matplotlib.colors.LogNorm(),cmap=matplotlib.cm.jet)
     ax2.axvline(0); ax2.axhline(0)
     ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
@@ -282,34 +383,24 @@ def sky2cf():
     ax2.set_ylim(-130,130)
     ax2.set_xlabel('m')
     ax2.set_ylabel('m')
+    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]))
+#                  vec.__repr__())
 
-    idx1 = np.argsort(bl)
+    idx1 = np.argsort(BL)
 #    print("idx1 ",idx1,len(idx1))
 #    print("bl ",bl,len(bl))
 #    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
 
-    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
-    selps = (bl>120.)
-    cfsps = cfs[selps]
-
-    Fps = np.mean(cfsps)*u.Jy
-    print("Fps = ", Fps)
-    Ftot = sky.getTotalFluxDensity()
-
-    cf = cf * u.pix
-    
-#    cf = (Ftot-Fps) * (cf/cf.max()) + Fps
-
-    print("=============== Ftot,Fps,cf = ",Ftot,Fps,cf)
-    cf = (Ftot-Fps) * (cf/Ftot) + Fps
-
-    ax3.plot(bl[idx1],cf[idx1],'b-')
+    ax3.plot(BL[idx1],CF[idx1],'bo-',ms=2,lw=1)
     ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
-    
-    ax2.set_xlabel('BL (m)')
-    ax2.set_ylabel('corr. flux (Jy)')
+    ax3.set_xlim(0,130)
+    ax3.set_xlabel('BL (m)')
+    ax3.set_ylabel('corr. flux (Jy)')
 
-    return vlti
+    print("bl", bl)
+    print("BL", BL)
+    
+    return vlti, fig
 
 
 

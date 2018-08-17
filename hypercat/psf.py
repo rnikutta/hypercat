@@ -7,13 +7,15 @@ import numpy as np
 from astropy.modeling.models import AiryDisk2D, Gaussian2D
 from astropy.convolution import convolve, convolve_fft
 from astropy.io import fits
-from imageops import *
-from units import *
 import astropy.io.ascii as ascii
 from scipy import ndimage
 from skimage import restoration
 import json
+
+from imageops import *
+from units import *
 from utils import get_rootdir
+
 rootdir = get_rootdir()
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"

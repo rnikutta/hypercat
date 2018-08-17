@@ -76,6 +76,8 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
 
     """Plot a single panel. To be called from :func:`multiplot() (see docstring there).`
     """
+    print("contours = ",contours)
+            
     
     # what kind of animal is 'image'?
     cls = None
@@ -139,6 +141,11 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
         elif contours == 'log':
             norm = matplotlib.colors.LogNorm()
             V = np.logspace(np.log10(min_),np.log10(max_),ncon)
+
+        else:
+            norm = None
+            print("contours = ",contours)
+            V = np.array(contours)*data.max()
             
         ax.contour(data,V,origin='lower',extent=extent,colors='w',linewidths=0.5,linestyles='-',corner_mask=True,norm=norm)
 
@@ -157,13 +164,14 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
             cb.set_label(units)
     else:
         print("Setting cax.set_visible(False)")
-        cax.set_visible(False)    
+        cax.set_visible(False)
+        
 
 # TODO: add 'scaling' arg; default = 'auto'; otherwise 'lin' or 'log' (like contours)
 def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               sharex=True,sharey=True,\
               colorbars=True,units='',titles='',contours=None,
-              interpolation='bicubic',cmap=plt.cm.viridis,figtitle='',\
+              interpolation='bicubic',cmap=plt.cm.viridis,figtitle='',fontsize=16,\
               **kwargs):
 
     """Plot one or more images in a multi-panel figure.
@@ -307,17 +315,19 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # IMAGES ARRAY
     images = arrayify(images,shape=geometry,fill=False,direction=direction)
     ny, nx = images.shape #geometry
+    print("ny,nx = ",ny,nx)
     n = nx*ny
 
     # ARRAYS OF PANEL FEATURES
     colorbars = arrayify(colorbars,shape=images.shape,fill=True,direction=direction)
     units = arrayify(units,shape=images.shape,fill=True,direction=direction)
     titles = arrayify(titles,shape=images.shape,fill=True,direction=direction)
+    print("contours before arrayify: ", contours)
     contours = arrayify(contours,shape=images.shape,fill=True,direction=direction)
-
+    print("contours before arrayify: ", contours)
     # MAKE FIGURE
     # setup
-    fontsize = 10
+    fontsize = fontsize
     plt.rcParams['axes.labelsize'] = fontsize
     plt.rcParams['font.size'] =  fontsize
     plt.rcParams['xtick.labelsize'] = fontsize-2
@@ -366,5 +376,6 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
         adjustkwargs[k] = v
         
     fig.subplots_adjust(**adjustkwargs)
+    fig.tight_layout()
     
     return fig, axes
