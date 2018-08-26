@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180809' #yyyymmdd
+__version__ = '20180824' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -334,7 +334,8 @@ class ModelCube:
         
         # instantiate an n-dim interpolator object
         logging.info("Instantiating n-dim interpolation object ...")
-        ip = ndiminterpolation.NdimInterpolation(data.squeeze(),theta_sel,mode='lin')
+#        ip = ndiminterpolation.NdimInterpolation(data.squeeze(),theta_sel,mode='lin')
+        ip = ndiminterpolation.NdimInterpolation(data.squeeze(),theta_sel,mode='log')
 
         logging.info("Done.")
         

@@ -4,11 +4,12 @@ from __future__ import print_function
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180216' #yyyymmdd
+__version__ = '20180824' #yyyymmdd
 
 #TODO: update doc strings
 
 import numpy as np
+from numpy import ma
 import warnings
 from scipy import interpolate, ndimage
 import itertools
@@ -95,7 +96,7 @@ class NdimInterpolation:
         """
 
         self.theta = copy(theta) # list of lists of parameter values, unique, in correct order
-
+        
         if not isinstance(self.theta,(list,tuple)):
             self.theta = [self.theta]
         
@@ -118,18 +119,21 @@ class NdimInterpolation:
 
         # take log10 of 'data' ('y' values)
         if self.mode in ('log','loglog'):
+
+            self.data_hypercube = ma.masked_less_equal(self.data_hypercube, 0.) # masking zeros and below
+            
             try:
-                self.data_hypercube = np.log10(self.data_hypercube)
+                self.data_hypercube = ma.log10(self.data_hypercube)
             except RuntimeWarning:
                 raise Exception("For mode='log' all entries in 'data' must be > 0.")
 
-        # take log10 of 'theta' ('x' values)
-        if self.mode == 'loglog':
-            for jt,t in enumerate(self.theta):
-                try:
-                    self.theta[jt] = np.log10(t)
-                except:
-                    raise # Exception
+#        # take log10 of 'theta' ('x' values)
+#        if self.mode == 'loglog':
+#            for jt,t in enumerate(self.theta):
+#                try:
+#                    self.theta[jt] = np.log10(t)
+#                except:
+#                    raise # Exception
 
         # set up n 1-d linear interpolators for all n parameters in theta
         self.ips = [] # list of 1-d interpolator objects
@@ -246,14 +250,14 @@ class NdimInterpolation:
         return vec
 
     
-    def __call__(self,vector):
+    def __call__(self,vector,mask_op=ma.masked_greater_equal,mask_thresh=0.):
         """Interpolate in N dimensions, using mapping to image coordinates."""
 
         if not isinstance(vector,(list,tuple)):
             vector = [vector]
             
-        if self.mode == 'loglog':
-            vector = [np.log10(e) for e in vector]
+#        if self.mode == 'loglog':
+#            vector = [np.log10(e) for e in vector]
             
         vec = self.serialize_vector(vector)
         
@@ -267,7 +271,18 @@ class NdimInterpolation:
 
         aux = aux.squeeze() # remove superflous length-one dimensions from result array
 
+        
+        
         if self.mode in  ('log','loglog'):
+            print("In mask_op branch")
+            aux = mask_op(aux,mask_thresh)
+#@            aux = ma.masked_greater_equal(aux,0.)
+            mask = aux.mask
+#            if mask_op is not None and mask_thresh is not None:
+##                aux = mask_op(aux,mask_thresh)
+#                aux = ma.masked_greater_equal(aux,0.)
+                
             aux = 10.**aux
+            aux[mask] = mask_thresh
 
         return aux
