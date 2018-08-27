@@ -941,8 +941,9 @@ class Source:
 
         # get raw image
         rawimage = self.cube.get_image(theta)
-        co = (rawimage < 0.)
-        rawimage[co] = 0. #*rawimage #.unit
+        print("rawimage.min(): ",rawimage.min())
+#ROT        co = (rawimage < 0.)
+#ROT        rawimage[co] = 0. #*rawimage #.unit
 
         # instantiatie Image class, with physical units
 #        print("SOURCE: self.pa before instaniating Image = ")

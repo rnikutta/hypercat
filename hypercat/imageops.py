@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180813'   #yyymmdd
+__version__ = '20180826'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -365,6 +365,11 @@ class Image(ImageFrame):
               3.0 mJy / pix
 
         """
+        if not isinstance(pa,astropy.units.quantity.Quantity):
+            pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])
+
+        if pa.to('deg').value != 0.:
+            self.rotate(pa)
 
         if total_flux_density is not None:
             self.setBrightness(total_flux_density)
@@ -373,13 +378,6 @@ class Image(ImageFrame):
 #        if brightness_units is not None:
 #            self.data = self.getBrightness(brightness_units)
 #        # TEST
-
-
-        if not isinstance(pa,astropy.units.quantity.Quantity):
-            pa = getQuantity(pa,recognized_units=UNITS['ANGULAR'])
-
-        if pa.to('deg').value != 0.:
-            self.rotate(pa)
 
         # add noise
         if snr is not None:
@@ -646,8 +644,8 @@ def rotateImage(image,angle,direction='NE'):
     if direction == 'NW':
         angle = -angle
 
-    # remember circular zero-value area around torus, and after rotation, re-set everything in said area to zero again
-    # (rotation is a interpolation scheme and might introduce minor fluctuations)
+#    # remember circular zero-value area around torus, and after rotation, re-set everything in said area to zero again
+#    # (rotation is a interpolation scheme and might introduce minor fluctuations)
     mask = (image <= 0.)
     rotimage = ndimage.rotate(image,angle.to('deg').value,reshape=False)
     rotimage[mask] = 0.

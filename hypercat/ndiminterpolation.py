@@ -4,7 +4,7 @@ from __future__ import print_function
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180824' #yyyymmdd
+__version__ = '20180826' #yyyymmdd
 
 #TODO: update doc strings
 
@@ -140,10 +140,11 @@ class NdimInterpolation:
         for t in self.theta:
             self.ips.append(interpolate.interp1d(t,np.linspace(0.,float(t.size-1.),t.size)))
 
-        if self.order == 3:
-            print("Evaluating cubic spline coefficients for subsequent use, please wait...")
-            self.coeffs = ndimage.spline_filter(self.data_hypercube,order=3)
-            print("Done.")
+# Not yet tested; potentially too slow to be practical
+#        if self.order == 3:
+#            print("Evaluating cubic spline coefficients for subsequent use, please wait...")
+#            self.coeffs = ndimage.spline_filter(self.data_hypercube,order=3)
+#            print("Done.")
 
 
     def get_coords(self,vec):
@@ -250,7 +251,7 @@ class NdimInterpolation:
         return vec
 
     
-    def __call__(self,vector,mask_op=ma.masked_greater_equal,mask_thresh=0.):
+    def __call__(self,vector,mask_op=ma.masked_equal,mask_thresh=0.):
         """Interpolate in N dimensions, using mapping to image coordinates."""
 
         if not isinstance(vector,(list,tuple)):
@@ -261,13 +262,15 @@ class NdimInterpolation:
             
         vec = self.serialize_vector(vector)
         
+        coords, shape_ = self.get_coords(vec)
         if self.order == 1:
-            coords, shape_ = self.get_coords(vec)
             aux = ndimage.map_coordinates(self.data_hypercube,coords,order=1)
             aux = aux.reshape(shape_)
-# temporarily disabled order==3, b/c not yet tested
+# Not yet tested; potentially too slow to be practical
 #        elif self.order == 3:
-#            aux = ndimage.map_coordinates(self.coeffs,self.get_coords(vector,pivots=pivots),order=3,prefilter=False)
+##            aux = ndimage.map_coordinates(self.coeffs,self.get_coords(vector,pivots=pivots),order=3,prefilter=False)
+#            aux = ndimage.map_coordinates(self.data_hypercube,coords,order=3)
+#            aux = aux.reshape(shape_)
 
         aux = aux.squeeze() # remove superflous length-one dimensions from result array
 
@@ -276,12 +279,7 @@ class NdimInterpolation:
         if self.mode in  ('log','loglog'):
             print("In mask_op branch")
             aux = mask_op(aux,mask_thresh)
-#@            aux = ma.masked_greater_equal(aux,0.)
             mask = aux.mask
-#            if mask_op is not None and mask_thresh is not None:
-##                aux = mask_op(aux,mask_thresh)
-#                aux = ma.masked_greater_equal(aux,0.)
-                
             aux = 10.**aux
             aux[mask] = mask_thresh
 
