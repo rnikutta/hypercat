@@ -394,10 +394,10 @@ class Interferometry(ObsMode):
 
     def set_uv_points(self,uv):
 
-        if os.path.isfile(uv) and uv.endswith('.oifits'):
-            self.u, self.v = load_uv(uv)
-        elif istance(uv,(tuple,list)):
+        if isinstance(uv,(tuple,list)):
             self.u, self.v = uv  # e-elements sequence, (u,v), where each is a 1-d sequence
+        elif os.path.isfile(uv) and uv.endswith('.oifits'):
+            self.u, self.v = load_uv(uv)
         else:
             raise Exception('No u,v points provided. Give them either directly or from an oifits file.')
 

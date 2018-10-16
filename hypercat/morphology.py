@@ -376,7 +376,29 @@ def get_elongation(cov):
     elong = np.sqrt(eigenvals[1]/eigenvals[0])
 
     return elong
+
+
+def get_elongation(cov):
+
+    """Get elongation (or aspect ratio) y/x of input image.
+
+    If the shape of the input image is (2,2), then it is assumed to be
+    the covariance matrix of the image. From such a covariance matrix
+    the elongation can be computed directly.
+
+    If the shape is not (2,2), the input is assumed to be the image
+    itself, and the covariance matrix is computed first.
+    """
     
+    if cov.shape != (2.2):
+        cov = get_cov_from_moments(cov)
+    
+    eigenvals = get_eigenvalues(cov)
+#    elong = np.sqrt(eigenvals[0]/eigenvals[1])
+    elong = np.sqrt(eigenvals[1]/eigenvals[0])
+
+    return elong
+
 
 #def make_circle(npix,r,x0=0,y0=0):
 def circle(npix,r,x0=0,y0=0):
