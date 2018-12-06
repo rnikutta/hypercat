@@ -1,6 +1,6 @@
 """GUI interface to (some) Hypercat functionality."""
 
-__version__ = '20180826'
+__version__ = '20181206'
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 # std lib
@@ -30,7 +30,7 @@ from astropy.samp import SAMPIntegratedClient
 # Hypercat
 import hypercat
 import imageops
-
+import ioops
 
 class App():
 
@@ -126,8 +126,11 @@ class App():
         button_update = Tk.Button(self.tabM, text="Update image", command=self.update_image)
         button_update.grid(row=row+2,column=2+20,columnspan=1,sticky='W')
         
-        button_ds9 = Tk.Button(self.tabM, text="View in DS9", command=self.send2ds9)
+        button_ds9 = Tk.Button(self.tabM, text="View in DS9 ", command=self.send2ds9)
         button_ds9.grid(row=row+2,column=3+20,columnspan=1,sticky='E')
+
+        button_fits = Tk.Button(self.tabM, text="Save as FITS", command=self.save2fits)
+        button_fits.grid(row=row+3,column=3+20,columnspan=1,sticky='E')
 
         # load first image
         self.update_image()
@@ -164,7 +167,10 @@ class App():
         norm = getattr(plt.mpl.colors,self.varNorm.get())
         
         fig = Figure(figsize=(4.8,4.8), facecolor=self.bgcolor)
-        fig.add_subplot(111).imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
+        ax = fig.add_subplot(111)
+        ax.imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
+#        ax.axvline(120,ls='-',color='w')
+#        ax.axhline(120,ls='-',color='w')
         fig.tight_layout()
 
         self.canvas = FigureCanvasTkAgg(fig, master=self.tabM)  # A tk.DrawingArea.
@@ -225,11 +231,27 @@ class App():
         setattr(self,name,obj)
         
         
+    def save2fits(self):
+
+        fname = filedialog.asksaveasfilename(defaultextension=".fits")
+        
+        if fname is None:
+            messagebox.showerror("Error", "No filename provided.")
+            return
+        
+        if not fname.endswith('.fits'):
+            fname += '.fits'
+
+        I = imageops.Image(self.img)
+        ioops.save2fits(I,fname)
+        print("Saved to file %s" % fname)
+        
+
     def make_hdu(self):
         hdu = fits.PrimaryHDU(data=self.img.T)
         return hdu
-    
 
+    
     def send2ds9(self):
 
         self.ds9 = shutil.which("ds9")

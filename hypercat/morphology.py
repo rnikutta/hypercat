@@ -1,23 +1,23 @@
 from __future__ import print_function
 
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
-__version__ = '20180216' # yyyymmdd
+__version__ = '20181206' # yyyymmdd
 
+# std lib
+import math
 import itertools
 import warnings
 from copy import copy
+
+# 3rd party
 import numpy as np
 from scipy import ndimage, integrate, optimize
 import scipy.signal as signal
-
-import ndiminterpolation as ndi
 import pylab as plt
-
-import math
-
 from astropy.modeling.functional_models import Gaussian2D
 
-from copy import copy
+# own
+import ndiminterpolation as ndi
 
 
 def halflight_radius(img,center=''):
@@ -390,7 +390,7 @@ def get_elongation(cov):
     itself, and the covariance matrix is computed first.
     """
     
-    if cov.shape != (2.2):
+    if cov.shape != (2,2):
         cov = get_cov_from_moments(cov)
     
     eigenvals = get_eigenvalues(cov)
@@ -567,9 +567,13 @@ class MomentAnalytics:
 #eta                self.set_moment_name(p,q,get_moment_scaleinvariant(self.img,(p,q)),prefix='eta')
 
         self.cov = get_cov_from_moments(self.img)
+        print("self.cov ", self.cov)
         self.eigenvals = get_eigenvalues(self.cov)
         self.elongation = get_elongation(self.cov)
-        self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
+#        self.angle = get_angle(self.cov) # angle(largest EV, closest axis)
+        self.angle = get_angle(cov=self.cov) # angle(largest EV, closest axis)
+        self.skewx = self.m03 / np.sqrt(self.m02**3.)
+        self.skewy = self.m30 / np.sqrt(self.m20**3.)
         self.gini = gini(self.img)
 
         npix = self.img.shape[0]
@@ -801,6 +805,53 @@ def gaussian(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.,norm=None):
 
     g = Gaussian2D(norm,x0,y0,sx,sy,np.radians(theta))
     Z = g(X,Y)
+
+    return Z
+
+def gaussian_asymmetric(npix=101,sx=5.,sy=5.,x0=0,y0=0,theta=0.,norm=None):
+
+    """Construct a two-component Gaussian"""
+    
+    x = np.arange(npix) - npix//2
+    X, Y = np.meshgrid(x,x,indexing='ij')
+
+    if norm is None:
+        norm = 1. / (2.*np.pi*sx*sy)
+
+    g1 = Gaussian2D(norm,x0,x0,sx,sy,np.radians(theta))
+    g2 = Gaussian2D(norm,x0,y0,sx,sx,np.radians(theta))
+#    g1 = Gaussian2D(norm,x0,x0,sx,sy,np.radians(theta))
+#    g2 = Gaussian2D(norm,x0,y0,sx,sy,np.radians(theta))
+    g = g1 + g2
+    Z = g(X,Y)
+
+    return Z
+
+
+def skew_normal_2d_r(npix,sx=10,sy=10,x0=0,y0=0,xlambda=0,ylambda=0):
+
+    # import rpy2 and sn lib
+    from rpy2.robjects.packages import importr
+    import rpy2.robjects as ro
+    sn = importr('sn')
+
+    # create and evaluate 2d skew normal
+
+    # 1. Create symmetric 2d Gaussian and get its cov
+    img = gaussian(npix=npix,sx=sx,sy=sy,x0=0,y0=0,theta=0,norm=None)
+    cov = get_cov_from_moments(img)
+    xx, yy = cov.diagonal()
+    print("xx, yy = ", xx, yy)
+    
+    # create and evaluate 2d skew normal
+    ro.r('alpha <-  c(%f, %f)' % (xlambda,ylambda))  # skewness parameter; the second value controls y skewness
+    ro.r('Omega <-  matrix(c(%f, 0., 0., %f), 2, 2)' % (xx,yy)) # cov of a Gaussian created like this: g = morphology.gaussian(101,10,20,0,0,0)
+    npix2 = npix // 2
+    xran = ro.r('xran  <-  seq(-%d, %d, length=%d)' % (npix2,npix2,npix))
+    yran = ro.r('yran  <-  seq(-%d, %d, length=%d)' % (npix2,npix2,npix))
+    z = ro.r('z <-  outer(xran, yran, FUN=Vectorize( function(x, y) dmsn(c(x, y), c(%d, %d), Omega, alpha) )  )' % (x0,y0)) # c(xoff,yoff) in pixels
+    
+    Z = np.asarray(z) # convert R array 'z' to numpy array 'Z'
 
     return Z
 

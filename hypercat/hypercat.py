@@ -113,6 +113,7 @@ class ModelCube:
         self.hdffile = hdffile
         self.omit = omit
         self.subcube_selection = subcube_selection
+#P        print('self.hdffile,self.omit,self.subcube_selection', self.hdffile,self.omit,self.subcube_selection)
 
         logging.info("Opening HDF5 file: {:s} ".format(hdffile))
         self.open_hdffile(hdffile)
@@ -120,6 +121,7 @@ class ModelCube:
         self.get_group()
         logging.info("Loading sampling parameters.")
         self.get_cube_layout()
+        print("self.theta.shape = ", self.theta.shape)
         self.get_eta()
         logging.info("Closing HDF5 file.")
         self.close_hdffile()
@@ -128,7 +130,7 @@ class ModelCube:
 
         # SELECT A SUB-HYPERCUBE
         if self.subcube_selection is not None:
-            
+#P            print('self.subcube_selection', self.subcube_selection)            
             if self.subcube_selection == 'interactive':
                 self.theta, self.idxes, self.subcubesize =\
                     getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
@@ -148,14 +150,19 @@ class ModelCube:
             else:
                 raise Exception("Unknown mode for 'subcube_selection'. Must be either of 'onthefly', 'interactive', or a '.json' file containing selecting indices.")
 
+#        print("self.theta.shape = ", self.theta.shape)
         if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
+#        print("self.theta = ", self.theta)
             
         # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
         for j,pn in enumerate(self.paramnames):
             setattr(self,pn+'_',self.theta[j])
 
         self.theta_full = copy(self.theta)
+#        print("self.theta_full = ", self.theta_full)
+        print("self.theta_full.shape = ", self.theta_full.shape)
+        
                 
         prefix, suffix = get_bytes_human(self.subcubesize)
             
@@ -201,6 +208,8 @@ class ModelCube:
         self.paramnames = [e.decode() for e in self.group['paramnames']]
         self.theta = self.group['theta'].value
         self.idxes = [list(range(len(t))) for t in self.theta]
+
+#P        print(self.paramnames,self.theta,self.idxes)
 
     def get_eta(self):
         iY = self.paramnames.index('Y')

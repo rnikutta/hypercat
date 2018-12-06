@@ -1,6 +1,7 @@
 from __future__ import print_function
+import itertools
 
-__version__ = '20180808' #yyymmdd
+__version__ = '20181206' #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -23,6 +24,67 @@ from astropy import wcs
 from astropy.coordinates import name_resolve
 import urwid, urwid.curses_display
 
+
+def make_subcube_hdf(sourcefile='/home/robert/data/hypercat/hypercat_20181031.hdf5',targetfile='',waveidx=None):
+
+    hs = h5py.File(sourcefile,'r')
+    ht = h5py.File(targetfile,'w')
+    
+    # copy these groups and datasets as-is
+    tocopy = ['Nhypercubes','hypercubenames','pattern','rootdir','clddata']
+    for _ in tocopy:
+        print("Copying ", _)
+        hs.copy(_,ht)
+
+    # copy a subset of this hypercube
+    gs = hs['imgdata']
+    gt = ht.create_group('imgdata')
+
+    # copy these
+    gs.copy('Nparam',gt)
+    gs.copy('funcname',gt)
+    gs.copy('paramnames',gt)
+
+    ds = gs['hypercube']
+    shape = list(ds.shape)
+    shape[-3] = len(waveidx)
+    shape = tuple(shape)
+    print("shape: ", shape)
+    
+    js = [list(range(j)) for j in shape[:6]]
+    idx = list(itertools.product(*js))
+    
+    dt = gt.create_dataset('hypercube',shape=shape,dtype='f4')
+    for j,_ in enumerate(idx):
+        auxidx = list(_)
+        auxidx.append(waveidx)
+        auxidx.append(Ellipsis)
+        auxidx = tuple(auxidx)
+        print(j, _, auxidx)
+        dataaux = ds[auxidx]
+        tidx = tuple(list(_) + [Ellipsis])
+        print("tidx = ", tidx)
+        dt[tidx] = dataaux
+
+    # copy (and modify) other datasets in the imgdata group
+    dt = gt.create_dataset('hypercubeshape',data=shape)
+    
+    theta = gs['theta'].value.tolist()
+    waves = theta[-3][np.array(waveidx)]
+    theta[-3] = waves
+    
+    dflt = h5py.special_dtype(vlen=np.dtype('float64'))
+    dt = gt.create_dataset('theta', (len(theta),), dtype=dflt)
+    for j,v in enumerate(theta):
+        dt[j] = v
+
+    # wrap up
+    hs.close()
+    ht.close()
+    print("Done.")
+
+
+    
 
 # === FITS FILES
 def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
