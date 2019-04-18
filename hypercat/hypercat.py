@@ -16,6 +16,9 @@ from collections import OrderedDict
 from operator import itemgetter
 from copy import copy
 import time
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 # 3rd party
 import numpy as np

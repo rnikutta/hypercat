@@ -2,6 +2,10 @@ from __future__ import print_function
 
 import os
 from copy import copy
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 from astropy.coordinates import name_resolve
 import astropy.io.ascii as ascii
 
