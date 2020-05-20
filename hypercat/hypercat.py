@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20181016' #yyyymmdd
+__version__ = '20200519' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -981,11 +981,10 @@ class Source:
             setattr(sky,attr+'_',val)
         
         # construct WCS if possible
-        if self.objectname != '':
-            wcs = get_wcs(sky)
-            if wcs is not None:
-                sky.wcs = wcs
-
+        wcs = get_wcs(sky)
+        if wcs is not None:
+            sky.wcs = wcs
+            
         return sky
 
 

@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20180811'   #yyymmdd
+__version__ = '20200519'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """General helper func for hypercat.
@@ -56,9 +56,12 @@ def get_rootdir():
 #    return rootdir
 
 
-def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
+def get_wcs(image,projection=("RA---TAN","DEC--TAN"),cunit='deg'):
 
-    """Resolve coordinates (via Vizier) of ``image.objectname`` and construct a WCS.
+    """Create WCS object.
+
+    If image.objectname is name-resolvable, the real coordinates will
+    be resolved (via Vizier) and used for the WCS.
 
     With the resolved coordinates and with ``image.npix`` an
     ``image.pixelscale`` construct a world coordinate system (WCS).
@@ -70,12 +73,14 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
         ``.objectname``, ``.npix`` and ``.pixelscale``.
 
     projection : tuple
-
         Tuple of two strings, each being the projection to be used for
         the WCS principal axes (usually RA and DEC). Default is
         ("RA---TAN","DEC--TAN"), corresponding to a gnomonic
         projection. The formatting of the strings and the possible
         values are described in http://docs.astropy.org/en/stable/wcs/
+
+    cunit : str
+        Coordinate unit. Default: 'deg'
 
     Returns
     -------
@@ -110,25 +115,24 @@ def get_wcs(image,projection=("RA---TAN","DEC--TAN")):
     try:
         coords = name_resolve.get_icrs_coordinates(image.objectname)
         logging.info("Coordinates for source '{:s}' resolved. WCS created.".format(image.objectname))
+        crvals = (coords.ra.to(cunit).value, coords.dec.to(cunit).value)
         
     except name_resolve.NameResolveError as e:
         msg = """Coordinate resolution for source name '{:s}' failed. Either a source with such name could not be resolved, or your network connection is down. If you wish to have a WCS created, reconnect to the internet and try again. Otherwise proceed without WCS.""".format(image.objectname)
         logging.warn(msg)
-        return None
+        crvals = (0,0)
     
-    else:
-        unit = 'deg' #image.pixelscale.unit.to_string()
-        crpix = image.npix//2 + 1
-        cdelt = image.pixelscale.to(unit).value
+    crpix = image.npix//2 + 1
+    cdelt = image.pixelscale.to(cunit).value
         
-        w = wcs.WCS(naxis=2)
-        w.wcs.cunit = (unit,unit)
-        w.wcs.crpix = (crpix,crpix)
-        w.wcs.cdelt = np.array((-cdelt,cdelt))
-        w.wcs.ctype = projection
-        w.wcs.crval = (coords.ra.to(unit).value, coords.dec.to(unit).value)
+    w = wcs.WCS(naxis=2)
+    w.wcs.cunit = (cunit,cunit)
+    w.wcs.crpix = (crpix,crpix)
+    w.wcs.cdelt = np.array((-cdelt,cdelt))
+    w.wcs.ctype = projection
+    w.wcs.crval = crvals
 
-        return w
+    return w
     
 
 def arrayify(seq,shape=None,fill=False,direction='x'):
