@@ -16,10 +16,11 @@ from imageops import *
 from units import *
 from utils import get_rootdir
 
-rootdir = get_rootdir()
+#rootdir = get_rootdir()
+rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180809' #yyyymmdd
+__version__ = '20200519' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 
@@ -109,10 +110,10 @@ class PSF(ImageFrame):
 
         return result
 
+
     def deconvolve(self,image,niter):
         ima = image.data/np.sum(image.data)
         psf = self.data/np.sum(self.data)
-#        result = restoration.richardson_lucy(ima, psf, iterations=10)
         result = restoration.richardson_lucy(ima, psf, iterations=niter)
         return result[::-1,::-1]
 
@@ -235,7 +236,7 @@ def modelPSF(npix=241,wavelength='2.2 micron',diameter='30 m',strehl=0.8,pixelsc
     y, x = np.mgrid[:npix, :npix] # this should be the dimension of the hypercat array
 
     # 2D AiryDisk: Halo of PSF
-    radius = (206206*(wavelength/diameter)) # Radius is the radius of the first zero l/D in arcsec
+    radius = (206265*(wavelength/diameter)) # Radius is the radius of the first zero l/D in arcsec
     radius = (radius/pixelscale) # Core diameter in px
 
     sigma_p_dl = 0.0745                    # Typical diffraction-limited aberration level or Strehl = 0.8
