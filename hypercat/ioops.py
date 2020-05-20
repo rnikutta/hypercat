@@ -181,7 +181,7 @@ def save2fits(image,fitsfile,usewcs=True,extra_keywords=None):
         header['BSCALE'] = (1.00000, 'Scaling of pixel values')
         header['BZERO'] = (0.00000, 'Zero offset')
         header['BUNIT'] = (image_.data.unit.to_string(), 'Unit of image data')
-
+        
         # helper func for simple attributes
         def add2header(obj,attr,comment='',keyword=None,suffix=''):
             if hasattr(obj,attr):
