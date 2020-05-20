@@ -322,7 +322,8 @@ class ModelCube:
         idxes.append(list(range(self.theta[-1].size)))
 
         theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
+#        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
+        logging.info("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
 
         # materialize data cube
         data = get_hyperslab_via_mesh(self.dsmm,idxes)

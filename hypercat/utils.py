@@ -46,10 +46,14 @@ def get_rootdir():
         Root directory of Hypercat, terminating in 'hypercat/'.
 
     """
-    
-    cwd = os.path.realpath('.')
-    rootdir = cwd[:cwd.find('hypercat')]+'hypercat/'
+
+    pwd = os.path.realpath(__file__)
+    rootdir = pwd[:pwd.find('hypercat')]+'hypercat/'
     return rootdir
+    
+#    cwd = os.path.realpath('.')
+#    rootdir = cwd[:cwd.find('hypercat')]+'hypercat/'
+#    return rootdir
 
 
 def get_wcs(image,projection=("RA---TAN","DEC--TAN")):

@@ -277,7 +277,7 @@ class NdimInterpolation:
         
         
         if self.mode in  ('log','loglog'):
-            print("In mask_op branch")
+            #print("In mask_op branch")
             aux = mask_op(aux,mask_thresh)
             mask = aux.mask
             aux = 10.**aux

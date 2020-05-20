@@ -1,18 +1,21 @@
-"""GUI interface to (some) Hypercat functionality."""
+#!/usr/bin/env python
 
-__version__ = '20181206'
+"""GUI interface to (some of) Hypercat functionality."""
+
+__version__ = '20190822'
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 # std lib
+#from copy import copy
+#from random import *
+#from io import BytesIO
 import time
-from copy import copy
 import string
-from random import *
 import os
-from io import BytesIO
 from tempfile import NamedTemporaryFile
 import shutil
 import subprocess
+import configparser
 
 # 3rd party
 import numpy as np
@@ -21,7 +24,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 #from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 import tkinter as Tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, font
 
 import astropy
 from astropy.io import fits
@@ -31,12 +34,118 @@ from astropy.samp import SAMPIntegratedClient
 import hypercat
 import imageops
 import ioops
+from loggers import *
 
+CONFIGFILE = 'hypercatgui.conf'
+
+def read_or_create_config():
+    config = configparser.ConfigParser()
+    config.optionxform = str  # deactivates lower-casing of keys and values
+    
+    defaults = {'hdf5file': '',
+                'colormap': 'inferno',
+                'scale': 'linear',
+                'sig': '43',
+                'i': '75',
+                'Y': '18',
+                'N': '7',
+                'q': '0.0',
+                'tv': '70',
+                'wave': '10.0',
+                'PA': '42'}
+    
+    writeconfigfile = False
+
+    print("list(config.keys()): ", list(config.keys()))
+    print("config['DEFAULT']: ", config['DEFAULT'])
+    print("list(config['DEFAULT'].keys()): ", list(config['DEFAULT'].keys()))
+    
+    if config.read(CONFIGFILE) == []:
+        print("No config file found. Creating default config file %s" % CONFIGFILE)
+        config['DEFAULT'] = defaults
+        config['USER'] = defaults
+        writeconfigfile = True
+
+    for section in ('DEFAULT','USER'):
+        print("section: ", section)
+        if section not in config or list(config[section].keys()) == []:
+            print("No %s section found in config file %s, or it is empty. Creating/populating." % (section,CONFIGFILE))
+            config[section] = defaults
+            writeconfigfile = True
+
+    if writeconfigfile is True:
+        with open(CONFIGFILE, 'w') as configfile:
+            config.write(configfile)
+
+    # add TEMP section to config, but only for runtime (i.e. don't save to config file)
+    config['TEMP'] = config['USER']
+
+    return config
+
+
+def logmsgbox(loglevel='info',title='',msg=''):
+
+    """Log an info/warn/error message, while also showing it in a message box.
+
+    Parameters:
+    -----------
+
+    loglevel : str
+        One of 'info' (default), 'warn', 'error', i.e. log levels from
+        the logging module. The levels are mapped to the tkinter
+        messagebox methods 'showinfo', 'showwarning', 'showerror'.
+
+    title : str
+        Title of the message box. Defaults to ''.
+
+    msg : str
+        The message to be logged, and displayed in the message box.
+
+    Examples:
+    ---------
+
+    logmsgbox('info','Information','You are doing good.')
+    logmsgbox('warn','Warning','This is a warning message')
+    logmsgbox('error','Error','Oh-oh!')
+
+    """
+    
+    # mapping logging levels to tkinter messagebox methods
+    loglevels = {'info' : 'showinfo', 'warn' : 'showwarning', 'error' : 'showerror'}
+
+    # get the methods to log and to show a msg box
+    logmethod = getattr(logging,loglevel)
+    msgboxmethod = getattr(messagebox,loglevels[loglevel])
+
+    # log the msg and pop up a msg box
+    logmethod(msg)
+    msgboxmethod(title,msg)
+    
+        
 class App():
 
-    def __init__(self):
+
+    def __init__(self,config):
+
+        self.config = config
+        print("self.config: ", self.config)
 
         self.root = Tk.Tk()
+        
+#        default_font = tkFont.nametofont("TkDefaultFont")
+#        default_font = font.nametofont("TkFixedFont")
+##        default_font.configure(size=48)
+##        self.default_font = tkFont.Font(family="Verdana", size=10)
+#G        self.root.default_font = font.Font(family="Times", size=16)
+#        self.root.default_font = font.Font("TkFixedFont", size=12)
+##tkFont.Font(family="{Times}",size=20)
+
+        # fonts for all widgets
+        self.root.option_add("*Font", "helvetica 11")
+
+        # font to use for label widgets
+        self.root.option_add("*Label.Font", "helvetica 11")
+
         
         self.bgcolor = self.root.cget('bg')
         self.root.configure(background=self.bgcolor)
@@ -50,10 +159,10 @@ class App():
         # Create tabs
         self.nb = ttk.Notebook(self.root)
         self.add_elem('tabM',ttk.Frame,self.nb,state='normal',add=True,title='Model')
-        self.add_elem('tabS',ttk.Frame,self.nb,state='disabled',add=True,title='Single-dish')
+        self.add_elem('tabS',ttk.Frame,self.nb,state='normal',add=True,title='Single-dish')
         self.add_elem('tabI',ttk.Frame,self.nb,state='disabled',add=True,title='Interferometry')
         self.add_elem('tabIFU',ttk.Frame,self.nb,state='disabled',add=True,title='IFU')
-        self.add_elem('tabMorpho',ttk.Frame,self.nb,state='disabled',add=True,title='Morphology')
+        self.add_elem('tabMorpho',ttk.Frame,self.nb,state='normal',add=True,title='Morphology')
 
         ### tabM
         # Select and load HDF5 file
@@ -64,7 +173,7 @@ class App():
         self.e1 = Tk.Entry(self.tabM,state='readonly',width=50,textvariable=self.v1)
         self.e1.grid(row=0,column=1,columnspan=5,sticky='W')
         self.b1 = Tk.Button(self.tabM,text="Pick file",command=self.pick_and_load)
-        self.b1.grid(row=0,column=1+5,sticky='W')
+        self.b1.grid(row=0,column=1+5,columnspan=2,sticky='W')
 
         # Select colormap and reload image
         l2 = Tk.Label(self.tabM,text="Colormap")
@@ -72,7 +181,12 @@ class App():
         self.varcmap = Tk.StringVar()
         cmaps = ('gray', 'viridis', 'jet', 'inferno', 'cubehelix', 'cividis', 'afmhot', 'bwr','coolwarm','gnuplot2','rainbow')
         self.cmapMenu = Tk.OptionMenu(self.tabM, self.varcmap, *cmaps, command=self.update_view)
-        self.varcmap.set('inferno')
+#        self.varcmap.set('inferno')
+        try:
+            self.varcmap.set(config['TEMP']['colormap'])
+        except:
+            self.varcmap.set('inferno')
+            
         self.cmapMenu.grid(row=1, column=1, columnspan=3, sticky='ew')
 
         # Checkbox to invert colormap
@@ -91,58 +205,136 @@ class App():
         self.cmapNorm2.deselect()
         
         # ask for HDF5 file and load cube
+        self.hdf5file = '/home/robert/data/hypercat/hypercat_20181031_all.hdf5' # for dev
+        self.load_cube()
         if not self.hdf5file:
             self.pick_and_load(text='Select Hypercat HDF5 file')
 
         # (linear) sliders for model parameters
         row = 4
 #        formats = ('%d','%d','%.1f','%.1f','%.1f','%d') # sig, i, Y, N, q, tv
-        formats = ('%d','%d','%d','%.1f','%.1f','%d') # sig, i, Y, N, q, tv
-        labels = (' (deg)',' (deg)','','','','')
+#        formats = ('%d','%d','%d','%.1f','%.1f','%d') # sig, i, Y, N, q, tv
+#        self.labels = ('deg','deg','','','','','mu','deg')
 #        resolutions = (1,1,0.1,0.2,0.1,5)
-        resolutions = (1,1,1,0.2,0.1,5)
-        inits = (54,75,18,7,0,80)
-        for j,par in enumerate(self.cube.paramnames[:6]):
-            theta = self.cube.theta[j]
-            MIN, MAX = theta[0], theta[-1]
-            objname = 'scale_'+par
-            setattr(self,objname,LinSlider(self.tabM,MIN,MAX,resolutions[j],label=par+labels[j],fmt=formats[j]))
-            obj = getattr(self,objname)
-            obj.grid(row=row,column=2+20,columnspan=2,sticky='W')
-            obj.set(inits[j])
+#        resolutions = (1,1,1,0.2,0.1,5)
+
+        self.parnames = ('sig','i','Y','N','q','tv','wave','PA')
+        self.increments = (1,1,1,0.1,0.1,1,0.1,1)
+#        self.inits = (54,75,18,7,0,80,10.,43)
+        self.ranges = [(self.cube.theta[j][0],self.cube.theta[j][-1]) for j in range(7)]
+        self.ranges.append((-360,360))
+        self.units = ('deg','deg','R_d','clouds','','','mu','deg')
+        print("self.ranges: ", self.ranges)
+
+
+
+        ParamsLabel = Tk.Label(self.tabM,text="Parameters [min - max] (units)")
+        ParamsLabel.grid(row=row,column=8,columnspan=2,sticky='W')
+        row += 1
+
+        vcmd = (self.root.register(self.ValidateIfNum), '%s', '%S', '%d', '%i', '%P', '%v', '%V', '%W')
+        for j in range(8):
+            self.make_spinbox(j,self.increments[j],row,8,vcmd)
             row += 1
-            
-        # log slider for wavelength
-        self.scale_wave = LogSlider(self.tabM,from_=1.2,to=870.)
-        self.scale_wave.grid(row=row,column=2+20,columnspan=2,sticky='W')
-        self.scale_wave.set(np.log10(10.2))
-                    
-        # lin slider for PA
-        self.scalePA = LinSlider(self.tabM,90,-90,1,label='PA (deg E of N)',fmt='%d')
-        self.scalePA.grid(row=row+1,column=2+20,columnspan=2,sticky='W')
-        self.scalePA.set(42)
+
+        # set param values
+        self.set_values()
+
+
 
         # button to update image
-        button_update = Tk.Button(self.tabM, text="Update image", command=self.update_image)
-        button_update.grid(row=row+2,column=2+20,columnspan=1,sticky='W')
+#experimental        button_update = Tk.Button(self.tabM, text="Update image", command=self.update_image)
+        button_update = Tk.Button(self.tabM, text="Update image", width=12, command=self.update_image)
+        self.root.bind('<Return>', self.update_image) # experimental
+        button_update.grid(row=row+2,column=8,columnspan=2,sticky='W')
         
-        button_ds9 = Tk.Button(self.tabM, text="View in DS9 ", command=self.send2ds9)
-        button_ds9.grid(row=row+2,column=3+20,columnspan=1,sticky='E')
+        button_ds9 = Tk.Button(self.tabM, text="View in DS9 ", width=12, command=self.send2ds9)
+        button_ds9.grid(row=row+4,column=8,columnspan=2,sticky='W')
 
-        button_fits = Tk.Button(self.tabM, text="Save as FITS", command=self.save2fits)
-        button_fits.grid(row=row+3,column=3+20,columnspan=1,sticky='E')
+        button_fits = Tk.Button(self.tabM, text="Save as FITS", width=12, command=self.save2fits)
+        button_fits.grid(row=row+5,column=8,columnspan=2,sticky='W')
 
         # load first image
-        self.update_image()
+#experimental        self.update_image()
+        self.update_image('foo')
 
         # make all
         self.nb.pack(expand=1, fill="both")  # Pack to make visible
 #        self.root.update()
+
+
+    def initialize(self):
+        pass
         
 
+#    def ValidateIfNum(self, s, S):
+    def ValidateIfNum(self, s, S, d, i, P, v, V, W):
+        print("s: ", s)
+        print("S: ", S)
+        print("d: ", d)
+        print("i: ", i)
+        print("P: ", P)
+        print("v: ", v)
+        print("V: ", V)
+        print("W: ", W)
+#w        valid = S == '' or S.isdigit()
+
+        print(self.root.nametowidget(W))
+
+
+        from_ = self.root.nametowidget(W).config('from')[4]
+        to_ = self.root.nametowidget(W).config('to')[4]
+        print("from_, to_ = ", from_, to_)
+
+        isvalid = False
+
+        if P in ('','-','+','.') or self.isNumber(P):
+            isvalid = True
+
+        return isvalid
+
+                
+    def isNumber(self,arg):
+        try:
+            float(arg)
+            return True
+        except:
+            return False
+
+
+    def onValidate(self, d, i, P, s, S, v, V, W):
+#        self.text.delete("1.0", "end")
+#        self.text.insert("end","OnValidate:\n")
+#        self.text.insert("end","d='%s'\n" % d)
+#        self.text.insert("end","i='%s'\n" % i)
+        self.text.insert("end","P='%s'\n" % P)
+        self.text.insert("end","s='%s'\n" % s)
+        self.text.insert("end","S='%s'\n" % S)
+#        self.text.insert("end","v='%s'\n" % v)
+#        self.text.insert("end","V='%s'\n" % V)
+#        self.text.insert("end","W='%s'\n" % W)
+
+#        self.delete("1.0", "end")
+#        self.insert("end","OnValidate:\n")
+#        self.insert("end","d='%s'\n" % d)
+#        self.insert("end","i='%s'\n" % i)
+#        self.insert("end","P='%s'\n" % P)
+#        self.insert("end","s='%s'\n" % s)
+#        self.insert("end","S='%s'\n" % S)
+#        self.insert("end","v='%s'\n" % v)
+#        self.insert("end","V='%s'\n" % V)
+#        self.insert("end","W='%s'\n" % W)
+
+        print("self:", self)
+        print("self.from_:", self.from_)
+        return True
+
+#        
+#        tk.messagebox.showinfo('foo','bar')
+
     def _geometry(self):
-        w = 700 # width for the Tk root
-        h = 600 # height for the Tk root
+        w = 800 # width for the Tk root
+        h = 700 # height for the Tk root
 
         # get screen width and height
         ws = self.root.winfo_screenwidth() # width of the screen
@@ -166,12 +358,24 @@ class App():
         cmap = getattr(plt.cm,cmap)
         norm = getattr(plt.mpl.colors,self.varNorm.get())
         
-        fig = Figure(figsize=(4.8,4.8), facecolor=self.bgcolor)
+        fig = Figure(figsize=(5.5,5.5), facecolor=self.bgcolor)
         ax = fig.add_subplot(111)
         ax.imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
+
+        figS = Figure(figsize=(4,4), facecolor=self.bgcolor)
+        axS = figS.add_subplot(111)
+        axS.imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
+
+        figMorpho = Figure(figsize=(3,3), facecolor=self.bgcolor)
+        axMorpho = figMorpho.add_subplot(111)
+        axMorpho.imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
+
+        
+#        ax.imshow(self.img.T,origin='lower',interpolation='none',cmap=cmap,norm=norm())
 #        ax.axvline(120,ls='-',color='w')
 #        ax.axhline(120,ls='-',color='w')
         fig.tight_layout()
+        figS.tight_layout()
 
         self.canvas = FigureCanvasTkAgg(fig, master=self.tabM)  # A tk.DrawingArea.
         self.canvas.get_tk_widget().grid(row=2,column=0,columnspan=20,sticky='W',rowspan=20)
@@ -181,24 +385,50 @@ class App():
         self.toolbar_frame.grid(row=22,column=0,columnspan=30,sticky='W')
         self.toolbar = NavigationToolbar2Tk(self.canvas,self.toolbar_frame)
 
+        # Duplicate canvas on tabPSF
+        self.canvasS = FigureCanvasTkAgg(figS, master=self.tabS)  # A tk.DrawingArea.
+        self.canvasS.get_tk_widget().grid(row=2,column=0,columnspan=20,sticky='W',rowspan=20)
+        self.canvasS.draw()
         
-    def update_image(self):
-        sig = self.scale_sig.get()
-        i = self.scale_i.get()
-        Y = self.scale_Y.get()
-        N = self.scale_N.get()
-        q = self.scale_q.get()
-        tv = self.scale_tv.get()
-        wave = 10**self.scale_wave.get()
-        vec = tuple([sig,i,Y,N,q,tv,wave])
-        print("vec = ", vec)
-        self.img = self.cube(vec)
+        # Duplicate canvas on tabMorpho
+        self.canvasMorpho = FigureCanvasTkAgg(figMorpho, master=self.tabMorpho)  # A tk.DrawingArea.
+        self.canvasMorpho.get_tk_widget().grid(row=2,column=0,columnspan=20,sticky='W',rowspan=20)
+        self.canvasMorpho.draw()
+#        self.canvasMorpho.resize(0.5)
 
-        pa = self.scalePA.get()
-        if pa != 0:
-            self.img = imageops.rotateImage(self.img,'%d deg' % pa)
+#G        self.toolbar_frameMorpho = ttk.Frame(self.tabMorpho)
+#G        self.toolbar_frameMorpho.grid(row=22,column=0,columnspan=30,sticky='W')
+#G        self.toolbarMorpho = NavigationToolbar2Tk(self.canvasMorpho,self.toolbar_frameMorpho)
+
+
+    def get_vector(self,source='config'):
         
-        self.update_view()
+        if source == 'config':
+            vec = tuple([config['TEMP'][par] for par in self.parnames])
+
+        elif source == 'vars':
+            vec = tuple([getattr(self,par + 'SB').Var.get() for par in self.parnames])
+            
+        return vec
+    
+
+    def update_image(self,event=None):
+
+        vec = self.get_vector(source='vars')
+
+        try:
+            self.img = self.cube(vec[:-1]) # omit the last element, PA
+        except:
+            logmsgbox('warn','Warning','Invalid model parameter(s) encountered. Reverting to last valid parameter set.')
+            self.set_values() # setting widgets back to last valid values, using config['TEMP']
+        else:
+            pa = self.PASB.Var.get()
+            if pa != 0:
+                self.img = imageops.rotateImage(self.img,'%d deg' % pa)
+        finally:
+#            print("Interpolation OK. Saving new values to config TEMP section")
+            self.update_temp_config()
+            self.update_view()
 
 
     def pick_and_load(self,text=''):
@@ -229,6 +459,31 @@ class App():
             target.add(obj,text=title,state=state)
             
         setattr(self,name,obj)
+
+
+    def make_spinbox(self,j,increment,row,col,vcmd):
+        par = self.parnames[j]
+        print("par: ", par)
+#        theta = self.cube.theta[j]
+
+        from_, to_ = self.ranges[j][0], self.ranges[j][-1]
+        widgetname = par + 'SB'
+        
+        unit = self.units[j]
+        if unit != '':
+            unit = "(%s)" % unit
+
+        if par == 'PA':
+            labeltext = "PA [any] %s" % unit
+        else:
+            labeltext = "%s [%g - %g] %s" % (par,from_,to_,unit)
+
+        section = 'USER' if 'USER' in self.config else 'DEFAULT'
+        init = float(self.config[section][par])
+        spinbox = BetterSpinbox(self.tabM,par,from_,to_,init,increment,labeltext,vcmd)
+        spinbox.grid(row=row,column=col,sticky='W')
+        spinbox.Label.grid(row=row,column=col+1,sticky='W')
+        setattr(self,widgetname,spinbox)
         
         
     def save2fits(self):
@@ -300,70 +555,56 @@ class App():
 
 
     def _quit(self):
+        self.save_config()
         self.root.quit()     # stops mainloop
         self.root.destroy()  # this is necessary on Windows to prevent Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
-                        
+#def _destroy(event):
+#    print "destroy"
 
-class LinSlider(Tk.Scale):
-    def __init__(self,target,from_,to,delta,label='',fmt='%.1f'):
+    def update_temp_config(self):
+        vec = self.get_vector(source='vars')
+        for j,par in enumerate(self.parnames):
+            config['TEMP'][par] = str(vec[j])
+#        print("config['TEMP']")
+#        print(list(config['TEMP'].items()))
 
-        self.fmt = fmt
+    def set_values(self):
+        vec = self.get_vector(source='config')
+        for j,par in enumerate(self.parnames):
+            getattr(self,par + 'SB').Var.set(float(vec[j]))
         
-        Tk.Scale.__init__(self,target,from_=from_,to=to,length=180,\
-                          digits=5,resolution=delta,orient='horizontal',showvalue=0,label=label,\
-                          command=self._update_label)
-        val = 0.5*(from_+to)
-        self.set(val)
-        self._update_label(val)
-
-    def _update_label(self,val):
-        print("val = ", val)
-        update_label(self,val,fmt=self.fmt,log=False)
-
-
-class LogSlider(Tk.Scale):
-    def __init__(self,target,from_,to,label='wave (micron)'):
-        
-        logfrom = np.log10(from_) 
-        logto = np.log10(to)
-
-        epsmin = logfrom*1e-6
-        epsmax = logto*1e-6
-        
-        Tk.Scale.__init__(self,target,from_=logfrom+epsmin,to=logto-epsmax,length=180,\
-                          digits=5,resolution=0.000001,orient='horizontal',showvalue=0,label=label,\
-                          command=self._update_label)
-        self.set(0.5*(logfrom+logto))
-
-    def _update_label(self,val):
-        print("val = ", val)
-        update_label(self,val,log=True)
+    def save_config(self):
+        self.config['USER'] = self.config['TEMP']
+        self.config.pop('TEMP') # remove TEMP section before saving config file
+        with open(CONFIGFILE, 'w') as configfile:
+                self.config.write(configfile)
 
         
-def update_label(obj,val,fmt='%.1f',log=False,limits=None):
+class BetterSpinbox(Tk.Spinbox):
 
-    val = float(val)
-    
-    if log is True:
-        val = 10**val
+    def __init__(self,parent,name,from_,to_,init,increment,labeltext='',vcmd=None):
+#    def __init__(self,parent,name,from_,to_,increment,labeltext='',vcmd=None):
+        self.Var = Tk.DoubleVar()
+#HERE        self.Var.set(init)
+        Tk.Spinbox.__init__(self,parent,from_=from_,to=to_,increment=increment,width=5,textvariable=self.Var,validate="key",validatecommand=vcmd)
 
-    if limits is not None:
-        MIN, MAX = limits
-        val = max(MIN,val)
-        val = min(MAX,val)
-        
-    label = obj.cget('label').split('=')[0].rstrip()
-    label = label + " = %s" % fmt % val
-    obj.configure(label=label)
-    print(label)
+#        myfont = font.Font(family='Helvetica', size=12) # , weight='bold'
+        self.Label = Tk.Label(parent,text=labeltext) # ,font=myfont
+#        self.Label = Tk.Label(parent,text=labeltext,font = ('Times',12))
+
+            
 
     
 
 if __name__ == '__main__':
-    app = App()
-    app.root.mainloop()
+    config = read_or_create_config()
+    app = App(config)
+
+    app.root.protocol("WM_DELETE_WINDOW", app._quit)
+#    app.bind("<Destroy>", _destroy)
     
+    app.root.mainloop()
 
 #Tk.mainloop()
 # If you put root.destroy() here, it will cause an error if the window is
