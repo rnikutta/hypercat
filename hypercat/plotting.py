@@ -72,7 +72,7 @@ def plot_with_wcs(image):
 #    plt.show()
 
 
-def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.viridis,contours=None,interpolation='bicubic'):
+def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.viridis,contours=None,interpolation='bicubic',**kwargs):
 
     """Plot a single panel. To be called from :func:`multiplot() (see docstring there).`
     """
@@ -113,10 +113,13 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
 
     # transpose here once for all future plotting in this function
     data = data.T
-    
-    # image normalization
-    norm = matplotlib.colors.Normalize()  # possibly allow this to be an argument? (e.g. for absolute normalizations)
-#    norm = matplotlib.colors.PowerNorm(1.)  # possibly allow this to be an argument? (e.g. for absolute normalizations)
+
+    if 'norm' in kwargs:
+        norm = kwargs['norm']
+    else:
+        # image normalization
+        norm = matplotlib.colors.Normalize()  # possibly allow this to be an argument? (e.g. for absolute normalizations)
+    #    norm = matplotlib.colors.PowerNorm(1.)  # possibly allow this to be an argument? (e.g. for absolute normalizations)
 
     if cls == 'PSF':
         norm = matplotlib.colors.LogNorm()
@@ -351,7 +354,8 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
             img = images[iy,ix]
             ax = axes[iy,ix]
             if img is not None:
-                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation)
+#                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation)
+                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation,**kwargs)
             else:
                 ax.set_visible(False)
 

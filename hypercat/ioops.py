@@ -82,8 +82,6 @@ def make_subcube_hdf(sourcefile='/home/robert/data/hypercat/hypercat_20181031.hd
     hs.close()
     ht.close()
     print("Done.")
-
-
     
 
 # === FITS FILES

@@ -59,10 +59,17 @@ def get_BLPhi(u,v):
     return BL, Phi
 
 
+def get_uv(phi,blmax=115,n=100):
+    BL = np.linspace(-blmax,blmax,n)
 
+    tan = np.tan(np.radians(phi))
+    t2 = np.sqrt(tan**2+1)
 
+    u = BL*tan / t2
+    v = BL / t2
 
-
+    return u, v
+    
 
 def uvload(filename,hdu=4):
 
@@ -449,7 +456,7 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
     import matplotlib
 
     # get cube and sky
-    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
+    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='imgdata', subcube_selection='onthefly')
 #    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
 #    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='12.5 Mpc',pa='42 deg')
     ngc1068 = hypercat.Source(cube,luminosity=luminosity,distance=distance,pa=posangle)
@@ -458,21 +465,23 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
     # obs data
     u_, v_, cf_, cferr_, phi_, phierr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
     bl = np.sqrt(u_**2 + v_**2)
+    pa = np.degrees(np.arctan2(-u_,v_))
+    
     wave_ *= 1e6
-#    sel = (wave_ > 11.5) & (wave_ < 12.5)
     sel = (wave_ > 11.5) & (wave_ < 12.5)
     cfs = cf_[:,sel].mean(axis=1)
     print("cfs selected = ", cfs.size)
     cferrs = cferr_[:,sel].mean(axis=1)
 
-    pa = np.degrees(np.arctan2(-u_,v_))
+    phis = phi_[:,sel].mean(axis=1)
+
     
-    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
-    selps = (bl>70.)
-    cfsps = cfs[selps]
-    Fps = np.mean(cfsps)*u.Jy
-    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
-    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
+#    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+#    selps = (bl>70.)
+#    cfsps = cfs[selps]
+#    Fps = np.mean(cfsps)*u.Jy
+#    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
+#    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
 
     
 #    cfs = cfs*t.vector('cfs')
@@ -487,6 +496,26 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
 
     U = u_
     V = v_
+#    return U,V
+    
+
+#    U = np.random.uniform(-115,115,100)
+#    V = np.random.uniform(-115,115,100)
+##    U = np.arange(-115,115.1,10)
+##    V = np.arange(-115,115.1,10)
+#    aux = np.array(list(product(U,V)))
+#    U = aux[:,0]
+#    V = aux[:,1]
+
+    U, V = [], []
+    for phi in range(0,181,10):
+        U_, V_ = get_uv(phi,129,100)
+        U = U + U_.tolist()
+        V = V + V_.tolist()
+
+    U = np.array(U)
+    V = np.array(V)
+            
     
     PA = np.degrees(np.arctan2(-U,V))
 
@@ -512,7 +541,7 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
 
 #    bl = bl[:len(bl)//2]
     
-    ccube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='clddata', subcube_selection='onthefly')
+    ccube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='clddata', subcube_selection='onthefly')
     cvec = np.array(vec)[np.array((0,1,2,4))]
     cimg = ccube(cvec) * vec[3]
     cimg = imageops.rotateImage(cimg,posangle)
@@ -573,9 +602,12 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
 #    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
 
     idxbl = np.argsort(bl)
-    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker='o',ms=3,zorder=1,color='orange',ls='none',label='data')
+#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker='o',ms=3,zorder=1,color='orange',ls='none',label='data')
+    im = ax4.scatter(bl[idxbl],cfs[idxbl],c=pa[idxbl],marker='o',s=10,zorder=1,cmap='rainbow',label='data')
+    cb = plt.colorbar(im,ax=ax4)
+#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker=None,mew=0,zorder=1,color='orange',ls='none')
     idxBL = np.argsort(BL)
-    ax4.plot(BL[idxBL],CF[idxBL],'b-',ms=3,zorder=2,alpha=0.7,label='model')
+    ax4.plot(BL[idxBL],CF[idxBL],marker='o',ms=1,color='b',ls='none',zorder=2,lw=1,alpha=0.8,label='model')
     ax4.xaxis.set_major_locator(MaxNLocator(6))
     ax4.yaxis.set_major_locator(MaxNLocator(7))
     ax4.set_xlim(0,130)
@@ -595,7 +627,7 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
     idxPA = np.argsort(PA)
 #    sel = (BL > 85) & (BL < 90)
 #    ax4.plot(PA[idxPA][sel],CF[idxPA][sel],'b-',ms=2,lw=1)
-    ax5.plot(PA[idxPA],CF[idxPA],'b-',ms=3,zorder=2,alpha=0.7)
+    ax5.plot(PA[idxPA],CF[idxPA],'b-',lw=0.1,ms=3,zorder=2,alpha=0.2)
 #    ax4.errorbar(pas[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
     idxpa = np.argsort(pa)
     ax5.errorbar(pa[idxpa],cfs[idxpa],yerr=cferrs[idxpa],marker='o',ms=3,zorder=1,color='orange',ls='none')
@@ -645,7 +677,7 @@ def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 d
 #    fig.suptitle(title)
 
     fig.subplots_adjust(left=0.07,right=0.99,top=0.99,bottom=0.08,wspace=0.3,hspace=0.25)
-    plt.savefig('ngc1068_vlti_12mic.pdf')
+    plt.savefig('ngc1068_vlti_12mic_test1.pdf')
     
     return vlti, fig, sky.data.value, cimg
 
@@ -697,7 +729,7 @@ def correlatedflux(imafft,fftscale,u,v):
     size = npix * fftscale # total image plae size in meters
     x = np.linspace(-size//2,size//2,npix)
     unit = imafft.unit
-    ip = ndiminterpolation.NdimInterpolation(imafft.value,[x,x])
+    ip = ndiminterpolation.NdimInterpolation(imafft.value,[x,x],mode='log')
     corrflux = ip(np.dstack((u,v)))
 
     return corrflux*unit

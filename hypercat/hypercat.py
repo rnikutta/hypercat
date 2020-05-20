@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-__version__ = '20181016' #yyyymmdd
+__version__ = '20200519' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -322,7 +322,8 @@ class ModelCube:
         idxes.append(list(range(self.theta[-1].size)))
 
         theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
+#        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
+        logging.info("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
 
         # materialize data cube
         data = get_hyperslab_via_mesh(self.dsmm,idxes)
@@ -980,11 +981,10 @@ class Source:
             setattr(sky,attr+'_',val)
         
         # construct WCS if possible
-        if self.objectname != '':
-            wcs = get_wcs(sky)
-            if wcs is not None:
-                sky.wcs = wcs
-
+        wcs = get_wcs(sky)
+        if wcs is not None:
+            sky.wcs = wcs
+            
         return sky
 
 

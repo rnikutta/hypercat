@@ -20,7 +20,7 @@ from utils import get_rootdir
 rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180809' #yyyymmdd
+__version__ = '20200519' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 
@@ -110,10 +110,11 @@ class PSF(ImageFrame):
 
         return result
 
-    def deconvolve(self,image,ninter):
+
+    def deconvolve(self,image,niter):
         ima = image.data/np.sum(image.data)
         psf = self.data/np.sum(self.data)
-        result = restoration.richardson_lucy(ima, psf, iterations=ninter)
+        result = restoration.richardson_lucy(ima, psf, iterations=niter)
         return result[::-1,::-1]
 
 
