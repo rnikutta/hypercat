@@ -446,7 +446,24 @@ class ModelCube:
 #
 #        return waves, sed
 
-    def get_sed(self,vec):
+#    def get_sed(self,vec):
+#
+#        """Get raw SED for all sample wavelengths in the cube.
+#
+#        Parameters
+#        ----------
+#        vec : tuple
+#            Tuple of all model parameters in the loaded cube, _except_
+#            wavelength (will be taken from cube as-is). Only single
+#            values per parameter please.
+#        """
+#        
+#        waves = self.wave_ # list of wavelengths
+#        sed = [ self(tuple(list(vec)+[wave])).sum() for wave in waves]
+#
+#        return waves, sed
+
+    def get_sed(self,vec,wave=None):
 
         """Get raw SED for all sample wavelengths in the cube.
 
@@ -456,12 +473,21 @@ class ModelCube:
             Tuple of all model parameters in the loaded cube, _except_
             wavelength (will be taken from cube as-is). Only single
             values per parameter please.
-        """
-        
-        waves = self.wave_ # list of wavelengths
-        sed = [ self(tuple(list(vec)+[wave])).sum() for wave in waves]
 
-        return waves, sed
+        wave : seq
+            List/tuple/array of wavelengths. If None (default), use
+            the built-in wavelengths.
+
+        """
+
+        if wave is None:
+            wave = self.wave_ # list of built-in wavelengths; otherwise use supplied wavelengths
+
+        vec = tuple((*vec,tuple(wave)))  # construct parameter vector with wvelengths
+        images = self(vec)  # interpolate images at all wavelengths
+        sed = np.array([_.sum() for _ in images])  # sum up all images to get SED
+            
+        return wave, sed
 
 
 ## normal
