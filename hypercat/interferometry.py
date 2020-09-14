@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20170813'   #yyymmdd
+__version__ = '20200913'   #yyymmdd
 __author__ = 'Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the interferometric mode of HyperCAT.

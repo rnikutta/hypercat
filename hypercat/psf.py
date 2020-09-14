@@ -1,4 +1,5 @@
-from __future__ import print_function
+__author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
+__version__ = '20200913' #yyyymmdd
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
@@ -20,9 +21,6 @@ from utils import get_rootdir
 #rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
 
 rootdir = get_rootdir()
-
-__author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20200519' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 

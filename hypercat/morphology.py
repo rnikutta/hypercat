@@ -1,7 +1,5 @@
-from __future__ import print_function
-
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
-__version__ = '20181206' # yyyymmdd
+__version__ = '20200913' # yyyymmdd
 
 # std lib
 import math

@@ -1,4 +1,5 @@
-from __future__ import print_function
+__version__ = '20200913' #yyyymmdd
+__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 import os
 from copy import copy
@@ -16,9 +17,6 @@ from interferometry import *
 import psf
 import imageops
 import ioops
-
-__version__ = '20180808' #yyyymmdd
-__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
 

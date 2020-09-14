@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20200519' #yyyymmdd
+__version__ = '20200913' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.

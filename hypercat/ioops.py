@@ -1,7 +1,4 @@
-from __future__ import print_function
-import itertools
-
-__version__ = '20181206' #yyymmdd
+__version__ = '20200913' #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -11,6 +8,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 """
 
 # std lib
+import itertools
 import os
 import logging
 import json
