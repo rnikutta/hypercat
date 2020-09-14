@@ -44,7 +44,7 @@ class ModelCube:
                  hypercube='imgdata',\
                  subcube_selection='onthefly',\
                  subcube_selection_save=None,
-                 omit=('x','y')):
+                 omit=('x','y'),bold=True):
 
         """Model hypercube of CLUMPY images. Can be generalized to any hypercube.
 
@@ -112,7 +112,8 @@ class ModelCube:
             cube = ModelCube()  # all defaults (i.e. default hdf5 file, 'imgdata' hypercube, 'onthefly' mode
 
         """
-        
+
+        self.bold = bold
         self.hdffile = hdffile
         self.omit = omit
         self.subcube_selection = subcube_selection
@@ -231,8 +232,13 @@ class ModelCube:
         self.subcubesize = self.fullcubesize
                      
     
-    def print_sampling(self,n=11,fmt="%7.3f"):
+#    def print_sampling(self,n=11,fmt="%7.3f"):
+    def print_sampling(self,n=11,fmt="%7.3f",bold=False):
 
+        startbold, endbold = "", ""
+        if bold is True:
+            startbold, endbold = "\033[1m", "\033[0m" 
+        
 #        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
         maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
         maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
@@ -260,14 +266,17 @@ class ModelCube:
 #Py3            parstr = "{{:>{:d}s}}".format(maxlen).format(p)
             asterisk = " "
             if (p not in self.omit) and (len(vals) != 1):
-                parstr = "\033[1m" + parstr
+#                parstr = "\033[1m" + parstr
+                parstr = startbold + parstr
                 asterisk = "*"
-                svals = svals  + "\033[0m"
+#                svals = svals  + "\033[0m"
+                svals = svals  + endbold
                 
             print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
             
         print(rule)
-        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+#        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+        print("Parameters printed in %sbold%s and/or marked with an asterisk (*) are interpolable." % (startbold,endbold))
 
         prefix, suffix = get_bytes_human(self.subcubesize)
         print("Hypercube size: %g (%s)" % (prefix, suffix))
