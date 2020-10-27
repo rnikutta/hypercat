@@ -17,7 +17,9 @@ from units import *
 from utils import get_rootdir
 
 #rootdir = get_rootdir()
-rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
+#rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
+
+rootdir = get_rootdir()
 
 __author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
 __version__ = '20200519' #yyyymmdd
