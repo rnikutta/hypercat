@@ -13,9 +13,13 @@ from scipy import ndimage
 from skimage import restoration
 import json
 
-from imageops import *
-from units import *
-from utils import get_rootdir
+#from imageops import *
+#from units import *
+#from utils import get_rootdir
+
+from .imageops import *
+from .units import *
+from .utils import get_rootdir
 
 #rootdir = get_rootdir()
 #rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'

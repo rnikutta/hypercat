@@ -1,4 +1,4 @@
-__version__ = '0.1.0' #'20210531' #yyyymmdd
+__version__ = '0.1.1' #'20210531' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -26,13 +26,21 @@ from astropy.io import fits
 import h5py
 
 # own
-from loggers import *
-import ndiminterpolation
-from obsmodes import *
-from imageops import *
-from utils import *
-from ioops import *
-from units import *
+#from loggers import *
+#import ndiminterpolation
+#from obsmodes import *
+#from imageops import *
+#from utils import *
+#from ioops import *
+#from units import *
+
+from .loggers import *
+from . import ndiminterpolation
+from .obsmodes import *
+from .imageops import *
+from .utils import *
+from .ioops import *
+from .units import *
 
 # CLASSES
 

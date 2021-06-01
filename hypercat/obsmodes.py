@@ -10,13 +10,21 @@ warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 from astropy.coordinates import name_resolve
 import astropy.io.ascii as ascii
 
-from units import *
-from utils import *
-from imageops import add_noise, measure_snr
-from interferometry import *
-import psf
-import imageops
-import ioops
+#from units import *
+#from utils import *
+#from imageops import add_noise, measure_snr
+#from interferometry import *
+#import psf
+#import imageops
+#import ioops
+
+from .units import *
+from .utils import *
+from .imageops import add_noise, measure_snr
+from .interferometry import *
+from . import psf
+from . import imageops
+from . import ioops
 
 """Utilities for handling the CLUMPY image hypercube.
 

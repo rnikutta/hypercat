@@ -17,7 +17,8 @@ import astropy
 from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
 
 # hypercat
-from units import *
+#from units import *
+from .units import *
 
 class ImageFrame:
 

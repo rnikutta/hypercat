@@ -23,10 +23,15 @@ from matplotlib.ticker import MaxNLocator
 #import ioops as io
 #import ndiminterpolation
 
-import ioops as io
-import ndiminterpolation
-import imageops
-import units
+#import ioops as io
+#import ndiminterpolation
+#import imageops
+#import units
+
+from . import ioops as io
+from . import ndiminterpolation
+from . import imageops
+from . import units
 
 # HELPER FUNCTIONS
 
