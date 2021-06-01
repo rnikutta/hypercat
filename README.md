@@ -2,7 +2,7 @@ hypercat
 ========
 Hypercubes of (clumpy) AGN tori
 
-**Authors:** Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa
+**Authors:** Robert Nikutta [\<robert.nikutta@gmail.com\>](mailto:robert.nikutta@gmail.com), Enrique Lopez-Rodriguez, Kohei Ichikawa
 
 **Version:** 2021-05-31
 
