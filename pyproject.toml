@@ -5,8 +5,8 @@ description = "Hypercube of clumpy AGN tori"
 authors = ["Robert Nikutta <robert.nikutta@gmail.com>", "Enrique Lopez-Rodriguez", "Kohei Ichikawa"]
 license = "BSD-3-Clause"
 readme = "README.md"
-homepage = "https://clumpy.org/images/"
-repository = "https://github.com/rnikutta/hypercat/"
+homepage = "https://clumpy.org/images"
+repository = "https://github.com/rnikutta/hypercat"
 keywords = ["astronomy","active galactic nuclei","hypercubes","extremely large telescopes","morphology"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -29,7 +29,7 @@ matplotlib = ">=3.0.3"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.urls]
-"Hypercat models (anonymous FTP)" = "ftp://ftp.noao.edu/pub/nikutta/hypercat/"
+"Hypercat models (anonymous FTP)" = "ftp://ftp.noao.edu/pub/nikutta/hypercat"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
