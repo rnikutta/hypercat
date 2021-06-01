@@ -2,27 +2,26 @@ hypercat
 ========
 Hypercubes of (clumpy) AGN tori
 
-**Author:** Robert Nikutta
+**Authors:** Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa
 
-**Team:** Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa, Chris Packham, Nancy Levenson, (and others tbd)
+**Version:** 2021-05-31
 
-**Version:** 2017-02-10
+**License:** BSD-3-Clause, please see [LICENSE](./LICENSE) file
 
-**License:** BSD 3-clause, please see [LICENSE](./LICENSE) file
+**Attribution:** Please cite this repository, and the following papers:
 
-**Attribution:** Please cite this repository, and the following 3-paper series:
+[R. Nikutta, E. Lopez-Rodriguez, K. Ichikawa, N. A. Levenson, C. Packham, A. Alonso-Herrero, S. F. Hönig; "Hypercubes of AGN Tori (HYPERCAT) -- I. Models and Image Morphology"; ApJ 2021, accepted for publication](TODO: link)
 
-[Nikutta+2016](link)
+[Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Alonso-Herrero, Hönig; "Hypercubes of AGN Tori (HYPERCAT) -- II. Reolving the Torus with with Extremely Large Telescopes"; ApJ 2021, under review](TODO: link)
 
-[Lopez-Rodriguez+2016](link)
+**Synopsis:**
+Handle a hypercube of CLUMPY brightness maps. Easy-to-use classes and
+functions are provided to interpolate images in many dimensions
+(spanned by the model parameters), extract monochromatic or
+multi-wavelength images, as well as rotate images, zoom in and out,
+apply PSFs, extract interferometric signals, etc.
 
-[Ichikawa+2016](link)
-
-**Synopsis:** Handle a hypercube of CLUMPY brightness
-maps. Easy-to-use classes and functions are provided to interpolate
-images in many dimensions (spanned by the model parameters), extract
-monochromatic or multi-color images, as well as rotate images, zoom in
-and out, apply PSFs, extract interferometric signals, etc.
-
-**Example:**
-For usage examples, please see [hypercat.ipynb](./hypercat.ipynb)
+**User Manual and Examples:**
+For installation instructions and many usage examples, please see the
+HYPERCAT User Manual [User Manual](./docs/manual/) and the [example
+Jupyter notebooks](./examples/)
