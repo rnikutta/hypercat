@@ -1,4 +1,4 @@
-__version__ = '20200913'   #yyymmdd
+__version__ = '20210601'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
@@ -18,7 +18,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy import units as u
 
 # own
-from utils import arrayify
+#from utils import arrayify
+from .utils import arrayify
 
 def plot_with_wcs(image):
 

@@ -333,356 +333,356 @@ def fft_pxscale(ima):
 #    return vlti, fig
 
 
-def sky2cf_many(vecs):
-    import hypercat
-    import obsmodes
-    import pylab as plt
-    import matplotlib
-
-    # get cube and sky
-    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
-    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
-#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='12.5 Mpc',pa='42 deg')
-#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='55 deg')
-
-    # obs data
-    u_, v_, cf_, cferr_, phi_, phierr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
-    bl = np.sqrt(u_**2 + v_**2)
-    wave_ *= 1e6
-#    sel = (wave_ > 11.5) & (wave_ < 12.5)
-    sel = (wave_ > 11.5) & (wave_ < 12.5)
-    cfs = cf_[:,sel].mean(axis=1)
-    print("cfs selected = ", cfs.size)
-    cferrs = cferr_[:,sel].mean(axis=1)
-
-    pa = np.degrees(np.arctan2(-u_,v_))
-    
-    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
-    selps = (bl>70.)
-    cfsps = cfs[selps]
-    Fps = np.mean(cfsps)*u.Jy
-    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
-    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
-
-    # instrument
-    vlti = obsmodes.Interferometry(uv='../docs/notebooks/NGC1068.oifits')
-
-    CFS = []
-    for vec in vecs:
-    
-        sky = ngc1068(vec,total_flux_density='16 Jy')
-
-        CF,BL,FFTSCALE = vlti.observe(sky,fliplr=True) # use u,v points from oifitsfile
-        CF = S * CF*u.pix + Fps
-        CF = CF.value.astype('float64')
-        CFS.append(CF)
-
-    fig,(ax3,ax4) = plt.subplots(1,2,figsize=(7,3))
-    idx1 = np.argsort(BL)
-    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
-    for CF_ in CFS:
-        ax3.plot(BL[idx1],CF_[idx1],'b-',ms=2,lw=0.5,alpha=0.7)
-    ax3.set_xlim(0,130)
-    ax3.set_xlabel('BL (m)')
-    ax3.set_ylabel('corr. flux (Jy)')
-
-    idx2 = np.argsort(pa)
-    ax4.errorbar(pa[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
-    for CF_ in CFS:
-        ax4.plot(pa[idx2],CF_[idx2],'bo-',ms=2,lw=1)
-    ax4.set_xlabel('PA (deg)')
-    ax4.set_ylabel('corr. flux (Jy)')
-
-    fig.subplots_adjust(left=0.06,right=0.98,bottom=0.15)
-    
-    return vlti, fig
-
-        
-        
-#    bl = bl[:len(bl)//2]
-    
-    # plotting
-    fig,(ax1,ax2,ax3,ax4) = plt.subplots(1,4,figsize=(13,3))
-    ex = sky.FOV.value/2
-    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.viridis)
-    ax1.axvline(0);ax1.axhline(0)
-    ax1.set_xlabel('mas')
-    ax1.set_ylabel('mas')
-
-    ex = (FFTSCALE*u.m * sky.npix).value/2
-    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[ex,-ex,-ex,ex],norm=matplotlib.colors.LogNorm(),cmap=matplotlib.cm.jet)
-    ax2.axvline(0); ax2.axhline(0)
-    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
-    ax2.set_xlim(130,-130)
-    ax2.set_ylim(-130,130)
-    ax2.set_xlabel('m')
-    ax2.set_ylabel('m')
-    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]))
-#                  vec.__repr__())
-
-    idx1 = np.argsort(BL)
-#    print("idx1 ",idx1,len(idx1))
-#    print("bl ",bl,len(bl))
-#    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
-
-    ax3.plot(BL[idx1],CF[idx1],'bo-',ms=2,lw=1)
-    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
-    ax3.set_xlim(0,130)
-    ax3.set_xlabel('BL (m)')
-    ax3.set_ylabel('corr. flux (Jy)')
-
-    print("bl", bl)
-    print("BL", BL)
-
-    
-    idx2 = np.argsort(pa)
-    ax4.plot(pa[idx2],CF[idx2],'bo-',ms=2,lw=1)
-#    ax4.errorbar(pas[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
-    ax4.errorbar(pa[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
-#    ax4.plot(pas,CF,'bo-',ms=2,lw=1)
-#    ax4.set_xlim(0,130)
-    ax4.set_xlabel('PA (deg)')
-    ax4.set_ylabel('corr. flux (Jy)')
-
-    fig.subplots_adjust(left=0.06,right=0.98,bottom=0.15)
-    
-    return vlti, fig
-
-
-
-
-
-def sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 deg',cmap='CMRmap'):
-    import hypercat
-    import obsmodes
-    import pylab as plt
-    import matplotlib
-
-    # get cube and sky
-    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='imgdata', subcube_selection='onthefly')
-#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
-#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='12.5 Mpc',pa='42 deg')
-    ngc1068 = hypercat.Source(cube,luminosity=luminosity,distance=distance,pa=posangle)
-#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='55 deg')
-
-    # obs data
-    u_, v_, cf_, cferr_, phi_, phierr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
-    bl = np.sqrt(u_**2 + v_**2)
-    pa = np.degrees(np.arctan2(-u_,v_))
-    
-    wave_ *= 1e6
-    sel = (wave_ > 11.5) & (wave_ < 12.5)
-    cfs = cf_[:,sel].mean(axis=1)
-    print("cfs selected = ", cfs.size)
-    cferrs = cferr_[:,sel].mean(axis=1)
-
-    phis = phi_[:,sel].mean(axis=1)
-
-    
-#    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
-#    selps = (bl>70.)
-#    cfsps = cfs[selps]
-#    Fps = np.mean(cfsps)*u.Jy
-#    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
-#    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
-
-    
-#    cfs = cfs*t.vector('cfs')
-#    cferrs = cfs*t.vector('cferrs')
-
-    
-    # instrument
-#    x = np.linspace(-100,100,20)
-#    UV = list(product(x,x))
-#    U = np.array([UV[j][0] for j in range(len(UV))])
-#    V = np.array([UV[j][1] for j in range(len(UV))])
-
-    U = u_
-    V = v_
-#    return U,V
-    
-
-#    U = np.random.uniform(-115,115,100)
-#    V = np.random.uniform(-115,115,100)
-##    U = np.arange(-115,115.1,10)
-##    V = np.arange(-115,115.1,10)
-#    aux = np.array(list(product(U,V)))
-#    U = aux[:,0]
-#    V = aux[:,1]
-
-    U, V = [], []
-    for phi in range(0,181,10):
-        U_, V_ = get_uv(phi,129,100)
-        U = U + U_.tolist()
-        V = V + V_.tolist()
-
-    U = np.array(U)
-    V = np.array(V)
-            
-    
-    PA = np.degrees(np.arctan2(-U,V))
-
-    
-    
-#    vlti = obsmodes.Interferometry(uv='../docs/notebooks/NGC1068.oifits')
-    vlti = obsmodes.Interferometry(uv=(U,V))
-
-
-    if vec is None:
-#    sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
-#        sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
-        sig, i, Y, N0, q, tv, wave = 28.7,57.6,10,1.39,0.022,10.95,12.
-        vec = (sig, i, Y, N0, q, tv, wave)
-        
-    sky = ngc1068(vec,total_flux_density='16 Jy')
-
-    CF,BL,FFTSCALE = vlti.observe(sky,fliplr=True) # use u,v points from oifitsfile
-#    CF = (CF*u.pix + 0.8*u.Jy).value.astype('float64')
-    
-#    CF = S * CF*u.pix + Fps
-#    CF = CF.value.astype('float64')
-
-#    bl = bl[:len(bl)//2]
-    
-    ccube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='clddata', subcube_selection='onthefly')
-    cvec = np.array(vec)[np.array((0,1,2,4))]
-    cimg = ccube(cvec) * vec[3]
-    cimg = imageops.rotateImage(cimg,posangle)
-    
-    # plotting
-    fontsize = 10
-    plt.rcParams['font.size'] = fontsize
-    
-    fig,((ax1,ax2,ax3),(ax4,ax5,ax6)) = plt.subplots(2,3,figsize=(10,6.3))
-    
-    ex = sky.FOV.value/2
-    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=cmap,interpolation='bicubic')
-    ax1.xaxis.set_major_locator(MaxNLocator(7))
-    ax1.yaxis.set_major_locator(MaxNLocator(7))
-    ax1.contour(cimg.T,origin='lower',extent=[-ex,ex,-ex,ex],levels=(1,3,5),linewidths=0.2,colors='w',alpha=0.5)
-    ax1.axvline(0,lw=0.5);
-    ax1.axhline(0,lw=0.5)
-    ax1.set_xlabel('x-offset (mas)')
-    ax1.set_ylabel('y-offset (mas)')
-    xt, yt = 0.02, 0.03
-    ax1.text(xt,yt,'(a)',color='w',transform=ax1.transAxes)
-#    ax1.add_compass(loc=1,c='w')
-
-    
-    
-    exf = (FFTSCALE*u.m * sky.npix).value/2
-    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[exf,-exf,-exf,exf],norm=matplotlib.colors.LogNorm(),cmap='jet')
-    ax2.xaxis.set_major_locator(MaxNLocator(6))
-    ax2.yaxis.set_major_locator(MaxNLocator(6))
-    ax2.axvline(0,lw=0.5);
-    ax2.axhline(0,lw=0.5)
-    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
-    ax2.set_xlim(130,-130)
-    ax2.set_ylim(-130,130)
-    ax2.set_xlabel('U (m)')
-    ax2.set_ylabel('V (m)')
-    ax2.text(xt,yt,'(b)',color='k',transform=ax2.transAxes)
-#    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]))
-#                  vec.__repr__())
-
-    limg = sky.data.value
-    levels = np.array((0.1,0.5,0.9))*np.max(limg)
-    ax3.imshow(cimg.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap='gray_r',interpolation='bicubic')
-    ax3.xaxis.set_major_locator(MaxNLocator(7))
-    ax3.yaxis.set_major_locator(MaxNLocator(7))
-    ax3.contour(limg.T,origin='lower',extent=[-ex,ex,-ex,ex],levels=levels,linewidths=0.2,colors='w',alpha=0.5)
-    ax3.axvline(0,lw=0.5);
-    ax3.axhline(0,lw=0.5)
-    ax3.set_xlabel('x-offset (mas)')
-    ax3.set_ylabel('y-offset (mas)')
-    xt, yt = 0.02, 0.03
-    ax3.text(xt,yt,'(c)',color='k',transform=ax3.transAxes)
-
-
-    idxBL = np.argsort(BL)
-#    print("idx1 ",idx1,len(idx1))
-#    print("bl ",bl,len(bl))
-#    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
-
-    idxbl = np.argsort(bl)
-#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker='o',ms=3,zorder=1,color='orange',ls='none',label='data')
-    im = ax4.scatter(bl[idxbl],cfs[idxbl],c=pa[idxbl],marker='o',s=10,zorder=1,cmap='rainbow',label='data')
-    cb = plt.colorbar(im,ax=ax4)
-#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker=None,mew=0,zorder=1,color='orange',ls='none')
-    idxBL = np.argsort(BL)
-    ax4.plot(BL[idxBL],CF[idxBL],marker='o',ms=1,color='b',ls='none',zorder=2,lw=1,alpha=0.8,label='model')
-    ax4.xaxis.set_major_locator(MaxNLocator(6))
-    ax4.yaxis.set_major_locator(MaxNLocator(7))
-    ax4.set_xlim(0,130)
-    ax4.xaxis.set_ticks((0,30,60,90,120),minor=False)
-    ax4.xaxis.set_ticks((0,10,20,30,40,50,60,70,80,90,100,110,120,130),minor=True)
-    ax4.set_ylim(0,15)
-    ax4.yaxis.set_ticks((0,5,10,15),minor=False)
-    ax4.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
-    ax4.set_xlabel('BL (m)')
-    ax4.set_ylabel('corr. flux (Jy)')
-    ax4.legend(loc='upper right',fontsize=8,frameon=False,title='@12 micron')
-    ax4.text(xt,yt,'(d)',color='k',transform=ax4.transAxes)
-
-    print("bl", bl)
-    print("BL", BL)
-
-    idxPA = np.argsort(PA)
-#    sel = (BL > 85) & (BL < 90)
-#    ax4.plot(PA[idxPA][sel],CF[idxPA][sel],'b-',ms=2,lw=1)
-    ax5.plot(PA[idxPA],CF[idxPA],'b-',lw=0.1,ms=3,zorder=2,alpha=0.2)
-#    ax4.errorbar(pas[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
-    idxpa = np.argsort(pa)
-    ax5.errorbar(pa[idxpa],cfs[idxpa],yerr=cferrs[idxpa],marker='o',ms=3,zorder=1,color='orange',ls='none')
-#    ax4.plot(pas,CF,'bo-',ms=2,lw=1)
-#    ax4.set_xlim(0,130)
-    ax5.set_xlabel('PA (deg)')
-    ax5.set_ylabel('corr. flux (Jy)')
-    ax5.set_xlim(-120,180)
-    ax5.xaxis.set_ticks((-90,0,90,180),minor=False)
-    ax5.xaxis.set_ticks((-120,-90,-60,-30,0,30,60,90,120,150,180),minor=True)
-    ax5.set_ylim(0,15)
-    ax5.yaxis.set_ticks((0,5,10,15),minor=False)
-    ax5.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
-    ax5.text(xt,yt,'(e)',color='k',transform=ax5.transAxes)
-
-
-
-#    vec2 = list(res.x[:2]) + [int(np.round(res.x[2]))] + list(res.x[3:6]) + [tuple(wave_[sel].tolist())]
-    mirwaves = np.linspace(8,13,20)
-    vec2 = vec[:-1] + [tuple(mirwaves)]
-    aux = cube(vec2)
-    sed = [aux[j,...].sum() for j in range(mirwaves.size)]
-
-    ax6.plot(mirwaves,sed,'b-',ms=1,label='model SED',zorder=2)
-    sel = (wave_>8) & (wave_<13)
-    for j in range(cf_.shape[0]):
-        if j == 0:
-            label = 'observations (per uv point)'
-        else:
-            label = ''
-            
-        ax6.plot(wave_[sel],cf_[j,sel],'0.2',lw=0.5,alpha=0.4,label=label)
-    ax6.legend(loc='upper left',fontsize=8,frameon=False)
-    ax6.set_xlabel('wavelength (micron)')
-    ax6.set_ylabel('corr. flux (Jy)')
-    ax6.set_xlim(8,13)
-    ax6.xaxis.set_ticks((8,9,10,11,12,13),minor=False)
-    ax6.xaxis.set_ticks(np.linspace(8,13,5*5+1),minor=True)
-    ax6.set_ylim(0,15)
-    ax6.yaxis.set_ticks((0,5,10,15),minor=False)
-    ax6.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
-    ax6.text(xt,yt,'(f)',color='k',transform=ax6.transAxes)
-    
-    
-    title = "sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]) + "; D = %s, L = %s, PA = %s" % (distance,luminosity,posangle)
-    print(title)
-#    fig.suptitle(title)
-
-    fig.subplots_adjust(left=0.07,right=0.99,top=0.99,bottom=0.08,wspace=0.3,hspace=0.25)
-    plt.savefig('ngc1068_vlti_12mic_test1.pdf')
-    
-    return vlti, fig, sky.data.value, cimg
+#UNDER_DEVELOPMENTdef sky2cf_many(vecs):
+#UNDER_DEVELOPMENT    import hypercat
+#UNDER_DEVELOPMENT    import obsmodes
+#UNDER_DEVELOPMENT    import pylab as plt
+#UNDER_DEVELOPMENT    import matplotlib
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    # get cube and sky
+#UNDER_DEVELOPMENT    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20180417.hdf5', hypercube='imgdata', subcube_selection='onthefly')
+#UNDER_DEVELOPMENT    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
+#UNDER_DEVELOPMENT#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='12.5 Mpc',pa='42 deg')
+#UNDER_DEVELOPMENT#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='55 deg')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    # obs data
+#UNDER_DEVELOPMENT    u_, v_, cf_, cferr_, phi_, phierr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
+#UNDER_DEVELOPMENT    bl = np.sqrt(u_**2 + v_**2)
+#UNDER_DEVELOPMENT    wave_ *= 1e6
+#UNDER_DEVELOPMENT#    sel = (wave_ > 11.5) & (wave_ < 12.5)
+#UNDER_DEVELOPMENT    sel = (wave_ > 11.5) & (wave_ < 12.5)
+#UNDER_DEVELOPMENT    cfs = cf_[:,sel].mean(axis=1)
+#UNDER_DEVELOPMENT    print("cfs selected = ", cfs.size)
+#UNDER_DEVELOPMENT    cferrs = cferr_[:,sel].mean(axis=1)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    pa = np.degrees(np.arctan2(-u_,v_))
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+#UNDER_DEVELOPMENT    selps = (bl>70.)
+#UNDER_DEVELOPMENT    cfsps = cfs[selps]
+#UNDER_DEVELOPMENT    Fps = np.mean(cfsps)*u.Jy
+#UNDER_DEVELOPMENT    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
+#UNDER_DEVELOPMENT    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    # instrument
+#UNDER_DEVELOPMENT    vlti = obsmodes.Interferometry(uv='../docs/notebooks/NGC1068.oifits')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    CFS = []
+#UNDER_DEVELOPMENT    for vec in vecs:
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT        sky = ngc1068(vec,total_flux_density='16 Jy')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT        CF,BL,FFTSCALE = vlti.observe(sky,fliplr=True) # use u,v points from oifitsfile
+#UNDER_DEVELOPMENT        CF = S * CF*u.pix + Fps
+#UNDER_DEVELOPMENT        CF = CF.value.astype('float64')
+#UNDER_DEVELOPMENT        CFS.append(CF)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    fig,(ax3,ax4) = plt.subplots(1,2,figsize=(7,3))
+#UNDER_DEVELOPMENT    idx1 = np.argsort(BL)
+#UNDER_DEVELOPMENT    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT    for CF_ in CFS:
+#UNDER_DEVELOPMENT        ax3.plot(BL[idx1],CF_[idx1],'b-',ms=2,lw=0.5,alpha=0.7)
+#UNDER_DEVELOPMENT    ax3.set_xlim(0,130)
+#UNDER_DEVELOPMENT    ax3.set_xlabel('BL (m)')
+#UNDER_DEVELOPMENT    ax3.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    idx2 = np.argsort(pa)
+#UNDER_DEVELOPMENT    ax4.errorbar(pa[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT    for CF_ in CFS:
+#UNDER_DEVELOPMENT        ax4.plot(pa[idx2],CF_[idx2],'bo-',ms=2,lw=1)
+#UNDER_DEVELOPMENT    ax4.set_xlabel('PA (deg)')
+#UNDER_DEVELOPMENT    ax4.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    fig.subplots_adjust(left=0.06,right=0.98,bottom=0.15)
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    return vlti, fig
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT        
+#UNDER_DEVELOPMENT        
+#UNDER_DEVELOPMENT#    bl = bl[:len(bl)//2]
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    # plotting
+#UNDER_DEVELOPMENT    fig,(ax1,ax2,ax3,ax4) = plt.subplots(1,4,figsize=(13,3))
+#UNDER_DEVELOPMENT    ex = sky.FOV.value/2
+#UNDER_DEVELOPMENT    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=matplotlib.cm.viridis)
+#UNDER_DEVELOPMENT    ax1.axvline(0);ax1.axhline(0)
+#UNDER_DEVELOPMENT    ax1.set_xlabel('mas')
+#UNDER_DEVELOPMENT    ax1.set_ylabel('mas')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    ex = (FFTSCALE*u.m * sky.npix).value/2
+#UNDER_DEVELOPMENT    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[ex,-ex,-ex,ex],norm=matplotlib.colors.LogNorm(),cmap=matplotlib.cm.jet)
+#UNDER_DEVELOPMENT    ax2.axvline(0); ax2.axhline(0)
+#UNDER_DEVELOPMENT    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
+#UNDER_DEVELOPMENT    ax2.set_xlim(130,-130)
+#UNDER_DEVELOPMENT    ax2.set_ylim(-130,130)
+#UNDER_DEVELOPMENT    ax2.set_xlabel('m')
+#UNDER_DEVELOPMENT    ax2.set_ylabel('m')
+#UNDER_DEVELOPMENT    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]))
+#UNDER_DEVELOPMENT#                  vec.__repr__())
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    idx1 = np.argsort(BL)
+#UNDER_DEVELOPMENT#    print("idx1 ",idx1,len(idx1))
+#UNDER_DEVELOPMENT#    print("bl ",bl,len(bl))
+#UNDER_DEVELOPMENT#    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    ax3.plot(BL[idx1],CF[idx1],'bo-',ms=2,lw=1)
+#UNDER_DEVELOPMENT    ax3.errorbar(bl[idx1],cfs[idx1],yerr=cferrs[idx1],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT    ax3.set_xlim(0,130)
+#UNDER_DEVELOPMENT    ax3.set_xlabel('BL (m)')
+#UNDER_DEVELOPMENT    ax3.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    print("bl", bl)
+#UNDER_DEVELOPMENT    print("BL", BL)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    idx2 = np.argsort(pa)
+#UNDER_DEVELOPMENT    ax4.plot(pa[idx2],CF[idx2],'bo-',ms=2,lw=1)
+#UNDER_DEVELOPMENT#    ax4.errorbar(pas[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT    ax4.errorbar(pa[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT#    ax4.plot(pas,CF,'bo-',ms=2,lw=1)
+#UNDER_DEVELOPMENT#    ax4.set_xlim(0,130)
+#UNDER_DEVELOPMENT    ax4.set_xlabel('PA (deg)')
+#UNDER_DEVELOPMENT    ax4.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    fig.subplots_adjust(left=0.06,right=0.98,bottom=0.15)
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    return vlti, fig
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENTdef sky2cf(vec=None,distance='14.4 Mpc',luminosity='1.6e45 erg/s',posangle='42 deg',cmap='CMRmap'):
+#UNDER_DEVELOPMENT    import hypercat
+#UNDER_DEVELOPMENT    import obsmodes
+#UNDER_DEVELOPMENT    import pylab as plt
+#UNDER_DEVELOPMENT    import matplotlib
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    # get cube and sky
+#UNDER_DEVELOPMENT    cube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='imgdata', subcube_selection='onthefly')
+#UNDER_DEVELOPMENT#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='42 deg')
+#UNDER_DEVELOPMENT#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='12.5 Mpc',pa='42 deg')
+#UNDER_DEVELOPMENT    ngc1068 = hypercat.Source(cube,luminosity=luminosity,distance=distance,pa=posangle)
+#UNDER_DEVELOPMENT#    ngc1068 = hypercat.Source(cube,luminosity='1.6e45 erg/s',distance='14.4 Mpc',pa='55 deg')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    # obs data
+#UNDER_DEVELOPMENT    u_, v_, cf_, cferr_, phi_, phierr_, amp_, amperr_, wave_ = uvload('../docs/notebooks/NGC1068.oifits')
+#UNDER_DEVELOPMENT    bl = np.sqrt(u_**2 + v_**2)
+#UNDER_DEVELOPMENT    pa = np.degrees(np.arctan2(-u_,v_))
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    wave_ *= 1e6
+#UNDER_DEVELOPMENT    sel = (wave_ > 11.5) & (wave_ < 12.5)
+#UNDER_DEVELOPMENT    cfs = cf_[:,sel].mean(axis=1)
+#UNDER_DEVELOPMENT    print("cfs selected = ", cfs.size)
+#UNDER_DEVELOPMENT    cferrs = cferr_[:,sel].mean(axis=1)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    phis = phi_[:,sel].mean(axis=1)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT#    # Find unresolved point-source flux at long baselines, following Lopez-Gonzaga+2016, Section 3.1
+#UNDER_DEVELOPMENT#    selps = (bl>70.)
+#UNDER_DEVELOPMENT#    cfsps = cfs[selps]
+#UNDER_DEVELOPMENT#    Fps = np.mean(cfsps)*u.Jy
+#UNDER_DEVELOPMENT#    Ftot = units.getQuantity('16 Jy',recognized_units=units.UNITS['FLUXDENSITY'])  #sky.getTotalFluxDensity()
+#UNDER_DEVELOPMENT#    S = (Ftot-Fps)/Ftot  # use this to scale modeled CFs
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT#    cfs = cfs*t.vector('cfs')
+#UNDER_DEVELOPMENT#    cferrs = cfs*t.vector('cferrs')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    # instrument
+#UNDER_DEVELOPMENT#    x = np.linspace(-100,100,20)
+#UNDER_DEVELOPMENT#    UV = list(product(x,x))
+#UNDER_DEVELOPMENT#    U = np.array([UV[j][0] for j in range(len(UV))])
+#UNDER_DEVELOPMENT#    V = np.array([UV[j][1] for j in range(len(UV))])
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    U = u_
+#UNDER_DEVELOPMENT    V = v_
+#UNDER_DEVELOPMENT#    return U,V
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT#    U = np.random.uniform(-115,115,100)
+#UNDER_DEVELOPMENT#    V = np.random.uniform(-115,115,100)
+#UNDER_DEVELOPMENT##    U = np.arange(-115,115.1,10)
+#UNDER_DEVELOPMENT##    V = np.arange(-115,115.1,10)
+#UNDER_DEVELOPMENT#    aux = np.array(list(product(U,V)))
+#UNDER_DEVELOPMENT#    U = aux[:,0]
+#UNDER_DEVELOPMENT#    V = aux[:,1]
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    U, V = [], []
+#UNDER_DEVELOPMENT    for phi in range(0,181,10):
+#UNDER_DEVELOPMENT        U_, V_ = get_uv(phi,129,100)
+#UNDER_DEVELOPMENT        U = U + U_.tolist()
+#UNDER_DEVELOPMENT        V = V + V_.tolist()
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    U = np.array(U)
+#UNDER_DEVELOPMENT    V = np.array(V)
+#UNDER_DEVELOPMENT            
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    PA = np.degrees(np.arctan2(-U,V))
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT#    vlti = obsmodes.Interferometry(uv='../docs/notebooks/NGC1068.oifits')
+#UNDER_DEVELOPMENT    vlti = obsmodes.Interferometry(uv=(U,V))
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    if vec is None:
+#UNDER_DEVELOPMENT#    sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
+#UNDER_DEVELOPMENT#        sig, i, Y, N0, q, tv, wave = 28.7,57.6,9.5,1.39,0.022,10.95,12.
+#UNDER_DEVELOPMENT        sig, i, Y, N0, q, tv, wave = 28.7,57.6,10,1.39,0.022,10.95,12.
+#UNDER_DEVELOPMENT        vec = (sig, i, Y, N0, q, tv, wave)
+#UNDER_DEVELOPMENT        
+#UNDER_DEVELOPMENT    sky = ngc1068(vec,total_flux_density='16 Jy')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    CF,BL,FFTSCALE = vlti.observe(sky,fliplr=True) # use u,v points from oifitsfile
+#UNDER_DEVELOPMENT#    CF = (CF*u.pix + 0.8*u.Jy).value.astype('float64')
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT#    CF = S * CF*u.pix + Fps
+#UNDER_DEVELOPMENT#    CF = CF.value.astype('float64')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT#    bl = bl[:len(bl)//2]
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    ccube = hypercat.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5', hypercube='clddata', subcube_selection='onthefly')
+#UNDER_DEVELOPMENT    cvec = np.array(vec)[np.array((0,1,2,4))]
+#UNDER_DEVELOPMENT    cimg = ccube(cvec) * vec[3]
+#UNDER_DEVELOPMENT    cimg = imageops.rotateImage(cimg,posangle)
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    # plotting
+#UNDER_DEVELOPMENT    fontsize = 10
+#UNDER_DEVELOPMENT    plt.rcParams['font.size'] = fontsize
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    fig,((ax1,ax2,ax3),(ax4,ax5,ax6)) = plt.subplots(2,3,figsize=(10,6.3))
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    ex = sky.FOV.value/2
+#UNDER_DEVELOPMENT    ax1.imshow(sky.data.value.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap=cmap,interpolation='bicubic')
+#UNDER_DEVELOPMENT    ax1.xaxis.set_major_locator(MaxNLocator(7))
+#UNDER_DEVELOPMENT    ax1.yaxis.set_major_locator(MaxNLocator(7))
+#UNDER_DEVELOPMENT    ax1.contour(cimg.T,origin='lower',extent=[-ex,ex,-ex,ex],levels=(1,3,5),linewidths=0.2,colors='w',alpha=0.5)
+#UNDER_DEVELOPMENT    ax1.axvline(0,lw=0.5);
+#UNDER_DEVELOPMENT    ax1.axhline(0,lw=0.5)
+#UNDER_DEVELOPMENT    ax1.set_xlabel('x-offset (mas)')
+#UNDER_DEVELOPMENT    ax1.set_ylabel('y-offset (mas)')
+#UNDER_DEVELOPMENT    xt, yt = 0.02, 0.03
+#UNDER_DEVELOPMENT    ax1.text(xt,yt,'(a)',color='w',transform=ax1.transAxes)
+#UNDER_DEVELOPMENT#    ax1.add_compass(loc=1,c='w')
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    exf = (FFTSCALE*u.m * sky.npix).value/2
+#UNDER_DEVELOPMENT    ax2.imshow(np.abs(vlti.imafft.value).T,origin='lower',extent=[exf,-exf,-exf,exf],norm=matplotlib.colors.LogNorm(),cmap='jet')
+#UNDER_DEVELOPMENT    ax2.xaxis.set_major_locator(MaxNLocator(6))
+#UNDER_DEVELOPMENT    ax2.yaxis.set_major_locator(MaxNLocator(6))
+#UNDER_DEVELOPMENT    ax2.axvline(0,lw=0.5);
+#UNDER_DEVELOPMENT    ax2.axhline(0,lw=0.5)
+#UNDER_DEVELOPMENT    ax2.plot(vlti.u,vlti.v,marker='o',ls='none',color='k',ms=3)
+#UNDER_DEVELOPMENT    ax2.set_xlim(130,-130)
+#UNDER_DEVELOPMENT    ax2.set_ylim(-130,130)
+#UNDER_DEVELOPMENT    ax2.set_xlabel('U (m)')
+#UNDER_DEVELOPMENT    ax2.set_ylabel('V (m)')
+#UNDER_DEVELOPMENT    ax2.text(xt,yt,'(b)',color='k',transform=ax2.transAxes)
+#UNDER_DEVELOPMENT#    ax2.set_title("sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]))
+#UNDER_DEVELOPMENT#                  vec.__repr__())
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    limg = sky.data.value
+#UNDER_DEVELOPMENT    levels = np.array((0.1,0.5,0.9))*np.max(limg)
+#UNDER_DEVELOPMENT    ax3.imshow(cimg.T,origin='lower',extent=[-ex,ex,-ex,ex],cmap='gray_r',interpolation='bicubic')
+#UNDER_DEVELOPMENT    ax3.xaxis.set_major_locator(MaxNLocator(7))
+#UNDER_DEVELOPMENT    ax3.yaxis.set_major_locator(MaxNLocator(7))
+#UNDER_DEVELOPMENT    ax3.contour(limg.T,origin='lower',extent=[-ex,ex,-ex,ex],levels=levels,linewidths=0.2,colors='w',alpha=0.5)
+#UNDER_DEVELOPMENT    ax3.axvline(0,lw=0.5);
+#UNDER_DEVELOPMENT    ax3.axhline(0,lw=0.5)
+#UNDER_DEVELOPMENT    ax3.set_xlabel('x-offset (mas)')
+#UNDER_DEVELOPMENT    ax3.set_ylabel('y-offset (mas)')
+#UNDER_DEVELOPMENT    xt, yt = 0.02, 0.03
+#UNDER_DEVELOPMENT    ax3.text(xt,yt,'(c)',color='k',transform=ax3.transAxes)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    idxBL = np.argsort(BL)
+#UNDER_DEVELOPMENT#    print("idx1 ",idx1,len(idx1))
+#UNDER_DEVELOPMENT#    print("bl ",bl,len(bl))
+#UNDER_DEVELOPMENT#    print("bl.shape,cfs.shape,cferrs.shape = ", bl.shape,cfs.shape,cferrs.shape )
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    idxbl = np.argsort(bl)
+#UNDER_DEVELOPMENT#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker='o',ms=3,zorder=1,color='orange',ls='none',label='data')
+#UNDER_DEVELOPMENT    im = ax4.scatter(bl[idxbl],cfs[idxbl],c=pa[idxbl],marker='o',s=10,zorder=1,cmap='rainbow',label='data')
+#UNDER_DEVELOPMENT    cb = plt.colorbar(im,ax=ax4)
+#UNDER_DEVELOPMENT#    ax4.errorbar(bl[idxbl],cfs[idxbl],yerr=cferrs[idxbl],marker=None,mew=0,zorder=1,color='orange',ls='none')
+#UNDER_DEVELOPMENT    idxBL = np.argsort(BL)
+#UNDER_DEVELOPMENT    ax4.plot(BL[idxBL],CF[idxBL],marker='o',ms=1,color='b',ls='none',zorder=2,lw=1,alpha=0.8,label='model')
+#UNDER_DEVELOPMENT    ax4.xaxis.set_major_locator(MaxNLocator(6))
+#UNDER_DEVELOPMENT    ax4.yaxis.set_major_locator(MaxNLocator(7))
+#UNDER_DEVELOPMENT    ax4.set_xlim(0,130)
+#UNDER_DEVELOPMENT    ax4.xaxis.set_ticks((0,30,60,90,120),minor=False)
+#UNDER_DEVELOPMENT    ax4.xaxis.set_ticks((0,10,20,30,40,50,60,70,80,90,100,110,120,130),minor=True)
+#UNDER_DEVELOPMENT    ax4.set_ylim(0,15)
+#UNDER_DEVELOPMENT    ax4.yaxis.set_ticks((0,5,10,15),minor=False)
+#UNDER_DEVELOPMENT    ax4.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
+#UNDER_DEVELOPMENT    ax4.set_xlabel('BL (m)')
+#UNDER_DEVELOPMENT    ax4.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT    ax4.legend(loc='upper right',fontsize=8,frameon=False,title='@12 micron')
+#UNDER_DEVELOPMENT    ax4.text(xt,yt,'(d)',color='k',transform=ax4.transAxes)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    print("bl", bl)
+#UNDER_DEVELOPMENT    print("BL", BL)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    idxPA = np.argsort(PA)
+#UNDER_DEVELOPMENT#    sel = (BL > 85) & (BL < 90)
+#UNDER_DEVELOPMENT#    ax4.plot(PA[idxPA][sel],CF[idxPA][sel],'b-',ms=2,lw=1)
+#UNDER_DEVELOPMENT    ax5.plot(PA[idxPA],CF[idxPA],'b-',lw=0.1,ms=3,zorder=2,alpha=0.2)
+#UNDER_DEVELOPMENT#    ax4.errorbar(pas[idx2],cfs[idx2],yerr=cferrs[idx2],marker='o',ms=2,color='orange',ls='none')
+#UNDER_DEVELOPMENT    idxpa = np.argsort(pa)
+#UNDER_DEVELOPMENT    ax5.errorbar(pa[idxpa],cfs[idxpa],yerr=cferrs[idxpa],marker='o',ms=3,zorder=1,color='orange',ls='none')
+#UNDER_DEVELOPMENT#    ax4.plot(pas,CF,'bo-',ms=2,lw=1)
+#UNDER_DEVELOPMENT#    ax4.set_xlim(0,130)
+#UNDER_DEVELOPMENT    ax5.set_xlabel('PA (deg)')
+#UNDER_DEVELOPMENT    ax5.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT    ax5.set_xlim(-120,180)
+#UNDER_DEVELOPMENT    ax5.xaxis.set_ticks((-90,0,90,180),minor=False)
+#UNDER_DEVELOPMENT    ax5.xaxis.set_ticks((-120,-90,-60,-30,0,30,60,90,120,150,180),minor=True)
+#UNDER_DEVELOPMENT    ax5.set_ylim(0,15)
+#UNDER_DEVELOPMENT    ax5.yaxis.set_ticks((0,5,10,15),minor=False)
+#UNDER_DEVELOPMENT    ax5.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
+#UNDER_DEVELOPMENT    ax5.text(xt,yt,'(e)',color='k',transform=ax5.transAxes)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT#    vec2 = list(res.x[:2]) + [int(np.round(res.x[2]))] + list(res.x[3:6]) + [tuple(wave_[sel].tolist())]
+#UNDER_DEVELOPMENT    mirwaves = np.linspace(8,13,20)
+#UNDER_DEVELOPMENT    vec2 = vec[:-1] + [tuple(mirwaves)]
+#UNDER_DEVELOPMENT    aux = cube(vec2)
+#UNDER_DEVELOPMENT    sed = [aux[j,...].sum() for j in range(mirwaves.size)]
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    ax6.plot(mirwaves,sed,'b-',ms=1,label='model SED',zorder=2)
+#UNDER_DEVELOPMENT    sel = (wave_>8) & (wave_<13)
+#UNDER_DEVELOPMENT    for j in range(cf_.shape[0]):
+#UNDER_DEVELOPMENT        if j == 0:
+#UNDER_DEVELOPMENT            label = 'observations (per uv point)'
+#UNDER_DEVELOPMENT        else:
+#UNDER_DEVELOPMENT            label = ''
+#UNDER_DEVELOPMENT            
+#UNDER_DEVELOPMENT        ax6.plot(wave_[sel],cf_[j,sel],'0.2',lw=0.5,alpha=0.4,label=label)
+#UNDER_DEVELOPMENT    ax6.legend(loc='upper left',fontsize=8,frameon=False)
+#UNDER_DEVELOPMENT    ax6.set_xlabel('wavelength (micron)')
+#UNDER_DEVELOPMENT    ax6.set_ylabel('corr. flux (Jy)')
+#UNDER_DEVELOPMENT    ax6.set_xlim(8,13)
+#UNDER_DEVELOPMENT    ax6.xaxis.set_ticks((8,9,10,11,12,13),minor=False)
+#UNDER_DEVELOPMENT    ax6.xaxis.set_ticks(np.linspace(8,13,5*5+1),minor=True)
+#UNDER_DEVELOPMENT    ax6.set_ylim(0,15)
+#UNDER_DEVELOPMENT    ax6.yaxis.set_ticks((0,5,10,15),minor=False)
+#UNDER_DEVELOPMENT    ax6.yaxis.set_ticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15),minor=True)
+#UNDER_DEVELOPMENT    ax6.text(xt,yt,'(f)',color='k',transform=ax6.transAxes)
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    title = "sig, i, Y, N0, q, tv, wave = " + ", ".join(["%.4f"%_ for _ in vec]) + "; D = %s, L = %s, PA = %s" % (distance,luminosity,posangle)
+#UNDER_DEVELOPMENT    print(title)
+#UNDER_DEVELOPMENT#    fig.suptitle(title)
+#UNDER_DEVELOPMENT
+#UNDER_DEVELOPMENT    fig.subplots_adjust(left=0.07,right=0.99,top=0.99,bottom=0.08,wspace=0.3,hspace=0.25)
+#UNDER_DEVELOPMENT    plt.savefig('ngc1068_vlti_12mic_test1.pdf')
+#UNDER_DEVELOPMENT    
+#UNDER_DEVELOPMENT    return vlti, fig, sky.data.value, cimg
 
 
 
