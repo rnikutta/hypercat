@@ -15,7 +15,8 @@ import pylab as plt
 from astropy.modeling.functional_models import Gaussian2D
 
 # own
-import ndiminterpolation as ndi
+#import ndiminterpolation as ndi
+from . import ndiminterpolation as ndi
 
 
 def halflight_radius(img,center=''):

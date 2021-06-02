@@ -1,4 +1,4 @@
-__version__ = '0.1.2' #'20210601' #yyyymmdd
+__version__ = '0.1.3' #'20210601' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.

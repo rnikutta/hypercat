@@ -2,7 +2,7 @@
 
 """GUI interface to (some of) Hypercat functionality."""
 
-__version__ = '20190822'
+__version__ = '20210601'
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 # std lib
@@ -31,10 +31,15 @@ from astropy.io import fits
 from astropy.samp import SAMPIntegratedClient
 
 # Hypercat
-import hypercat
-import imageops
-import ioops
-from loggers import *
+from hypercat.hypercat import ModelCube
+from hypercat import imageops
+from hypercat import ioops
+from hypercat.loggers import *
+
+#import hypercat
+#import imageops
+#import ioops
+#from loggers import *
 
 CONFIGFILE = 'hypercatgui.conf'
 
@@ -444,7 +449,8 @@ class App():
 
         
     def load_cube(self):
-        self.cube = hypercat.ModelCube(self.hdf5file,hypercube='imgdata',subcube_selection='onthefly')
+#        self.cube = hypercat.ModelCube(self.hdf5file,hypercube='imgdata',subcube_selection='onthefly')
+        self.cube = ModelCube(self.hdf5file,hypercube='imgdata',subcube_selection='onthefly')
 
 
     def launch_samphub(self):
@@ -597,14 +603,25 @@ class BetterSpinbox(Tk.Spinbox):
 
     
 
-if __name__ == '__main__':
+def main():
+    global config, app
     config = read_or_create_config()
     app = App(config)
-
     app.root.protocol("WM_DELETE_WINDOW", app._quit)
-#    app.bind("<Destroy>", _destroy)
-    
     app.root.mainloop()
+    
+
+if __name__ == '__main__':
+    main()
+    
+#    config = read_or_create_config()
+#    app = App(config)
+#
+#    app.root.protocol("WM_DELETE_WINDOW", app._quit)
+##    app.bind("<Destroy>", _destroy)
+#    
+#    app.root.mainloop()
+
 
 #Tk.mainloop()
 # If you put root.destroy() here, it will cause an error if the window is
