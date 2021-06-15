@@ -1,0 +1,52 @@
+#+begin_export latex
+\clearpage
+#+end_export
+* Running Hypercat
+
+The full functionality of \HC{} lies in its several Python modules. To
+use all of its capabilities, you can import ~hypercat~ into your
+Python workflow, including in Jupyter notebooks, and use the various
+functions. The examples below show how to import \HC{} into a Python
+workflow after the initial installation.\\
+
+For the most common task -- obtaining an image at given model
+parameters and wavelength -- the user may opt to launch the [[\HC{}
+GUI Program][Hypercat GUI; it is very easy to use.
+
+** If you installed Hypercat via pip
+
+Just start e.g. Ipython, and import Hypercat:
+
+#+begin_src bash eval: no
+ipython --pylab
+Python 3.8.10 (default, May 19 2021, 18:05:58)
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.24.0 -- An enhanced Interactive Python. Type '?' for help.
+Using matplotlib backend: TkAgg
+
+In [1]: import hypercat as hc
+In [2]: hc.__version__
+Out[2]: '0.1.3'
+#+end_src
+
+** If you cloned Hypercat from Github
+
+Change into the ~hypercat/~ directory, launch e.g. Ipython, and import Hypercat:
+
+#+begin_src python
+cd hypercat/hypercat
+ipython --pylab
+
+In [1]: import hypercat as hc
+In [2]: hc.__version__
+Out[2]: '0.1.3'
+#+end_src
+
+# ** If you installed Hypercat via Docker
+# 
+# #+begin_src bash
+# docker run -i -v $(pwd)/data:/data -p 8888:8888 robnik/hypercat:latest
+# #+end_src
+# 
+# 
+

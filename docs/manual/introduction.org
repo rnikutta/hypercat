@@ -1,0 +1,152 @@
+#+begin_export latex
+\clearpage
+#+end_export
+* Hypercat short introduction
+
+** Purpose
+
+\HC{} is a Python software package developed to ease operating on
+N-dimensional hypercubes of model images, produced with \C{} or other
+codes, while hiding the complexity of dealing with hundreds of
+gigabytes of data.
+
+** Attribution and software license
+
+Hypercat is open-source software and freely available on [[https://github.com/rnikutta/hypercat/][GitHub]] and
+[[https://pypi.org/project/hypercat/][PyPI]] under a permissive [[https://github.com/rnikutta/hypercat/blob/master/LICENSE][BSD 3-clause license]] -- in short, if you are
+using in your research any of the \HC{} software or its components,
+and/or the \HC{} data hypercubes, and/or telescope pupil images,
+please cite these two papers:\\
+
+/Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig, Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- I. Models and Image Morphology", ApJ (2021, accepted)/\\
+
+/Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig, Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- II. Resolving the
+torus with Extremely Large Telescopes", ApJ (2021, under review)/
+
+\todo{Add final URLs}
+
+** Code contributions are welcome
+
+We welcome contributions to the [[https://github.com/rnikutta/hypercat][\HC{} GitHub repository]], be it bug
+fixes, documentation / examples / notebooks, or enhanced
+functionality.\\
+
+Just fork the repository on GitHub, make edits on your fork, and when
+ready, make a pull request against the \HC{} master branch. Thank you!
+
+
+# * Taken from Paper 1 appendix
+# 
+# * Introduction to the Hypercat Software
+# 
+# The hypercubes of \C{} images and projected dust distribution maps
+# released with this paper are one part of \HC. The other is a set of
+# software tools that allow users to operate on these large data sets
+# with ease, and to simulate various types of observations. The \HC{}
+# software has two interfaces: a high-level layer that is expected to be
+# appropriate for most \HC{} users, and a low-level layer with more
+# functionality but also more complex. The high-level Application
+# Programming Interface (API) abstracts away several concepts familiar
+# to astronomers, such as e.g. ~Source~, ~Imaging~ (i.e. single-dish
+# photometry), ~Interferometry~, and ~IFU~. The low-level interface is
+# much closer to the model data and permits direct operations on arrays,
+# e.g. rotation, resampling, convolution, or the computation of
+# morphological quantities. Details are explicated in the User Manual.
+# 
+# 
+# # \subsection{MAIN High-level API}
+# # \label{sec:high-level-api}
+# # 
+# # % 
+# # \begin{figure*}
+# #   \center
+# #   \includegraphics[width=0.8\hsize]{f26.pdf}
+# #   \caption{High-level abstractions of objects and concepts familiar to
+# #     astronomers (e.g. Source, Imaging), shown as white rectangles, and
+# #     possible workflow paths for users of the \HC\
+# #     software. Parallelograms symbolize any kind of input to or
+# #     configuration of \HC, shaded rectangles stand for generated
+# #     output, and rounded boxes are the operations performed.}
+# #   \label{fig:flowchart}
+# # \end{figure*}
+# # %
+# # \noindent
+# # Figure \ref{fig:flowchart} shows a view of the information flow in
+# # \HC, and a possible workflow using the high-level API. A typical
+# # scenario is to simulate observations of a brightness distribution with
+# # realistic accounting for telescope PSF, camera pixelization, and sky
+# # noise effects. The steps entail:
+# # % [leftmargin=.2cm,align=left,label={(\arabic*)}]
+# # %
+# # \begin{enumerate}[leftmargin=.45cm]
+# # \item Memory-map a data cube of models %\\[-15pt]
+# # \item Create an astronomical source (with bolometric luminosity and distance) %\\[-15pt]
+# # \item Generate a model image of the source %\\[-15pt]
+# # \item Select an observing mode (e.g. ``Imaging'') %\\[-15pt]
+# # \item Observe the model image
+# # \end{enumerate}
+# # %
+# # Any number of source objects can be created using the same model cube,
+# # and any number of observing modes / instruments can be constructed
+# # (e.g. with different PSFs, detector pixelizations, etc.) to observe
+# # the model source image with. When the source object is called with a
+# # vector \hbox{$\bm\theta = \{\theta_k\}$} of model parameter values
+# # $\theta_k$, it generates the requested image via multilinear
+# # interpolation. An example could be for instance
+# # \hbox{$\bm\theta = (43.2,75,18,7.1,0,9.7,42)$} for the values of \sig,
+# # \iv, \Y, \No, \q, \tv, $\lambda$, and \pa. The $x$ and $y$ pixel
+# # indices are always implicitly selected and interpolated.
+# # %
+# # Note that every parameter in the $\bm\theta$ vector can itself be
+# # multi-valued (given as a tuple). The interpolated image is then a
+# # hyper-image -- a more than 2-dimensional image.
+# # 
+# # With the scaling by the bolometric luminosity and distance applied,
+# # this returned image is the \C\ torus model of the astrophysical
+# # source. It is flux calibrated (e.g. in Jansky) and carries the correct
+# # pixel size (e.g. in milli-arcsec) for the native resolution of the
+# # model images.
+# # 
+# # The next step is to create an AGN source, through the \texttt{Source}
+# # class. This \textsc{Python} object contains information about an AGN
+# # that are required to perform image operations with correct flux and
+# # spatial scales. The pixel scale can be specified in various ways,
+# # e.g. either directly, or by providing the AGN luminosity and distance,
+# # from which \HC\ then computes the dust sublimation radius and the
+# # pixel scale. The User Manual shows in detail how this is achieved.
+# # 
+# # \subsection{MAIN Hypercube Handling}
+# # %
+# # \noindent
+# # All operations in \HC\ begin with the hypercube of images being made
+# # available in the computer memory. For accessing the \emph{entire} cube
+# # the ``on the fly'' mode is most convenient; it memory-maps the file on
+# # disk, i.e. does not load all data into RAM, which would be
+# # prohibitively expensive. The interpolation of each image in this mode
+# # is a little bit slower than if the hypercube (or a sub-cube) were
+# # already loaded into memory.\footnote{In our tests the speed penalty
+# #   depends primarily on the number of axes of the hyperslab loaded, and
+# #   is quite insensitive to the lengths of the hyperslab axes. If a
+# #   hyperslab with all seven \C\ parameter axes is loaded, the
+# #   interpolation time (on a standard laptop computer) for one image is
+# #   \about 390~ms, versus \about 520~ms in the memory-mapped
+# #   ``on-the-fly'' mode. If fewer axes are loaded into RAM, the
+# #   interpolation can be up to an order of magnitude faster per image
+# #   (not counting the time to initially load the hyperslab into RAM.)}
+# # If speed is most important (e.g. for Markov Chain Monte Carlo
+# # applications) the user may want to load a subset of the hypercube into
+# # RAM and operate on that hyperslab. Details of all available loading
+# # modes are provided in the User Manual. The mapping of model parameter
+# # values to the vertices of the hypercube is stored in the same
+# # \texttt{hdf5} file. It permits very convenient sub-cube selection via
+# # parameter values rather than through n-dimensional array
+# # indices. Finally, \HC\ creates an interpolation object from the loaded
+# # cube. It can very quickly generate 2D images and n-dim hyperimages for
+# # \emph{any} combination of parameter values within the envelope spanned
+# # by the cube. We caution \HC\ users that interpolation of the \Y\
+# # parameter between the sampled (integer) values from 5 to 20 is
+# # \emph{not} advised, as the different radial sizes of the image lead to
+# # heavy interpolation artifacts within the outermost 1~\Rd. That is,
+# # values $\Y = 5,6,7,\ldots,19,20$ are safe to use, fractional values in
+# # between are not. All other \C\ model parameters are safe to use at any
+# # intermediate value within their envelope.

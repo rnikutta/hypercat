@@ -1,0 +1,7 @@
+* Download and verification of model hypercubes
+
+** Downloading of ~hdf5~ file(s)
+
+** Verification of downloaded files
+
+** Content of the ~hdf5~ files

@@ -1,0 +1,64 @@
+#+begin_export latex
+\clearpage
+#+end_export
+* Installing Hypercat
+
+Hypercat can be installed in several ways. Please select the route you
+may be most familar with.
+
+** Installing via pip
+
+In most cases running ~pip install~ in your Python environment will be
+easiest:
+
+#+begin_src bash eval: no
+pip install hypercat
+#+end_src
+
+Currently, \HC{} requires a specific version of the ~h5py~ package, so
+it might be a ood idea to install hypercat in a new virtual Python
+enviroment.
+
+If you are familiar with using Anaconda to manage Python environments, the steps are:
+
+#+begin_src bash eval: no
+# make a new environment called 'hypercat' with Python 3.8 installed
+conda create -n hypercat python=3.8
+
+# install into that environment ipython and jupyterlab (useful for working with Hypercat)
+conda install -n hypercat ipython jupyterlab
+
+# activate this environment
+conda activate hypercat
+
+# install hypercat from pypi
+pip install hypercat
+#+end_src
+
+
+** Clone directly from GitHub
+
+You can also clone the Hypercat repository directly from Github, but
+you will have to make sure that all external Python modules are
+already installed on your computer:
+
+#+begin_src bash eval: no
+cd foo/ # your target directory
+git clone https://github.com/rnikutta/hypercat.git
+cd hypercat/
+#+end_src
+
+
+# ** Installing via a Docker container
+# 
+# Finally, a Docker installation is available. It comes with the entire
+# Python software stack required for Hypercat already installed.
+# 
+# #+begin_src bash eval: no
+# docker pull robnik/hypercat:latest
+# #+end_src
+
+
+#+begin_export latex
+\clearpage
+#+end_export

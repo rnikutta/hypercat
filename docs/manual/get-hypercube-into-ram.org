@@ -1,0 +1,114 @@
+#+begin_export latex
+\clearpage
+#+end_export
+
+* Using \HC{}
+
+This section will be expanded in the near future. Until then, we refer
+the reader to the Jupyter notebook examples in the \HC{} GitHub
+repository: https://github.com/rnikutta/hypercat/examples/
+
+
+
+* Opening a hypercube in Hypercat
+
+In this Section we show how to make a hypercube of model images
+available on the computer.
+
+** Opening a cube as a memory map
+
+The most convenient (and the default) way is to allow \HC{} to
+memory-map the HDF group that contains a hypercube. After mapping, the
+interpolation of brightness and dust maps is transparent to the
+user.\\
+
+We make sure that \HC{} is in the Python path, and import the main
+module:
+
+#+BEGIN_SRC python
+import sys
+return sys.exec_prefix
+#+END_SRC
+
+#+RESULTS:
+: /home/robert/miniconda3/envs/py38
+
+
+
+
+#+BEGIN_SRC python :session foo :results output :exports both :cache no
+import sys
+print(sys.executable)
+print(sys.exec_prefix)
+#!which datalab
+#!datalab whoami
+sys.path.append('/home/robert/dev/hypercat/hypercat')
+#sys.path.insert(0,'/home/robert/dev/hypercat/hypercat')
+print(sys.path)
+import hypercat as hc
+print(hc.__version__)
+# print(hc.__file__)
+#print('foobar')
+print('BAZ')
+# print('barbar')
+#+END_SRC
+
+#+RESULTS:
+: /home/robert/miniconda3/envs/py38/bin/python
+: /home/robert/miniconda3/envs/py38
+: ['/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/docs/manual', '/home/robert/miniconda3/envs/py38/lib/python38.zip', '/home/robert/miniconda3/envs/py38/lib/python3.8', '/home/robert/miniconda3/envs/py38/lib/python3.8/lib-dynload', '', '/home/robert/miniconda3/envs/py38/lib/python3.8/site-packages', '/home/robert/miniconda3/envs/py38/lib/python3.8/site-packages/IPython/extensions', '/home/robert/.ipython', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat', '/home/robert/dev/hypercat/hypercat']
+: BAZ
+
+
+# #+BEGIN_SRC ipython :session foo :results output code :exports both :cache no
+# import sys
+# sys.path.append('/home/robert/dev/hypercat/hypercat')
+# import hypercat as hc
+# print(hc.__version__)
+# #+END_SRC
+
+Now we can instantiate a cube of images (they are in the ~imgdata~
+group in the HDF5 file).
+
+# #+BEGIN_SRC ipython :session foo :results output code :exports both :cache no
+# cube2 = hc.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5',hypercube='imgdata')
+# #+END_SRC
+
+# 
+# 
+# #+BEGIN_SRC ipython :session foo :results output replace :exports both :cache no
+# cube2.print_sampling(bold=False)
+# #+END_SRC
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+
+** Interactive selection of a sub-cube
+
+When using \HC{} in a terminal (python or ipython interpreter) then
+the selection of a sub-cube that is to be laoded into RAM can be also
+accomplished interactively.
+
+# #+BEGIN_SRC ipython :session foo eval: never :results output code :exports both :cache no
+# cube3 = hc.ModelCube('/home/robert/data/hypercat/hypercat_20181031_all.hdf5',hypercube='imgdata',subcube_selection='interactive')
+# #+END_SRC
+
+
+** Saving your selection into a file
+
+** Loading using a selection file
+
+** Saving your sub-cube to a separate hdf5 file
+
+** Loading the entire cube into RAM
+
+WARNING! LOADING OF A LARGE HDF5 DIRECTLY INTO RAM IS NOT RECOMMENDED!
+
+You will very likely exceed the available memory on your computer.
+
+Unless it is a smaller hdf5 file, ich which case proceed carefully.
+

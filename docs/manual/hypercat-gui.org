@@ -1,0 +1,92 @@
+#+begin_export latex
+\clearpage
+#+end_export
+* \HC{} GUI Program
+
+The \HC{} graphical user interface (GUI) application provides a simple
+way to generate, view, and export model images. It may be most
+convenient for exploring the effect of model parameters on the
+resulting image. With the initial release of \HC{} the \C{} model
+cube(s) are available, and the section demonstrates operation using
+these \C{} models.
+
+** Launching \HC{} GUI
+
+If you installed \HC{} using ~`pip`~ or similar, you should be able to
+simply start \HC{} GUI in the terminal:
+
+#+begin_src python
+hypercatgui
+#+end_src
+
+If you instead just cloned the \HC{} repository from GitHub, you can
+change to the directory subdirectory ~`hypercat/hypercatgui/~ inside
+where you cloned the code into, and run
+
+#+begin_src python
+python ./hypercatgui.py
+#+end_src
+
+The application should launch in either case, and if it is the first
+launch, it will ask you which \HC{} model cub to load. Navigate to the
+~.hdf5~ file (e.g. ~hypercat_20181031_all.hdf5~), and an image with
+default settings will appear.
+
+#+CAPTION: The \HC{} GUI displaying the emission map for a set of parameter values.
+#+LABEL: fig:gui
+#+ATTR_LATEX: :width 0.4\textwidth
+[[file:fig-gui-default.pdf]]
+
+Currently the GUI application is quite simple. For a loaded model, a
+number of color maps and their scaling are selectable. The displayed
+image can be saved to a ~.fits~ file, and if \textsc{SAO DS9} is
+installed, the model image can be sent to \textsc{DS9}. Figure [[fig:gui]]
+shows the GUI displaying one \C{} emission map.
+
+** Changing model parameters
+
+You can change all model parameter in the fields to the right of the
+displayed image, either by typing the new value (it overrides the
+currently displayed one), or by using the small up/down arrows next to
+each parameter (the finite stepping is some useful values for the
+given parameter).\\
+
+Please note that for the ~Y~ parameter (the torus radial extent) we
+recommend that only integer values be used, as the image interpolation
+for fractional numbers will lead to have artifacts in the last ~Y~
+through ~Y-1~ outer annulus.\\
+
+When you have changed one parameter you can either hit ~ENTER~ or the
+~Update image~ button to compute the new model, or change another
+parameters before updating. Note that the ~TAB~ keystroke brings you
+to the next parameter field. Upon updating the model a new image is
+computed from the hypercube through N-dimensional linear interpolation
+and displayed quickly.\\
+
+Note that your most recent parameter selection is saved in a local
+configuration file. When you next time launch \HC{} GUI, the same
+model will be loaded again, using the values stored in the
+configuration file.
+
+** Save as FITS
+If the currently displayed model is to your liking and you would like
+to export it to a FITS file, click on the ~Save as FITS~ button and
+decide where on your local disk to save the FITS file. The save file
+will have a header with the necessary information about the stored
+model, including \C{} parameters, etc.
+
+** View in \textsc{DS9}
+
+If the \textsc{SAO DS9} software is installed on your system (found
+out my typing ~which ds9~ in the terminal), you can send the currently
+displayed model to \textsc{DS9} directly from \HC{} GUI. Simply click
+on the ~View in DS9~ button.\\
+
+You can open several models in the same \textsc{DS9} (as new frames),
+but changing the displayed model, and then clicking on the ~View in
+DS9~ button again.
+
+#+CAPTION: The \HC{} GUI and SAO DS9 displaying the same \C{} model.
+#+LABEL: fig:guids9
+#+ATTR_LATEX: :width 0.7\textwidth
+[[file:fig-hypercatgui-with-ds9.png]]
