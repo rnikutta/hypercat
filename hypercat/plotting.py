@@ -1,4 +1,4 @@
-__version__ = '20210601'   #yyymmdd
+__version__ = '20210626'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Plotting funcs for hypercat.
@@ -71,12 +71,10 @@ def plot_with_wcs(image):
 #    plt.show()
 
 
-def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.viridis,contours=None,interpolation='bicubic',**kwargs):
+def plotPanel(ax,image,units='',extent=None,colorbar=False,cblabel=None,title='',cmap=plt.cm.viridis,contours=None,interpolation='bicubic',**kwargs):
 
     """Plot a single panel. To be called from :func:`multiplot() (see docstring there).`
     """
-    print("contours = ",contours)
-            
     
     # what kind of animal is 'image'?
     cls = None
@@ -103,7 +101,7 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
             rad = fov/2.
             extent = [-rad,rad,-rad,rad]
         
-    elif cls == 'ndarray':
+    elif cls == 'ndarray' or cls == 'MaskedArray':
         data = image
         axunit = 'pixel'
 
@@ -146,7 +144,6 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
 
         else:
             norm = None
-            print("contours = ",contours)
             V = np.array(contours)*data.max()
             
         ax.contour(data,V,origin='lower',extent=extent,colors='w',linewidths=0.5,linestyles='-',corner_mask=True,norm=norm)
@@ -164,16 +161,18 @@ def plotPanel(ax,image,units='',extent=None,colorbar=False,title='',cmap=plt.cm.
         cb = plt.colorbar(im,cax=cax,orientation='vertical')
         if cls == 'Image' and units is not None:
             cb.set_label(units)
+
+        if cblabel is not None:
+            cb.set_label(cblabel)
     else:
-        print("Setting cax.set_visible(False)")
         cax.set_visible(False)
         
 
 # TODO: add 'scaling' arg; default = 'auto'; otherwise 'lin' or 'log' (like contours)
 def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
               sharex=True,sharey=True,\
-              colorbars=True,units='',titles='',contours=None,
-              interpolation='bicubic',cmap=plt.cm.viridis,figtitle='',fontsize=16,\
+              colorbars=True,cblabels='',units='',titles='',contours=None,
+              interpolation='bicubic',cmaps=plt.cm.viridis,figtitle='',fontsize=16,\
               **kwargs):
 
     """Plot one or more images in a multi-panel figure.
@@ -317,16 +316,17 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # IMAGES ARRAY
     images = arrayify(images,shape=geometry,fill=False,direction=direction)
     ny, nx = images.shape #geometry
-    print("ny,nx = ",ny,nx)
+#    print("ny,nx = ",ny,nx)
     n = nx*ny
 
     # ARRAYS OF PANEL FEATURES
     colorbars = arrayify(colorbars,shape=images.shape,fill=True,direction=direction)
+    cblabels = arrayify(cblabels,shape=images.shape,fill=True,direction=direction)
     units = arrayify(units,shape=images.shape,fill=True,direction=direction)
     titles = arrayify(titles,shape=images.shape,fill=True,direction=direction)
-    print("contours before arrayify: ", contours)
     contours = arrayify(contours,shape=images.shape,fill=True,direction=direction)
-    print("contours before arrayify: ", contours)
+    cmaps = arrayify(cmaps,shape=images.shape,fill=True,direction=direction)
+
     # MAKE FIGURE
     # setup
     fontsize = fontsize
@@ -335,10 +335,6 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     plt.rcParams['xtick.labelsize'] = fontsize-2
     plt.rcParams['ytick.labelsize'] = fontsize-2
     plt.rcParams['font.family'] = 'serif' # 'sans-serif'
-#    # don't use Type 3 fonts (MNRAS requeirement)
-#    plt.rcParams['ps.useafm'] = True
-#    plt.rcParams['pdf.use14corefonts'] = True
-#    plt.rcParams['text.usetex'] = True
 
     figsize = (panelsize*nx,panelsize*ny)
     fig, axes = plt.subplots(ny,nx,sharex=sharex,sharey=sharey,figsize=figsize)
@@ -349,12 +345,11 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # generate panels
     for iy in range(ny):
         for ix in range(nx):
-            print("Plotting panel ({:d},{:d})".format(iy,ix))
+#            print("Plotting panel ({:d},{:d})".format(iy,ix))
             img = images[iy,ix]
             ax = axes[iy,ix]
             if img is not None:
-#                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation)
-                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],title=titles[iy,ix],cmap=cmap,contours=contours[iy,ix],interpolation=interpolation,**kwargs)
+                plotPanel(ax,img,units=units[iy,ix],colorbar=colorbars[iy,ix],cblabel=cblabels[iy,ix],title=titles[iy,ix],cmap=cmaps[iy,ix],contours=contours[iy,ix],interpolation=interpolation,**kwargs)
             else:
                 ax.set_visible(False)
 
@@ -376,7 +371,8 @@ def multiplot(images,geometry=None,panelsize=4,direction='x',extent=None,\
     # fig.subplots_adjust() arguments; can be modified via kwargs
     adjustkwargs = {'left':0.15,'right':0.88,'top':0.97,'bottom':0.06,'hspace':0.15,'wspace':0.35}
     for k,v in kwargs.items():
-        adjustkwargs[k] = v
+        if k in adjustkwargs:
+            adjustkwargs[k] = v
         
     fig.subplots_adjust(**adjustkwargs)
     fig.tight_layout()

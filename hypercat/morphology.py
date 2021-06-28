@@ -321,11 +321,6 @@ def get_eigenvalues(cov):
     return eigenvals
 
 
-#def get_angle(cov):
-#    angle = 0.5 * np.arctan2((2*cov[0,1]),(cov[0,0]-cov[1,1]))
-#
-#    return angle
-    
 def get_angle(img=None,cov=None):
 
     """"Compute image position angle.
@@ -369,6 +364,7 @@ def get_angle(img=None,cov=None):
     return angle
     
 
+# TODO: allow for axes switching (auto, or by user)
 def get_elongation(cov):
     eigenvals = get_eigenvalues(cov)
 #    elong = np.sqrt(eigenvals[0]/eigenvals[1])
@@ -399,7 +395,6 @@ def get_elongation(cov):
     return elong
 
 
-#def make_circle(npix,r,x0=0,y0=0):
 def circle(npix,r,x0=0,y0=0):
 
     I = np.zeros((npix,npix))
@@ -411,7 +406,6 @@ def circle(npix,r,x0=0,y0=0):
 
     return I
 
-#def make_square(npix,a,x0=0,y0=0):
 def square(npix,a,x0=0,y0=0):
 
     I = np.zeros((npix,npix))
@@ -423,7 +417,6 @@ def square(npix,a,x0=0,y0=0):
 
     return I
 
-#def make_rectangle(npix,a,b,x0=0,y0=0):
 def rectangle(npix,a,b,x0=0,y0=0,theta=0.):
 
     I = np.zeros((npix,npix))
@@ -450,7 +443,6 @@ def get_hu_moment(img,orders):
 def get_moment(img,orders,central=False,scaleinvariant=False):
 
     p, q = orders
-
     
     if central is True:
         mu00 = get_moment(img,(0,0))
@@ -469,8 +461,6 @@ def get_moment(img,orders,central=False,scaleinvariant=False):
         mu00 = get_moment(img,(0,0))
         aux = mu00**(1+(p+q)/2.)
         mu = mu / aux
-    
-#    print(mu)
     
     return mu
 
@@ -630,8 +620,6 @@ def gini(arr):
     arr = arr + eps  # make all pixels non-zero
     arr = np.sort(arr)
     
-    print(n,idx,MIN,eps,arr)
-    
     G = np.sum((2*idx-n-1)*arr) / (n*np.sum(arr))
 
     return G
@@ -718,7 +706,7 @@ def rotateVector(vec,deg=90.):
     s = math.sin(angle)
     c = math.cos(angle)
     matrix = np.array([[ c, s],
-                      [-s, c]])
+                       [-s, c]])
 
     # transposing matrix to make positive angles rotate
     # counter-clockwise, i.e. as is convention in mathematics

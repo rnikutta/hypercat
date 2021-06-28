@@ -1,4 +1,4 @@
-__version__ = '20200913'   #yyymmdd
+__version__ = '20210617'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling global logging.
@@ -20,7 +20,7 @@ class LogFormatter(logging.Formatter):
         if record.levelno == logging.INFO:
             s = '{:s}'.format(record.msg)
         else:
-            s = '[{:s}]: {:s}'.format(record.levelname,record.msg)
+            s = '[{:s}] {:s}'.format(record.levelname,record.msg)
 
         # return formatted msg
         return s
