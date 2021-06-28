@@ -26,7 +26,7 @@ Using matplotlib backend: TkAgg
 
 In [1]: import hypercat as hc
 In [2]: hc.__version__
-Out[2]: '0.1.3'
+Out[2]: '0.1.5'
 #+end_src
 
 ** If you cloned Hypercat from Github
@@ -39,7 +39,7 @@ ipython --pylab
 
 In [1]: import hypercat as hc
 In [2]: hc.__version__
-Out[2]: '0.1.3'
+Out[2]: '0.1.5'
 #+end_src
 
 # ** If you installed Hypercat via Docker

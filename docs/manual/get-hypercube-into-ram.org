@@ -10,7 +10,7 @@ repository: https://github.com/rnikutta/hypercat/examples/
 
 
 
-* Opening a hypercube in Hypercat
+* Opening a hypercube in Hypercat                                  :noexport:
 
 In this Section we show how to make a hypercube of model images
 available on the computer.

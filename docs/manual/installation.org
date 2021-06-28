@@ -22,14 +22,24 @@ enviroment.
 If you are familiar with using Anaconda to manage Python environments, the steps are:
 
 #+begin_src bash eval: no
-# make a new environment called 'hypercat' with Python 3.8 installed
-conda create -n hypercat python=3.8
-
-# install into that environment ipython and jupyterlab (useful for working with Hypercat)
-conda install -n hypercat ipython jupyterlab
+# make a new environment called 'hypercat' with Python 3.7.2 installed (higher version are ok too)
+conda create -n hypercat-env python=3.7.2
 
 # activate this environment
-conda activate hypercat
+conda activate hypercat-env
+
+# install hypercat from pypi
+pip install hypercat
+#+end_src
+
+Or maybe you are coordinating Python environments with pyenv. Then do:
+
+#+begin_src bash eval: no
+# make a new environment called 'hypercat' with Python 3.7.2 installed (higher version are ok too)
+pyenv install 3.7.2
+
+# activate this environment
+. .venv/bin/activate
 
 # install hypercat from pypi
 pip install hypercat
