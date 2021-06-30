@@ -1,5 +1,7 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/rnikutta/hypercat/total)
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/hypercat)
+
 HYPERCAT
 ========
 
