@@ -1,3 +1,5 @@
+![GitHub all releases](https://img.shields.io/github/downloads/rnikutta/hypercat/total)
+
 HYPERCAT
 ========
 
@@ -21,7 +23,7 @@ Robert Nikutta [\<robert.nikutta@gmail.com\>](mailto:robert.nikutta@gmail.com), 
 Version
 -------
 
-Version fo this document: 2021-06-27
+Version fo this document: 2021-06-30
 
 Current version of the hypercat sofware: 0.1.5
 
