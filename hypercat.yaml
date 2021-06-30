@@ -3,14 +3,12 @@ channels:
   - conda
   - conda-forge
 dependencies:
-  - python>=3.5
+  - python>=3.6
   - h5py>=2.9.0
-  - pymc3>=3.6
   - astropy>=3
   - numpy
   - scipy
   - scikit-image
   - ipython
   - matplotlib
-  - rpy2
   - urwid

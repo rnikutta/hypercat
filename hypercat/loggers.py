@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20180207'   #yyymmdd
+__version__ = '20210617'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling global logging.
@@ -22,7 +20,7 @@ class LogFormatter(logging.Formatter):
         if record.levelno == logging.INFO:
             s = '{:s}'.format(record.msg)
         else:
-            s = '[{:s}]: {:s}'.format(record.levelname,record.msg)
+            s = '[{:s}] {:s}'.format(record.levelname,record.msg)
 
         # return formatted msg
         return s

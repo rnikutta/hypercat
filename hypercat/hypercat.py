@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20200519' #yyyymmdd
+__version__ = '0.1.5' #'20210626' #yyyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -28,13 +26,21 @@ from astropy.io import fits
 import h5py
 
 # own
-from loggers import *
-import ndiminterpolation
-from obsmodes import *
-from imageops import *
-from utils import *
-from ioops import *
-from units import *
+#from loggers import *
+#import ndiminterpolation
+#from obsmodes import *
+#from imageops import *
+#from utils import *
+#from ioops import *
+#from units import *
+
+from .loggers import *
+from . import ndiminterpolation
+from .obsmodes import *
+from .imageops import *
+from .utils import *
+from .ioops import *
+from .units import *
 
 # CLASSES
 
@@ -44,7 +50,7 @@ class ModelCube:
                  hypercube='imgdata',\
                  subcube_selection='onthefly',\
                  subcube_selection_save=None,
-                 omit=('x','y')):
+                 omit=('x','y'),bold=True):
 
         """Model hypercube of CLUMPY images. Can be generalized to any hypercube.
 
@@ -112,7 +118,8 @@ class ModelCube:
             cube = ModelCube()  # all defaults (i.e. default hdf5 file, 'imgdata' hypercube, 'onthefly' mode
 
         """
-        
+
+        self.bold = bold
         self.hdffile = hdffile
         self.omit = omit
         self.subcube_selection = subcube_selection
@@ -124,7 +131,6 @@ class ModelCube:
         self.get_group()
         logging.info("Loading sampling parameters.")
         self.get_cube_layout()
-        print("self.theta.shape = ", self.theta.shape)
         self.get_eta()
         logging.info("Closing HDF5 file.")
         self.close_hdffile()
@@ -133,7 +139,6 @@ class ModelCube:
 
         # SELECT A SUB-HYPERCUBE
         if self.subcube_selection is not None:
-#P            print('self.subcube_selection', self.subcube_selection)            
             if self.subcube_selection == 'interactive':
                 self.theta, self.idxes, self.subcubesize =\
                     getIndexLists(self.theta,self.paramnames,initsize=self.fullcubesize,omit=self.omit)
@@ -153,18 +158,14 @@ class ModelCube:
             else:
                 raise Exception("Unknown mode for 'subcube_selection'. Must be either of 'onthefly', 'interactive', or a '.json' file containing selecting indices.")
 
-#        print("self.theta.shape = ", self.theta.shape)
         if not isinstance(self.theta,np.ndarray):
             self.theta = np.array(self.theta)
-#        print("self.theta = ", self.theta)
             
         # for each parameter save its sampling as a member (attach '_' to the name, to minimize the change of name space collisions)
         for j,pn in enumerate(self.paramnames):
             setattr(self,pn+'_',self.theta[j])
 
         self.theta_full = copy(self.theta)
-#        print("self.theta_full = ", self.theta_full)
-        print("self.theta_full.shape = ", self.theta_full.shape)
         
                 
         prefix, suffix = get_bytes_human(self.subcubesize)
@@ -212,8 +213,6 @@ class ModelCube:
         self.theta = self.group['theta'].value
         self.idxes = [list(range(len(t))) for t in self.theta]
 
-#P        print(self.paramnames,self.theta,self.idxes)
-
     def get_eta(self):
         iY = self.paramnames.index('Y')
         self.Ymax = self.theta[iY].max()  # largest Y, i.e. 'FOV' of the images in units of Rd
@@ -231,9 +230,12 @@ class ModelCube:
         self.subcubesize = self.fullcubesize
                      
     
-    def print_sampling(self,n=11,fmt="%7.3f"):
+    def print_sampling(self,n=11,fmt="%7.3f",bold=False):
 
-#        maxstr = " %%% ds " % max([len(p) for p in self.paramnames])  # longest parameter name
+        startbold, endbold = "", ""
+        if bold is True:
+            startbold, endbold = "\033[1m", "\033[0m" 
+        
         maxlen = max([len(p) for p in self.paramnames])  # length of longest parameter name
         maxn = max([int(np.ceil(np.log10(t.size))) for t in self.theta])  # largest parameter cardinality
 
@@ -255,19 +257,17 @@ class ModelCube:
                 svals += ', ...'  # continuation indicator, if any
 
             # bring everything together
-#            parstr = maxstr % p
             parstr = '%%%ds' % maxlen % p
-#Py3            parstr = "{{:>{:d}s}}".format(maxlen).format(p)
             asterisk = " "
             if (p not in self.omit) and (len(vals) != 1):
-                parstr = "\033[1m" + parstr
+                parstr = startbold + parstr
                 asterisk = "*"
-                svals = svals  + "\033[0m"
+                svals = svals  + endbold
                 
             print(parstr + asterisk + "    %s" % srange + "  (%%%dd)   " % maxn % v.size +  svals)
             
         print(rule)
-        print("Parameters printed in \033[1mbold\033[0m and/or marked with an asterisk (*) are interpolable.")
+        print("Parameters printed in %sbold%s and/or marked with an asterisk (*) are interpolable." % (startbold,endbold))
 
         prefix, suffix = get_bytes_human(self.subcubesize)
         print("Hypercube size: %g (%s)" % (prefix, suffix))
@@ -322,7 +322,6 @@ class ModelCube:
         idxes.append(list(range(self.theta[-1].size)))
 
         theta = [self.theta[j][idxes[j]] for j in range(len(self.theta))]
-#        print("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
         logging.info("Loading a subcube of %g %s into RAM." % (get_bytes_human(get_bytesize(idxes))))
 
         # materialize data cube
@@ -980,7 +979,7 @@ class Source:
 
         # get raw image
         rawimage = self.cube.get_image(theta)
-        print("rawimage.min(): ",rawimage.min())
+#        print("rawimage.min(): ",rawimage.min())
 #ROT        co = (rawimage < 0.)
 #ROT        rawimage[co] = 0. #*rawimage #.unit
 

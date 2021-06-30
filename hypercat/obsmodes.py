@@ -1,24 +1,31 @@
-from __future__ import print_function
+__version__ = '20210616' #yyyymmdd
+__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
 
 import os
 from copy import copy
 import warnings
-warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+#warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+import logging
 
 from astropy.coordinates import name_resolve
 import astropy.io.ascii as ascii
 
-from units import *
-from utils import *
-from imageops import add_noise, measure_snr
-from interferometry import *
-import psf
-import imageops
-import ioops
+#from units import *
+#from utils import *
+#from imageops import add_noise, measure_snr
+#from interferometry import *
+#import psf
+#import imageops
+#import ioops
 
-__version__ = '20180808' #yyyymmdd
-__author__ = 'Robert Nikutta <robert.nikutta@gmail.com>, Enrique Lopez-Rodriguez <enloro@gmail.com>'
+from .units import *
+from .utils import *
+from .imageops import add_noise, measure_snr
+from .interferometry import *
+from . import psf
+from . import imageops
+from . import ioops
 
 """Utilities for handling the CLUMPY image hypercube.
 
@@ -182,14 +189,29 @@ class Imaging(ObsMode):
             self.psfdict = psfdict
             self.PSF = psf.getPSF(self.psfdict)
 
-        print('self.PSF: Computed pixelscale from pupil = ',self.PSF.pixelscale,' [mas/px]' )
+        logging.info('self.PSF: Computed pixelscale from pupil = ',self.PSF.pixelscale,' [mas/px]')
 
-        #PSF with the same FOV of the image
+#good-with-prints        #PSF with the same FOV of the image
+#good-with-prints        if self.PSF.FOV != image.FOV:
+#good-with-prints            print("   ### image.npix, image.FOV, PSF.npix, PSF.FOV, PSF.pixelscale", image.npix, image.FOV, self.PSF.npix, self.PSF.FOV, self.PSF.pixelscale)
+#good-with-prints            self.PSF.changeFOV(image.FOV*1.2)
+#good-with-prints            print("   ### AFTER 1st PSF.changeFOV: image.FOV, PSF.npix, PSF.FOV, PSF.pixelscale", image.FOV, self.PSF.npix, self.PSF.FOV, self.PSF.pixelscale)
+#good-with-prints            self.PSF.resample(image.pixelscale)
+#good-with-prints            print("   ### AFTER PSF.resample(): image.FOV, PSF.npix, PSF.FOV, PSF.pixelscale", image.FOV, self.PSF.npix, self.PSF.FOV, self.PSF.pixelscale)
+#good-with-prints            self.PSF.changeFOV(image.FOV)
+#good-with-prints            print("   ### AFTER 2nd PSF.changeFOV: image.FOV, PSF.npix, PSF.FOV, PSF.pixelscale", image.FOV, self.PSF.npix, self.PSF.FOV, self.PSF.pixelscale)
+
+        # PSF with the same FOV of the image
         if self.PSF.FOV != image.FOV:
-            newFOV = getQuantity(image.FOV,UNITS['CUNITS'])*1.2
-            self.PSF.changeFOV(str(newFOV))
+            # crop PSF image to a FOV slightly larger than the model image FOV (safety margin)
+            self.PSF.changeFOV(image.FOV*1.2)
+
+            # resample cropped PSF image to the model image pixel scale (we cropped the PSF image first to not have to resample the gigantic original PSF image 
             self.PSF.resample(image.pixelscale)
-            self.PSF.changeFOV(str(image.FOV))
+
+            # final crop of the PSF image to match the model image dimensions and FOV
+            self.PSF.changeFOV(image.FOV)
+
 
         #PSF with the same pixelscale as the image
         PSF_resampled = copy(self.PSF)

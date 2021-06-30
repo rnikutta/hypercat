@@ -1,28 +1,32 @@
-from __future__ import print_function
+__author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
+__version__ = '20210615' #yyyymmdd
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+from copy import copy
+import logging
 
 import numpy as np
 from astropy.modeling.models import AiryDisk2D, Gaussian2D
 from astropy.convolution import convolve, convolve_fft
 from astropy.io import fits
-import astropy.io.ascii as ascii
-from scipy import ndimage
+#import astropy.io.ascii as ascii
+#from scipy import ndimage
 from skimage import restoration
 import json
 
-from imageops import *
-from units import *
-from utils import get_rootdir
+#from imageops import *
+#from units import *
+#from utils import get_rootdir
+
+from .imageops import *
+from .units import *
+from .utils import get_rootdir
 
 #rootdir = get_rootdir()
 #rootdir = '/Users/elopezro/Documents/GitHub/hypercat/'
 
 rootdir = get_rootdir()
-
-__author__ = "Enrique Lopez-Rodriguez <enloro@gmail.com>, Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20200519' #yyyymmdd
 
 """Utilities for the PSF analysis of the images created by hyperCAT
 
@@ -68,7 +72,7 @@ def fft_pxscale(header,wave):
     fftscale=np.diff(freq)[0]           ## cycles / mas per pixel in FFT image
     mas2rad=np.deg2rad(1./3600000.)     ## mas per rad
     fftscale = fftscale/mas2rad * lam   ## meters baseline per px in FFT image at a given wavelength
-    print("Pixel scale in PSF image is: ", fftscale.value, " mas per pixel")
+    logging.info("Pixel scale in PSF image is: %g mas per pixel" % fftscale.value)
     return fftscale.value
 
 
@@ -113,13 +117,28 @@ class PSF(ImageFrame):
         return result
 
 
+#    def deconvolve(self,image,niter):
+#        ima = image.data/np.sum(image.data)
+#        psf = self.data/np.sum(self.data)
+#        result = restoration.richardson_lucy(ima, psf, iterations=niter)
+#        return result[::-1,::-1]
+
     def deconvolve(self,image,niter):
-        ima = image.data/np.sum(image.data)
+        # TODO: refactor such that this func can return ndarray; package into an class::`Image` container outside
+        _image = copy(image)
+#        print("_image.data.sum()", _image.data.sum())
+        _unit = _image.data.unit # save units for later...
+        ima = _image.data #/np.sum(_image.data)
+#        print("ima.sum()", ima.sum())
         psf = self.data/np.sum(self.data)
+#        print("psf.sum()", psf.sum())
         result = restoration.richardson_lucy(ima, psf, iterations=niter)
-        return result[::-1,::-1]
+#        print("result.sum()", result.sum())
+        _image.data = result * _unit  # ... re-apply units
+#        print("_image.data.sum()", _image.data.sum())
+        return _image
 
-
+    
 def getPupil(psfdict):
     pupilfile = rootdir+'data/pupils.json'
     with open(pupilfile,'r') as f:

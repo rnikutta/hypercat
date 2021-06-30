@@ -1,10 +1,8 @@
-from __future__ import print_function
-
 """N-dimensional interpolation on data hypercubes.
 """
 
 __author__ = "Robert Nikutta <robert.nikutta@gmail.com>"
-__version__ = '20180826' #yyyymmdd
+__version__ = '20200913' #yyyymmdd
 
 #TODO: update doc strings
 

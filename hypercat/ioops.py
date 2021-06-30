@@ -1,7 +1,4 @@
-from __future__ import print_function
-import itertools
-
-__version__ = '20181206' #yyymmdd
+__version__ = '20210617' #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling I/O.
@@ -11,6 +8,7 @@ __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 """
 
 # std lib
+import itertools
 import os
 import logging
 import json
@@ -33,7 +31,7 @@ def make_subcube_hdf(sourcefile='/home/robert/data/hypercat/hypercat_20181031.hd
     # copy these groups and datasets as-is
     tocopy = ['Nhypercubes','hypercubenames','pattern','rootdir','clddata']
     for _ in tocopy:
-        print("Copying ", _)
+        logging.info("Copying %s" % _)
         hs.copy(_,ht)
 
     # copy a subset of this hypercube

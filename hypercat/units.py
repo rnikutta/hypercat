@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20180222'   #yyymmdd
+__version__ = '20200913'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling units and units strings.

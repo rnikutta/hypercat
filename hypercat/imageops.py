@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__version__ = '20180826'   #yyymmdd
+__version__ = '20210617'   #yyymmdd
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
@@ -19,7 +17,8 @@ import astropy
 from astropy import nddata  # todo: re-implement the functionality provided by nddata.extract_array() & remove this dependency
 
 # hypercat
-from units import *
+#from units import *
+from .units import *
 
 class ImageFrame:
 
@@ -177,8 +176,8 @@ class ImageFrame:
 
         self.setPixelscale(pixelscale=self.pixelscale/newfactor)
         if newfactor != resamplingfactor:
-            logging.warning("The requested resampling to pixel scale ({:g} {:s}) was slightly adjusted due to discretization (now {:g} {:s}). This is to preserve sizes on the sky.".format(\
-                            newpixelscale.value,newpixelscale.unit,self.pixelscale.value,self.pixelscale.unit))
+            logging.info("The requested resampling to pixel scale ({:g} {:s}) was slightly adjusted due to discretization (now {:g} {:s}). This is to preserve sizes on the sky.".format(\
+                          newpixelscale.value,newpixelscale.unit,self.pixelscale.value,self.pixelscale.unit))
 
 
     def rotate(self,angle,direction='NE',returnimage=False):
@@ -381,13 +380,13 @@ class Image(ImageFrame):
 
         # add noise
         if snr is not None:
-            print("Before add_noise:: self.data.value.std() =", self.data.value.std())
+#            print("Before add_noise:: self.data.value.std() =", self.data.value.std())
 
             noisy_image, noise_pattern = add_noise(copy(self.data.value),snr)
             self.data = noisy_image * self.data.unit
-            print("After add_noise:: self.data.value.std() =", self.data.value.std())
+#            print("After add_noise:: self.data.value.std() =", self.data.value.std())
 
-            print("SNR_meas = {:.2f}".format(measure_snr(noisy_image, noise_pattern)))
+            logging.info("SNR_meas = {:.2f}".format(measure_snr(noisy_image, noise_pattern)))
 
     def setBrightness(self,total_flux_density='1 Jy'):
 
@@ -1106,7 +1105,7 @@ def resample_image(img,factor=None,npixout=None):
     if npixout is not None:
         npixin = img.shape[0]
         factor = npixout / npixin
-        print("npixin, npixout = ",npixin,npixout)
+        logging.info("npixin, npixout = %d, %d" % (npixin,npixout))
 
     if factor is None and npixout is None:
         raise Exception("Specify either ``factor`` ot ``npixout``.")

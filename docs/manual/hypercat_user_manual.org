@@ -1,0 +1,144 @@
+#+TITLE: \textsc{Hypercat User Manual}
+#+AUTHOR: The HC team\\
+#+AUTHOR: /Contact: robert.nikutta@gmail.com/
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX: \setlength\parindent{0pt}
+#+OPTIONS: ^:nil
+#
+#+LATEX_HEADER: \newcommand\HC {\textsc{Hypercat}}
+#+LATEX_HEADER: \newcommand\C {\textsc{Clumpy}}
+#+LATEX_HEADER: \newcommand\No  {\hbox{${\cal N}_0$}}
+#+LATEX_HEADER: \newcommand\iv  {\hbox{$i$}}
+#+LATEX_HEADER: \newcommand\sig {\hbox{$\sigma$}}
+#+LATEX_HEADER: \newcommand\q   {\hbox{$q$}}
+#+LATEX_HEADER: \newcommand\tv  {\hbox{$\tau_{\rm V}$}}
+#+LATEX_HEADER: \newcommand\Y   {\hbox{$Y$}}
+#+LATEX_HEADER: \newcommand{\todo}[1]{{\color{red} [{TODO: #1}]}}
+#
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{pastie}
+#
+#
+# #+BIND: org-export-filter-strike-through-functions (tmp-f-strike-through)
+# #+BIND: org-export-filter-code-functions (tmp-latex-code-filter)
+# #+BEGIN_SRC emacs-lisp :exports results :results none
+#   (defun tmp-latex-code-filter (text backend info)
+#     "red inline code"
+#     (when (org-export-derived-backend-p backend 'latex) 
+#         (format "\\colorbox{vlg}{\\color{black}%s}" text)))
+# #+END_SRC
+# #+latex_header: \usepackage{xcolor}
+# #+latex_header: \definecolor{vlg}{gray}{0.9}
+# #+BEGIN_SRC emacs-lisp :exports results :results none
+#   (defun tmp-f-strike-through (s backend info) "")
+# #+END_SRC
+#
+#
+#+LATEX_HEADER: \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+
+# ~this is a test~
+# 
+# +this is a test+
+
+
+
+
+
+
+
+
+# #+BEGIN_SRC python :session foo :results output :exports both :cache: no
+# import sys
+# print(sys.exec_prefix)
+# print(sys.executable)
+# 
+# import hypercat as hc
+# #from hypercat import hypercat as hc
+# #print(hc.__file__)
+# print(hc.__version__)
+# #+END_SRC
+# 
+# #+RESULTS:
+# : /home/robert/.cache/pypoetry/virtualenvs/hypercat-xxGelLMS-py3.6
+# : /home/robert/.cache/pypoetry/virtualenvs/hypercat-xxGelLMS-py3.6/bin/python
+# : 0.1.3
+
+
+#+INCLUDE: "./introduction.org"
+#+INCLUDE: "./download-verification-content.org"
+#+INCLUDE: "./installation.org"
+#+INCLUDE: "./running.org"
+#+INCLUDE: "./hypercat-gui.org"
+#+INCLUDE: "./get-hypercube-into-ram.org"
+
+# >>># 
+# >>># #+INCLUDE: "./hypercat-app.org"
+# >>># 
+# >>># #+INCLUDE: "./simulate-observations.org"
+
+
+# Download image hypercubes
+# -------------------------
+# 
+# Verify
+# ~~~~~~
+# 
+# Download Hypercat
+# -----------------
+# 
+# Start Hypercat
+# --------------
+# 
+# In a Python / Ipython enviroment
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# In a Jupyter environment
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# As a GUI
+# ~~~~~~~~
+# 
+# .. image:: |filename|/images/hypercatgui.png
+#    :align: center
+#    :width: 400
+#    :alt: HYPERCAT GUI
+# 
+# As a (local) web app in your browser
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# 
+# 
+# 
+# * High-level workflow and API
+# 
+# ** Create a Source model
+# 
+# *** Specify source properties
+# 
+# luminosity
+# 
+# distance
+# 
+# 
+# ** Generate a "perfect" image
+# 
+# wavelength
+# 
+# flux density of the image
+# 
+# 
+# 
+# * Useful operations with Hypercat
+# 
+# * Pixel operations on images
+# 
+# * Low-level operations and API
+# 
+# * Morphology module
+# 
+# * Use your own model hypercube with Hypercat
+# 
+# 
+
+
+
