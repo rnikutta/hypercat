@@ -1,4 +1,4 @@
-__version__ = '0.1.7' # version tag last updated on 2021-09-20
+__version__ = '0.1.8' # version tag last updated on 2021-09-20
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 """Utilities for handling the CLUMPY image hypercube.
