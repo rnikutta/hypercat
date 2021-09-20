@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hypercat"
-version = "0.1.6"
+version = "0.1.7"
 description = "Hypercube of clumpy AGN tori"
 authors = ["Robert Nikutta <robert.nikutta@gmail.com>", "Enrique Lopez-Rodriguez", "Kohei Ichikawa"]
 license = "BSD-3-Clause"
