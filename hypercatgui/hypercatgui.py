@@ -2,13 +2,10 @@
 
 """GUI interface to (some of) Hypercat functionality."""
 
-__version__ = '20210601'
+__version__ = '20210917'
 __author__ = 'Robert Nikutta <robert.nikutta@gmail.com>'
 
 # std lib
-#from copy import copy
-#from random import *
-#from io import BytesIO
 import time
 import string
 import os
@@ -21,7 +18,6 @@ import configparser
 import numpy as np
 import pylab as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-#from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 import tkinter as Tk
 from tkinter import ttk, filedialog, messagebox, font
@@ -36,11 +32,6 @@ from hypercat import imageops
 from hypercat import ioops
 from hypercat.loggers import *
 
-#import hypercat
-#import imageops
-#import ioops
-#from loggers import *
-
 CONFIGFILE = 'hypercatgui.conf'
 
 def read_or_create_config():
@@ -50,6 +41,7 @@ def read_or_create_config():
     defaults = {'hdf5file': '',
                 'colormap': 'inferno',
                 'scale': 'linear',
+                'invert': '0',
                 'sig': '43',
                 'i': '75',
                 'Y': '18',
@@ -156,9 +148,7 @@ class App():
         self.root.configure(background=self.bgcolor)
         self.root.title("Hypercat")
         self._geometry()
-        
-        self.hdf5file = None
-#        self.hdf5file = '/home/robert/data/hypercat/hypercat_20180417.hdf5'
+
         self.ds9process = None
 
         # Create tabs
@@ -174,7 +164,6 @@ class App():
         self.l1 = Tk.Label(self.tabM,text="HDF5 file")
         self.l1.grid(row=0,column=0,sticky='W')
         self.v1 = Tk.StringVar(self.tabM,value='Pick HDF5 file') #, self.root, value=self.hdf5file)
-#        self.v1.trace('w',self.setvar)
         self.e1 = Tk.Entry(self.tabM,state='readonly',width=50,textvariable=self.v1)
         self.e1.grid(row=0,column=1,columnspan=5,sticky='W')
         self.b1 = Tk.Button(self.tabM,text="Pick file",command=self.pick_and_load)
@@ -185,8 +174,7 @@ class App():
         l2.grid(row=1,column=0,sticky='W')
         self.varcmap = Tk.StringVar()
         cmaps = ('gray', 'viridis', 'jet', 'inferno', 'cubehelix', 'cividis', 'afmhot', 'bwr','coolwarm','gnuplot2','rainbow')
-        self.cmapMenu = Tk.OptionMenu(self.tabM, self.varcmap, *cmaps, command=self.update_view)
-#        self.varcmap.set('inferno')
+        self.cmapMenu = Tk.OptionMenu(self.tabM, self.varcmap, *cmaps, command=self.update_image)
         try:
             self.varcmap.set(config['TEMP']['colormap'])
         except:
@@ -196,24 +184,37 @@ class App():
 
         # Checkbox to invert colormap
         self.varInvert = Tk.IntVar()
-        self.cmapInvert = Tk.Checkbutton(self.tabM, text="invert", variable=self.varInvert, onvalue=1, padx=10, command=self.update_view)
-        self.cmapInvert.deselect()
+        self.cmapInvert = Tk.Checkbutton(self.tabM, text="invert", variable=self.varInvert, onvalue=1, padx=10, command=self.update_image)
+        if config['TEMP']['invert'] == '1':
+            self.cmapInvert.select()
+        else:
+            self.cmapInvert.deselect()
         self.cmapInvert.grid(row=1,column=4,columnspan=1,sticky='W')
 
         # Select linear or log colormap normalization
         self.varNorm = Tk.StringVar()
-        self.cmapNorm1 = Tk.Radiobutton(self.tabM, text="linear", variable=self.varNorm, value='Normalize',pady=0,command=self.update_view)
+        self.cmapNorm1 = Tk.Radiobutton(self.tabM, text="linear", variable=self.varNorm, value='linear',pady=0,command=self.update_image)
         self.cmapNorm1.grid(row=1,column=4,columnspan=1,sticky='e')
-        self.cmapNorm1.select()
-        self.cmapNorm2 = Tk.Radiobutton(self.tabM, text="log", variable=self.varNorm, value='LogNorm',pady=0,command=self.update_view)
+        if config['TEMP']['scale'] == 'linear':
+            self.cmapNorm1.select()
+        else:
+            self.cmapNorm1.deselect()
+            
+        self.cmapNorm2 = Tk.Radiobutton(self.tabM, text="log", variable=self.varNorm, value='log',pady=0,command=self.update_image)
         self.cmapNorm2.grid(row=1,column=5,columnspan=1,sticky='w')
-        self.cmapNorm2.deselect()
+        if config['TEMP']['scale'] == 'log':
+            self.cmapNorm2.select()
+        else:
+            self.cmapNorm2.deselect()
         
-        # ask for HDF5 file and load cube
-        self.hdf5file = '/home/robert/data/hypercat/hypercat_20181031_all.hdf5' # for dev
-        self.load_cube()
-        if not self.hdf5file:
+        self.hdf5file = config['TEMP']['hdf5file']
+        if not os.path.isfile(self.hdf5file):
             self.pick_and_load(text='Select Hypercat HDF5 file')
+            config['TEMP']['hdf5file'] = self.hdf5file
+        else:
+            self.load_cube()
+
+        self.v1.set(self.hdf5file)
 
         # (linear) sliders for model parameters
         row = 4
@@ -225,13 +226,10 @@ class App():
 
         self.parnames = ('sig','i','Y','N','q','tv','wave','PA')
         self.increments = (1,1,1,0.1,0.1,1,0.1,1)
-#        self.inits = (54,75,18,7,0,80,10.,43)
         self.ranges = [(self.cube.theta[j][0],self.cube.theta[j][-1]) for j in range(7)]
         self.ranges.append((-360,360))
         self.units = ('deg','deg','R_d','clouds','','','mu','deg')
         print("self.ranges: ", self.ranges)
-
-
 
         ParamsLabel = Tk.Label(self.tabM,text="Parameters [min - max] (units)")
         ParamsLabel.grid(row=row,column=8,columnspan=2,sticky='W')
@@ -248,7 +246,6 @@ class App():
 
 
         # button to update image
-#experimental        button_update = Tk.Button(self.tabM, text="Update image", command=self.update_image)
         button_update = Tk.Button(self.tabM, text="Update image", width=12, command=self.update_image)
         self.root.bind('<Return>', self.update_image) # experimental
         button_update.grid(row=row+2,column=8,columnspan=2,sticky='W')
@@ -260,19 +257,15 @@ class App():
         button_fits.grid(row=row+5,column=8,columnspan=2,sticky='W')
 
         # load first image
-#experimental        self.update_image()
         self.update_image('foo')
 
         # make all
         self.nb.pack(expand=1, fill="both")  # Pack to make visible
-#        self.root.update()
 
 
     def initialize(self):
         pass
         
-
-#    def ValidateIfNum(self, s, S):
     def ValidateIfNum(self, s, S, d, i, P, v, V, W):
         print("s: ", s)
         print("S: ", S)
@@ -282,7 +275,6 @@ class App():
         print("v: ", v)
         print("V: ", V)
         print("W: ", W)
-#w        valid = S == '' or S.isdigit()
 
         print(self.root.nametowidget(W))
 
@@ -334,8 +326,6 @@ class App():
         print("self.from_:", self.from_)
         return True
 
-#        
-#        tk.messagebox.showinfo('foo','bar')
 
     def _geometry(self):
         w = 800 # width for the Tk root
@@ -361,7 +351,9 @@ class App():
         if invert == 1:
             cmap = cmap + '_r'
         cmap = getattr(plt.cm,cmap)
-        norm = getattr(plt.mpl.colors,self.varNorm.get())
+        
+        norms = {'linear':'Normalize', 'log':'LogNorm'}
+        norm = getattr(plt.mpl.colors,norms[self.varNorm.get()])
         
         fig = Figure(figsize=(5.5,5.5), facecolor=self.bgcolor)
         ax = fig.add_subplot(111)
@@ -375,10 +367,6 @@ class App():
         axMorpho = figMorpho.add_subplot(111)
         axMorpho.imshow(self.img.T,origin='lower',interpolation='bicubic',cmap=cmap,norm=norm())
 
-        
-#        ax.imshow(self.img.T,origin='lower',interpolation='none',cmap=cmap,norm=norm())
-#        ax.axvline(120,ls='-',color='w')
-#        ax.axhline(120,ls='-',color='w')
         fig.tight_layout()
         figS.tight_layout()
 
@@ -442,9 +430,9 @@ class App():
                     
         
     def pick_file(self,target='hdf5file',text=''):
-        filename = filedialog.askopenfilename(title=text)
+        self.hdf5file = filedialog.askopenfilename(title=text)
         if target is not None:
-            setattr(self,target,filename)
+            setattr(self,target,self.hdf5file)
             self.v1.set(self.hdf5file)
 
         
@@ -470,7 +458,6 @@ class App():
     def make_spinbox(self,j,increment,row,col,vcmd):
         par = self.parnames[j]
         print("par: ", par)
-#        theta = self.cube.theta[j]
 
         from_, to_ = self.ranges[j][0], self.ranges[j][-1]
         widgetname = par + 'SB'
@@ -554,26 +541,20 @@ class App():
 #P        print("os.path.isfile(f.name)", os.path.isfile(f.name))
 
 
-
-#    def on_key_press(self,event):
-#        print("you pressed {}".format(event.key))
-#        key_press_handler(event, self.canvas, toolbar)
-
-
     def _quit(self):
         self.save_config()
         self.root.quit()     # stops mainloop
         self.root.destroy()  # this is necessary on Windows to prevent Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
-#def _destroy(event):
-#    print "destroy"
 
     def update_temp_config(self):
         vec = self.get_vector(source='vars')
         for j,par in enumerate(self.parnames):
             config['TEMP'][par] = str(vec[j])
-#        print("config['TEMP']")
-#        print(list(config['TEMP'].items()))
+
+        config['TEMP']['colormap'] = self.varcmap.get()
+        config['TEMP']['scale'] = self.varNorm.get()
+        config['TEMP']['invert'] = str(self.varInvert.get())
 
     def set_values(self):
         vec = self.get_vector(source='config')
@@ -590,18 +571,13 @@ class App():
 class BetterSpinbox(Tk.Spinbox):
 
     def __init__(self,parent,name,from_,to_,init,increment,labeltext='',vcmd=None):
-#    def __init__(self,parent,name,from_,to_,increment,labeltext='',vcmd=None):
         self.Var = Tk.DoubleVar()
-#HERE        self.Var.set(init)
         Tk.Spinbox.__init__(self,parent,from_=from_,to=to_,increment=increment,width=5,textvariable=self.Var,validate="key",validatecommand=vcmd)
 
 #        myfont = font.Font(family='Helvetica', size=12) # , weight='bold'
         self.Label = Tk.Label(parent,text=labeltext) # ,font=myfont
 #        self.Label = Tk.Label(parent,text=labeltext,font = ('Times',12))
 
-            
-
-    
 
 def main():
     global config, app
@@ -614,13 +590,8 @@ def main():
 if __name__ == '__main__':
     main()
     
-#    config = read_or_create_config()
-#    app = App(config)
-#
 #    app.root.protocol("WM_DELETE_WINDOW", app._quit)
 ##    app.bind("<Destroy>", _destroy)
-#    
-#    app.root.mainloop()
 
 
 #Tk.mainloop()

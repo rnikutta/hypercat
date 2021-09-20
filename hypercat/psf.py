@@ -123,21 +123,42 @@ class PSF(ImageFrame):
 #        result = restoration.richardson_lucy(ima, psf, iterations=niter)
 #        return result[::-1,::-1]
 
+#    def deconvolve(self,image,niter):
+#        # TODO: refactor such that this func can return ndarray; package into an class::`Image` container outside
+#        _image = copy(image)
+##        print("_image.data.sum()", _image.data.sum())
+#        _unit = _image.data.unit # save units for later...
+#        ima = _image.data #/np.sum(_image.data)
+##        print("ima.sum()", ima.sum())
+#        psf = self.data/np.sum(self.data)
+##        print("psf.sum()", psf.sum())
+#        result = restoration.richardson_lucy(ima, psf, iterations=niter)
+##        print("result.sum()", result.sum())
+#        _image.data = result * _unit  # ... re-apply units
+##        print("_image.data.sum()", _image.data.sum())
+#        return _image
+
+
     def deconvolve(self,image,niter):
         # TODO: refactor such that this func can return ndarray; package into an class::`Image` container outside
         _image = copy(image)
+        print("BEFORE: psf.PSF.deconvolve(): _image.data.max() = ", _image.data.max())
 #        print("_image.data.sum()", _image.data.sum())
         _unit = _image.data.unit # save units for later...
-        ima = _image.data #/np.sum(_image.data)
+        ima = _image.data.value #/np.sum(_image.data)
+        print("MIDDLE: psf.PSF.deconvolve(): ima.max() = ", ima.max())
 #        print("ima.sum()", ima.sum())
         psf = self.data/np.sum(self.data)
 #        print("psf.sum()", psf.sum())
         result = restoration.richardson_lucy(ima, psf, iterations=niter)
+        print("MIDDLE: psf.PSF.deconvolve(): result.max() = ", result.max())
 #        print("result.sum()", result.sum())
         _image.data = result * _unit  # ... re-apply units
 #        print("_image.data.sum()", _image.data.sum())
+        print("AFTER: psf.PSF.deconvolve(): _image.data.max() = ", _image.data.max())
         return _image
 
+    
     
 def getPupil(psfdict):
     pupilfile = rootdir+'data/pupils.json'
