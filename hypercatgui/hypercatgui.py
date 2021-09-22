@@ -56,6 +56,11 @@ def read_or_create_config():
     print("list(config.keys()): ", list(config.keys()))
     print("config['DEFAULT']: ", config['DEFAULT'])
     print("list(config['DEFAULT'].keys()): ", list(config['DEFAULT'].keys()))
+
+    res = config.read(CONFIGFILE)
+    print("res: ", res)
+    print("type(res): ", type(res))
+
     
     if config.read(CONFIGFILE) == []:
         print("No config file found. Creating default config file %s" % CONFIGFILE)

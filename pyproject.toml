@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hypercat"
-version = "0.1.8"
+version = "0.1.10"
 description = "Hypercube of clumpy AGN tori"
 authors = ["Robert Nikutta <robert.nikutta@gmail.com>", "Enrique Lopez-Rodriguez", "Kohei Ichikawa"]
 license = "BSD-3-Clause"
@@ -16,7 +16,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy"
 ]
 
-include = ['README.md','rgb.png','data/*','examples/*ipynb','hypercatgui/']
+packages = [
+    { include = "hypercat" },
+    { include = "hypercatgui" },
+]
+
+include = ['README.md','rgb.png','data/*','examples/*ipynb']
 exclude = ['*checkpoint.ipynb']
 
 [tool.poetry.dependencies]
