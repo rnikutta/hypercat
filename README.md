@@ -9,7 +9,8 @@
 Hypercubes of (clumpy) AGN tori
 
 ![Hypercat images at 2.2 and 30 micron, and their composite](./rgb.png)
-*Hypercat images at 2.2 and 30 micron, and their composite.*
+
+*Hypercat images at 2.2 (blue) and 30 micron (gold), and their composite.*
 
 ## Synopsis
 
@@ -26,7 +27,7 @@ Robert Nikutta [\<robert.nikutta@gmail.com\>](mailto:robert.nikutta@gmail.com), 
 
 ## Version
 
-Version of this document: 2022-09-20
+Version of this document: 2022-09-24
 
 Current version of the HYPERCAT package: ![PyPI](https://img.shields.io/pypi/v/hypercat)
 
@@ -47,8 +48,7 @@ and/or telescope pupil images, please cite these two papers:
 
 - *Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
   Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- II. Resolving
-  the torus with Extremely Large Telescopes", ApJ (2021, under
-  review)*
+  the torus with Extremely Large Telescopes", ApJ (2021, accepted)*
 
 
 ## Minimal install instructions
@@ -60,6 +60,11 @@ current environment (real or virtual), simply run:
 pip install hypercat
 ```
 
+or, if you are installing over an older version:
+
+```
+pip install hypercat --upgrade
+```
 
 If you prefer to install HYPERCAT into a fresh new environment without affecting your existing Python installation, you can create a new environment in various ways.
 
@@ -77,7 +82,7 @@ After that:
 conda create -n hypercat-env python=3.7.2
 conda activate hypercat-env
 
-pip install hypercat
+pip install hypercat --upgrade
 ```
 
 **If you are a user of pyenv:**
@@ -86,7 +91,7 @@ pip install hypercat
 pyenv install 3.7.2
 . .venv/bin/activate
 
-pip install hypercat
+pip install hypercat --upgrade
 ```
 
 ### Installation trouble-shooting
@@ -102,13 +107,13 @@ ftp://ftp.tuc.noirlab.edu/pub/nikutta/hypercat/).
 
 We offer several model files, which only differ in the wavelength range they cover:
 
-|File name                     | Size compressed / raw (GB) | Nwave | Wavelengths (micron) |
-|------------------------------|----------------------------|-------|----------------------|
-| hypercat_20200830_all.hdf5   | 271 / 913                  | 25    | all of the below     | 
-| hypercat_20200830_nir.hdf5   |  44 / 146                  |  4    | 1.2, 2.2, 3.5, 4.8   | 
-| hypercat_20200830_mir.hdf5   | 120 / 402                  | 11    | 8.7, 9.3, 9.8, 10, 10.3, 10.6, 11.3, 11.6, 12, 12.5, 18.5 | 
-| hypercat_20200830_fir.hdf5   |  65 / 219                  |  6    | 31.5, 37.1, 53, 89, 154, 214 | 
-| hypercat_20200830_submm.hdf5 |  42 / 146                  |  4    | 350, 460, 690, 945   | 
+|File name                       | Size compressed / raw (GB) | Nwave | Wavelengths (micron) |
+|--------------------------------|----------------------------|-------|----------------------|
+| `hypercat_20200830_all.hdf5`   | 271 / 913                  | 25    | all of the below     | 
+| `hypercat_20200830_nir.hdf5`   |  44 / 146                  |  4    | 1.2, 2.2, 3.5, 4.8   | 
+| `hypercat_20200830_mir.hdf5`   | 120 / 402                  | 11    | 8.7, 9.3, 9.8, 10, 10.3, 10.6, 11.3, 11.6, 12, 12.5, 18.5 | 
+| `hypercat_20200830_fir.hdf5`   |  65 / 219                  |  6    | 31.5, 37.1, 53, 89, 154, 214 | 
+| `hypercat_20200830_submm.hdf5` |  42 / 146                  |  4    | 350, 460, 690, 945   | 
 
 
 **Download and unpacking**
@@ -161,7 +166,18 @@ cube = hc.ModelCube(fname,hypercube='imgdata')  # use 'imgdata' for brightness m
 
 ## Example Jupyter notebooks
 
-Several Jupyter example notebooks demonstrate some of HYPERCAT's functionality:
+Several Jupyter example notebooks demonstrate some of HYPERCAT's
+functionality. The easiest way to obtain them is to clone the HYPERCAT
+GitHub repository, and to run the notebooks from there. Cloning the
+repository will also download all necessary supplemental files used in
+some notebooks such as, e.g., the telescope pupil images and the dust
+opacity curve:
+
+```
+git clone https://github.com/rnikutta/hypercat.git  # clone the git repository
+cd hypercat/examples/  # change to the directory with example notebooks
+jupyter-lab ./&  # run the notebooks locally; JupyterLab must be installed
+```
 
 - [01-hypercat-basics.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/01-hypercat-basics.ipynb):
   Loading a model hypercube, generating model images, images at
