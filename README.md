@@ -27,7 +27,7 @@ Robert Nikutta [\<robert.nikutta@gmail.com\>](mailto:robert.nikutta@gmail.com), 
 
 ## Version
 
-Version of this document: 2022-09-24
+Version of this document: 2021-10-05
 
 Current version of the HYPERCAT package: ![PyPI](https://img.shields.io/pypi/v/hypercat)
 
@@ -42,13 +42,13 @@ In short, if you are using in your research any of the HYPERCAT
 software or its components, and/or the HYPERCAT model data hypercubes,
 and/or telescope pupil images, please cite these two papers:
 
-- *Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
+- [*Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
   Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- I. Models and
-  Image Morphology", ApJ (2021, accepted)*
+  Image Morphology", ApJ 2021, 919, 136*](https://ui.adsabs.harvard.edu/abs/2021arXiv210912123N/abstract)
 
-- *Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
+- [*Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
   Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- II. Resolving
-  the torus with Extremely Large Telescopes", ApJ (2021, accepted)*
+  the torus with Extremely Large Telescopes", ApJ 2021 (accepted)*](https://ui.adsabs.harvard.edu/abs/2021arXiv210912130N/abstract)
 
 
 ## Minimal install instructions
@@ -215,7 +215,13 @@ For more detailed installation instructions and other usage examples,
 please see the HYPERCAT User Manual [User Manual](./docs/manual/) (in
 addition to the [example Jupyter notebooks](./examples/) )
 
+## Bug reports and feature suggestions
+
+We are very thankful for any bug reports and feature sugguestions to
+improve or extend HYPERCAT. Please open a new issue on GitHub:
+https://github.com/rnikutta/hypercat/issues
+
 ## Contributing
 
-Bug fixes and feature contributions to HYPERCAT are welcome. Please
-make a pull request against the 'master' branch.
+Direct software contributions (e.g., bug fixes, features) to HYPERCAT
+are welcome. Please make a pull request against the 'master' branch.
