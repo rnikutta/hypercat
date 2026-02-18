@@ -24,6 +24,71 @@ Installing from PyPI
 
    pip install hypercat
 
+Installing via conda-forge
+--------------------------
+
+Hypercat is available from the `conda-forge <https://conda-forge.org>`_ channel.
+This is the recommended route if you manage your Python environment with
+`conda <https://docs.conda.io>`_ or `mamba <https://mamba.readthedocs.io>`_,
+because conda-forge resolves binary dependencies (HDF5, NumPy, SciPy) from a
+single consistent channel.
+
+.. code-block:: console
+
+   conda install -c conda-forge hypercat
+
+With `mamba <https://mamba.readthedocs.io>`_ (faster solver):
+
+.. code-block:: console
+
+   mamba install -c conda-forge hypercat
+
+To create a fresh environment and install Hypercat in one step:
+
+.. code-block:: console
+
+   conda create -n hypercat -c conda-forge python=3.11 hypercat
+   conda activate hypercat
+
+Installing with Docker
+----------------------
+
+A ``Dockerfile`` is provided in the repository root. It builds a self-contained
+image with Hypercat and JupyterLab, suitable for exploratory analysis without
+touching the host Python environment.
+
+**Build the image**
+
+.. code-block:: console
+
+   git clone https://github.com/rnikutta/hypercat.git
+   cd hypercat
+   docker build -t hypercat .
+
+**Start a JupyterLab session**
+
+Mount the directory that holds your CLUMPY HDF5 data files to ``/data`` inside
+the container, and optionally mount a local working directory to ``/work``:
+
+.. code-block:: console
+
+   docker run --rm -p 8888:8888 \
+       -v /path/to/clumpy/data:/data \
+       -v $(pwd):/work \
+       hypercat
+
+Open ``http://localhost:8888`` in your browser. Inside notebooks the data files
+are accessible under ``/data/``.
+
+**Run a one-off script**
+
+.. code-block:: console
+
+   docker run --rm \
+       -v /path/to/clumpy/data:/data \
+       -v $(pwd):/work \
+       hypercat python /work/myscript.py
+
 Installing for development
 --------------------------
 
