@@ -1,227 +1,199 @@
-![PyPI](https://img.shields.io/pypi/v/hypercat)
-![PyPI - Python Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpypi.org%2Fpypi%2Fhypercat%2Fjson&query=info.requires_python&label=python)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/hypercat)
-![GitHub issues](https://img.shields.io/github/issues/rnikutta/hypercat)
+# HYPERCAT — Hypercubes of AGN Tori
 
-
-# HYPERCAT
-
-Hypercubes of (clumpy) AGN tori
+[![PyPI](https://img.shields.io/pypi/v/hypercat?label=PyPI&logo=pypi&logoColor=white)](https://pypi.org/project/hypercat/)
+[![conda-forge](https://img.shields.io/conda/vn/conda-forge/hypercat?label=conda-forge&logo=conda-forge&logoColor=white)](https://anaconda.org/conda-forge/hypercat)
+[![Docker Hub](https://img.shields.io/docker/v/rnikutta/hypercat?label=Docker%20Hub&logo=docker&logoColor=white&sort=semver)](https://hub.docker.com/r/rnikutta/hypercat)
+[![Documentation](https://readthedocs.org/projects/hypercat/badge/?version=latest)](https://hypercat.readthedocs.io/en/latest/)
+[![CI](https://github.com/rnikutta/hypercat/actions/workflows/testing-and-coverage.yml/badge.svg)](https://github.com/rnikutta/hypercat/actions/workflows/testing-and-coverage.yml)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?logo=python&logoColor=white)](https://github.com/rnikutta/hypercat/actions/workflows/testing-and-coverage.yml)
+[![License](https://img.shields.io/github/license/rnikutta/hypercat)](./LICENSE)
+[![Template](https://img.shields.io/badge/template-LINCC%20Frameworks-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
+[![Issues](https://img.shields.io/github/issues/rnikutta/hypercat)](https://github.com/rnikutta/hypercat/issues)
 
 ![Hypercat images at 2.2 and 30 micron, and their composite](./rgb.png)
 
-*Hypercat images at 2.2 (blue) and 30 micron (gold), and their composite.*
+*Hypercat images at 2.2 μm (blue) and 30 μm (gold), and their false-colour composite.*
 
-## Synopsis
+## What is Hypercat?
 
-Handle a hypercube of CLUMPY brightness maps and 2D projected dust
-maps. Easy-to-use classes and functions are provided to interpolate
-images in many dimensions (spanned by the model parameters), extract
-monochromatic or multi-wavelength images, as well as rotate images,
-zoom in and out, apply PSFs, extract interferometric signals, quantify
-morphologies, etc.
+Hypercat is a Python toolkit for working with the **CLUMPY** hypercubes of AGN
+torus model images (Nenkova et al. 2008). The CLUMPY models describe infrared
+emission from a dusty, clumpy torus surrounding an active galactic nucleus. The
+image hypercube spans a seven-dimensional parameter space (inclination, torus
+width, radial extent, cloud number, cloud distribution, optical depth,
+wavelength) and contains hundreds of thousands of pre-computed images.
 
-## Authors
+Hypercat provides:
 
-Robert Nikutta [\<robert.nikutta@gmail.com\>](mailto:robert.nikutta@gmail.com), Enrique Lopez-Rodriguez, Kohei Ichikawa
+- **N-dimensional interpolation** — retrieve a model image at any parameter
+  combination via multi-linear or cubic-spline interpolation, with
+  memory-mapped HDF5 access (only the needed slab is loaded into RAM)
+- **Physical calibration** — attach luminosity, distance, and position angle to
+  obtain images in physical brightness units (Jy/arcsec², etc.) with a WCS
+- **Single-dish observations** — convolve with a Gaussian + Airy PSF, add
+  noise, resample to detector pixel scale
+- **Interferometric observations** — compute correlated fluxes and
+  visibilities at arbitrary UV baselines via 2-D FFT
+- **Morphological analysis** — image moments, covariance, Gini coefficient,
+  eigenanalysis, half-light radius
+- **Interactive GUI** — point-and-click exploration of the parameter space
+  (requires `tkinter`)
 
-## Version
+## Installation
 
-Version of this document: 2021-10-05
+### pip
 
-Current version of the HYPERCAT package: ![PyPI](https://img.shields.io/pypi/v/hypercat)
-
-## License and Attribution
-
-HYPERCAT is open-source software and freely available at
-https://github.com/rnikutta/hypercat/ and
-https://pypi.org/project/hypercat/ under a permissive [BSD 3-clause
-license](./LICENSE) .
-
-In short, if you are using in your research any of the HYPERCAT
-software or its components, and/or the HYPERCAT model data hypercubes,
-and/or telescope pupil images, please cite these two papers:
-
-- [*Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
-  Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- I. Models and
-  Image Morphology", ApJ 2021, 919, 136*](https://ui.adsabs.harvard.edu/abs/2021arXiv210912123N/abstract)
-
-- [*Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig,
-  Alonso-Herrero, "Hypercubes of AGN Tori (Hypercat) -- II. Resolving
-  the torus with Extremely Large Telescopes", ApJ 2021 (accepted)*](https://ui.adsabs.harvard.edu/abs/2021arXiv210912130N/abstract)
-
-
-## Minimal install instructions
-
-If you don't mind installing HYPERCAT and its dependencies into your
-current environment (real or virtual), simply run:
-
-```
+```bash
 pip install hypercat
 ```
 
-or, if you are installing over an older version:
+The core library works on any system regardless of whether `tkinter` is
+installed. The interactive GUI (`hypercatgui`) additionally requires `tkinter`,
+which is usually bundled with CPython but may need a separate install on
+headless Linux systems:
 
-```
-pip install hypercat --upgrade
-```
-
-If you prefer to install HYPERCAT into a fresh new environment without affecting your existing Python installation, you can create a new environment in various ways.
-
-**If you are a user of conda / anaconda / miniconda / astroconda:**
-
-We recommend to update the conda-installled packages first (but you also first try to install HYPERCAT without updating):
-
-```
-conda update --all
+```bash
+sudo apt-get install python3-tk   # Ubuntu / Debian
 ```
 
-After that:
+### conda-forge
 
-```
-conda create -n hypercat-env python=3.7.2
-conda activate hypercat-env
-
-pip install hypercat --upgrade
+```bash
+conda install -c conda-forge hypercat
 ```
 
-**If you are a user of pyenv:**
+Or with [mamba](https://mamba.readthedocs.io) for a faster solve:
 
-```
-pyenv install 3.7.2
-. .venv/bin/activate
-
-pip install hypercat --upgrade
+```bash
+mamba install -c conda-forge hypercat
 ```
 
-### Installation trouble-shooting
+The conda-forge package ships binary builds of all dependencies and installs
+`tkinter` automatically on most platforms, so the GUI works out of the box.
 
-tbw
+### Docker
 
-## HYPERCAT / CLUMPY model images and 2D dust cloud maps
+A self-contained image with Hypercat and JupyterLab is available from Docker
+Hub — no local Python environment required:
 
-Hypercat needs to access the hypercubes of Clumpy images and dust
-maps. They can be downloaded as hdf5 files from the link given at
-https://www.clumpy.org/images/ (which currently is
-ftp://ftp.tuc.noirlab.edu/pub/nikutta/hypercat/).
-
-We offer several model files, which only differ in the wavelength range they cover:
-
-|File name                       | Size compressed / raw (GB) | Nwave | Wavelengths (micron) |
-|--------------------------------|----------------------------|-------|----------------------|
-| `hypercat_20200830_all.hdf5`   | 271 / 913                  | 25    | all of the below     | 
-| `hypercat_20200830_nir.hdf5`   |  44 / 146                  |  4    | 1.2, 2.2, 3.5, 4.8   | 
-| `hypercat_20200830_mir.hdf5`   | 120 / 402                  | 11    | 8.7, 9.3, 9.8, 10, 10.3, 10.6, 11.3, 11.6, 12, 12.5, 18.5 | 
-| `hypercat_20200830_fir.hdf5`   |  65 / 219                  |  6    | 31.5, 37.1, 53, 89, 154, 214 | 
-| `hypercat_20200830_submm.hdf5` |  42 / 146                  |  4    | 350, 460, 690, 945   | 
-
-
-**Download and unpacking**
-
-For example, the `*_all.hdf5.gz` file contains the image hypercube at
-all sampled wavelengths. This is the maximally compressed version of
-the hdf5 file, which must be uncompressed on the user’s computer
-system. To reduce the peak storage required on the target computer,
-both steps can be executed in one go (all commands in a single line):
-
-```
-lftp -e 'set net:timeout 10; cat /pub/nikutta/hypercat/hypercat_20200830_all.hdf5.gz; bye' ftp.tuc.noirlab.edu | gunzip >
-hypercat_20200830_all.hdf5
+```bash
+docker run --rm -p 8888:8888 \
+    -v /path/to/clumpy/data:/data \
+    -v $(pwd):/work \
+    rnikutta/hypercat
 ```
 
-The program `lftp` must be installed on the target system, and 913 GB
-of space must be available on it (but only 271 GB of compressed data
-will be downloaded).
+Open <http://localhost:8888> in your browser. Data files mounted at `/data/`
+are accessible from all notebooks. To build the image locally:
 
-
-**File validation**
-
-One should also download the checksums file
-`ftp://ftp.tuc.noirlab.edu/pub/nikutta/hypercat/hypercat_20200830.md5`
-and verify the hypercube file:
-
-```
-# this can take 30 minutes even on a modern computer
-md5sum --ignore-missing -c hypercat_20200830.md5
-hypercat_20200830_all.hdf5: OK
-
-# or on MacOS and BSD variants
-md5 hypercat_20200830_all.hdf5
-
-#... and compare the printed hash with the one in the .md5 file
+```bash
+git clone https://github.com/rnikutta/hypercat.git
+cd hypercat
+docker build -t hypercat .
 ```
 
-**Pointing HYPERCAT to a model file**
+### Development install
 
-The software, and the example Jupyter notebooks (see below) will need
-to be instructed about the location of the model file(s). This is very
-easy to do upon loading the model file; the notebooks have several
-examples on how to accomplish this, e.g.
-
+```bash
+git clone https://github.com/rnikutta/hypercat.git
+cd hypercat
+pip install -e ".[dev]"
+pre-commit install
 ```
+
+## Quick start
+
+```python
 import hypercat as hc
-fname = 'hypercat_20200830_all.hdf5' # use your local location to the HDF5 model file
-cube = hc.ModelCube(fname,hypercube='imgdata')  # use 'imgdata' for brightness maps, and 'clddata' for 2D cloud maps
+
+# Memory-map the CLUMPY image hypercube (loads slabs on demand)
+cube = hc.ModelCube('hypercat_20200830_all.hdf5')
+cube.print_sampling()   # show parameter names and sampled values
+
+# Interpolate an image: (i, sigma, Y, N0, q, tau_v, lambda_micron)
+image_array = cube((30., 30., 10., 5., 1., 40., 10.))
+
+# Attach physical scales to get a calibrated Image
+src = hc.Source(cube, luminosity='1e45 erg/s', distance='14.4 Mpc', pa='90 deg')
+img = src((30., 30., 10., 5., 1., 40., 10.), total_flux_density='0.5 Jy')
+
+# Simulate a single-dish observation
+telescope = hc.Imaging(psfdict={'psf': 'model', 'diameter': '8.2 m',
+                                 'wavelength': '10 micron', 'strehl': 0.9})
+observed, psf, _ = telescope(img)
+
+# Multi-panel plot
+fig, axes = hc.multiplot([img, observed], titles=['Sky', 'Convolved'],
+                          units='Jy/arcsec^2', colorbars=True)
 ```
 
-## Example Jupyter notebooks
+See the [Quick start guide](https://hypercat.readthedocs.io/en/latest/quickstart.html)
+for more annotated examples.
 
-Several Jupyter example notebooks demonstrate some of HYPERCAT's
-functionality. The easiest way to obtain them is to clone the HYPERCAT
-GitHub repository, and to run the notebooks from there. Cloning the
-repository will also download all necessary supplemental files used in
-some notebooks such as, e.g., the telescope pupil images and the dust
-opacity curve:
+## Model data files
 
-```
-git clone https://github.com/rnikutta/hypercat.git  # clone the git repository
-cd hypercat/examples/  # change to the directory with example notebooks
-jupyter-lab ./&  # run the notebooks locally; JupyterLab must be installed
-```
+The CLUMPY image hypercubes are distributed separately (tens to hundreds of
+GB). Several files are available, covering different wavelength ranges:
 
-- [01-hypercat-basics.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/01-hypercat-basics.ipynb):
-  Loading a model hypercube, generating model images, images at
-  multiple wavelengths, images at multiple values of other model
-  parameters, accessing cloud maps
+| File | Size gz / raw (GB) | N<sub>wave</sub> | Wavelengths (μm) |
+|---|---|---|---|
+| `hypercat_20200830_all.hdf5`   | 271 / 913 | 25 | all below |
+| `hypercat_20200830_nir.hdf5`   |  44 / 146 |  4 | 1.2, 2.2, 3.5, 4.8 |
+| `hypercat_20200830_mir.hdf5`   | 120 / 402 | 11 | 8.7 – 18.5 |
+| `hypercat_20200830_fir.hdf5`   |  65 / 219 |  6 | 31.5 – 214 |
+| `hypercat_20200830_submm.hdf5` |  42 / 146 |  4 | 350 – 945 |
 
-- [02-hypercat-astro.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/02-hypercat-astro.ipynb):
-  Adding physical units to images, world coordinate system, field of
-  view and pixel scale operations, image rotation / position angle,
-  saving to FITS files
+Download instructions and MD5 checksums are at
+<https://www.clumpy.org/images/> (currently mirrored at
+`ftp://ftp.tuc.noirlab.edu/pub/nikutta/hypercat/`).
 
-- [03-hypercat-singledish.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/03-hypercat-singledish.ipynb):
-  Telescope pupil images (JWST, Keck, GMT, TMT, ELT), simulating
-  observations with single-dish telescopes, noisy observations,
-  Richardson-Lucy deconvolotuion, detector pixel scale, flux
-  preservation, observations at multiple wavelengths
+## Documentation
 
-- [04-hypercat-morphology-intro.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/05-hypercat-morphology-intro.ipynb):
-  Introduction to morphological measurements (on 2D Gaussians), image
-  centroid, rotation, measuring size of emission features, elongation,
-  half-light radius, Gini coefficient
+Full documentation is on ReadTheDocs: <https://hypercat.readthedocs.io>
 
-- [05-hypercat-morphology-clumpy.ipynb](https://github.com/rnikutta/hypercat/tree/master/examples/05-hypercat-morphology-clumpy.ipynb):
-  Morphology of the HYPERCAT model images; morphological sizes,
-  elongation, centroid location; compare morphologies of of emission
-  and their underlying dust distributions; from 2D cloud maps to real
-  cloud numbers per LOS; photon escape probability along a LOS
-
-
-## User Manual
-
-WARNING -- the User Manual is still work-in-progress:
-
-For more detailed installation instructions and other usage examples,
-please see the HYPERCAT User Manual [User Manual](./docs/manual/) (in
-addition to the [example Jupyter notebooks](./examples/) )
-
-## Bug reports and feature suggestions
-
-We are very thankful for any bug reports and feature sugguestions to
-improve or extend HYPERCAT. Please open a new issue on GitHub:
-https://github.com/rnikutta/hypercat/issues
+| | |
+|---|---|
+| [Overview](https://hypercat.readthedocs.io/en/latest/overview.html) | Architecture, parameter table |
+| [Installation](https://hypercat.readthedocs.io/en/latest/installation.html) | All installation methods in detail |
+| [Quick start](https://hypercat.readthedocs.io/en/latest/quickstart.html) | Annotated code examples |
+| [API reference](https://hypercat.readthedocs.io/en/latest/api/core.html) | Full API docs from docstrings |
 
 ## Contributing
 
-Direct software contributions (e.g., bug fixes, features) to HYPERCAT
-are welcome. Please make a pull request against the 'master' branch.
+Contributions of all kinds are welcome — bug fixes, new features, documentation
+improvements, and additional tests.
+
+1. Fork the repository and create a feature branch.
+2. Install in development mode: `pip install -e ".[dev]" && pre-commit install`
+3. Add tests for any new functionality; run the suite with `pytest`.
+4. Open a pull request against `main` with a clear description of the change.
+
+## Bug reports and feature requests
+
+Please open an issue on GitHub:
+<https://github.com/rnikutta/hypercat/issues>
+
+Include the Hypercat version (`python -c "import hypercat; print(hypercat.__version__)"`),
+your Python version, and a minimal reproducible example where applicable.
+
+## Citation
+
+If you use Hypercat in published research, please cite both papers:
+
+- Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig, Alonso-Herrero,
+  *Hypercubes of AGN Tori (Hypercat) — I. Models and Image Morphology*,
+  ApJ 2021, 919, 136.
+  [ADS](https://ui.adsabs.harvard.edu/abs/2021arXiv210912123N/abstract)
+
+- Nikutta, Lopez-Rodriguez, Ichikawa, Levenson, Packham, Hönig, Alonso-Herrero,
+  *Hypercubes of AGN Tori (Hypercat) — II. Resolving the torus with Extremely
+  Large Telescopes*, ApJ 2021.
+  [ADS](https://ui.adsabs.harvard.edu/abs/2021arXiv210912130N/abstract)
+
+## License
+
+BSD 3-Clause — see [LICENSE](./LICENSE).
+
+## Authors
+
+Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa
