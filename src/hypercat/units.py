@@ -161,7 +161,7 @@ def getValueUnit(quantity,recognized_units):
         raise AttributeError("Argument 'quantity' is neither string nor instance of 'Quantity'.")
 
     try:
-        value = np.float(value)
+        value = float(value)
     except ValueError:
         value = ''
 

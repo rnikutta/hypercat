@@ -233,7 +233,7 @@ class ImageFrame:
         """
 
         FOV = getQuantity(fov,UNITS['ANGULAR'])
-        self.pixelscale = FOV / np.float(self.npix)
+        self.pixelscale = FOV / float(self.npix)
         self.__computePixelarea()
         self.__computeFOV()
 
@@ -879,7 +879,7 @@ def computeIntCorrections(npix,factor):
 
     checkOdd(npix)
     newnpix = npix*factor
-    newnpix = np.int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
+    newnpix = int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor
@@ -1041,7 +1041,7 @@ def trim_square(img):
 def radial_profile(data, center):
     y, x = np.indices((data.shape))
     r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
-    r = r.astype(np.int)
+    r = r.astype(int)
 
     tbin = np.bincount(r.ravel(), data.ravel())
     nr = np.bincount(r.ravel())

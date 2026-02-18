@@ -1,4 +1,8 @@
-from ._version import __version__
-from .example_module import greetings, meaning
+from importlib.metadata import PackageNotFoundError, version
 
-__all__ = ["greetings", "meaning", "__version__"]
+try:
+    __version__ = version("hypercat")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
+__all__ = ["__version__"]
