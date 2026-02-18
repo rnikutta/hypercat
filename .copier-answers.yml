@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier
+_commit: v2.2.0
+_src_path: https://github.com/lincc-frameworks/python-project-template
+author_email: robert.nikutta@gmail.com
+author_name: Robert Nikutta
+custom_install: retrofit
+include_docs: true
+include_notebooks: true
+package_name: hypercat
+project_description: Hypercube of clumpy AGN tori
+project_license: BSD
+project_name: hypercat
+project_organization: rnikutta
+python_versions:
+- '3.10'
+- '3.11'
+- '3.12'
+- '3.13'

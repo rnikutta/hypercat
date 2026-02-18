@@ -1,49 +1,57 @@
-[tool.poetry]
+
+[project]
 name = "hypercat"
-version = "0.1.11"
-description = "Hypercube of clumpy AGN tori"
-authors = ["Robert Nikutta <robert.nikutta@gmail.com>", "Enrique Lopez-Rodriguez", "Kohei Ichikawa"]
 license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 readme = "README.md"
-homepage = ""
-repository = "https://github.com/rnikutta/hypercat"
-keywords = ["astronomy","active galactic nuclei","hypercubes","extremely large telescopes","morphology"]
+authors = [
+    { name = "Robert Nikutta", email = "robert.nikutta@gmail.com" }
+]
+description = "Hypercube of clumpy AGN tori"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Astronomy"
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+]
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
 ]
 
-packages = [
-    { include = "hypercat" },
-    { include = "hypercatgui" },
+[project.urls]
+"Source Code" = "https://github.com/rnikutta/hypercat"
+
+# On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
+[project.optional-dependencies]
+dev = [
+    "asv[virtualenv]==0.6.5", # Used to compute performance benchmarks
+    "jupyter", # Clears output from Jupyter notebooks
+    "pre-commit", # Used to run checks before finalizing a git commit
+    "pytest",
+    "pytest-cov", # Used to report total code coverage
 ]
-
-include = ['README.md','rgb.png','data/*']
-exclude = ['*checkpoint.ipynb']
-
-[tool.poetry.dependencies]
-python = ">=3.7.2"
-numpy = "*"
-scipy = "*"
-scikit-image = "*"
-astropy = "*"
-urwid = ">=2.0.1"
-h5py = "2.9.0"
-matplotlib = "*"
-ipython = "^7.24.1"
-pandas = "^1.2.4"
-jupyterlab = "^3.0.16"
-
-[tool.poetry.dev-dependencies]
-
-[tool.poetry.scripts]
-hypercatgui = "hypercatgui:main"
-
-[tool.poetry.urls]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = [
+    "setuptools>=62", # Used to build and package the Python project
+    "setuptools_scm>=6.2", # Gets release version from git. Makes it available programmatically
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "src/hypercat/_version.py"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "src",
+    "docs",
+]
+addopts = "--doctest-modules --doctest-glob=*.rst"
+
+
+
+[tool.coverage.run]
+omit=["src/hypercat/_version.py"]
