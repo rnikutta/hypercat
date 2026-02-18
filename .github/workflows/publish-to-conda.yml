@@ -1,0 +1,92 @@
+# Build a conda package from the PyPI sdist and upload it to Anaconda.org.
+#
+# Triggered automatically on every published GitHub Release.
+#
+# Required repository secrets:
+#   ANACONDA_TOKEN  – API token from anaconda.org (Settings → Access)
+#
+# The package is uploaded to the channel that owns the token.  To install:
+#   conda install -c <your-channel> hypercat
+
+name: Build and upload conda package
+
+on:
+  release:
+    types: [published]
+
+  # Allow manual re-runs from the Actions tab (e.g. to fix a bad upload)
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 1.2.3, without the leading v)"
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conda-build-and-upload:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -el {0}   # activates conda for every step
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Resolve the version ────────────────────────────────────────────────
+      # On a release event the tag is "vX.Y.Z"; strip the leading "v".
+      # On a manual dispatch the version is supplied directly.
+      - name: Resolve package version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # ── Set up conda ───────────────────────────────────────────────────────
+      - name: Set up miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: "3.11"
+          auto-update-conda: true
+          auto-activate-base: true
+
+      - name: Install conda-build and anaconda-client
+        run: conda install -y conda-build anaconda-client
+
+      # ── Compute SHA-256 of the PyPI sdist ─────────────────────────────────
+      # We download the exact sdist that PyPI will serve so the hash in
+      # meta.yaml matches what conda-build fetches.
+      - name: Download sdist and compute SHA-256
+        id: sha256
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          pip download --no-deps --no-binary :all: \
+              --dest /tmp/sdist "hypercat==${VERSION}"
+          TARBALL=$(ls /tmp/sdist/hypercat-*.tar.gz)
+          SHA=$(sha256sum "$TARBALL" | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      # ── Build the conda package ────────────────────────────────────────────
+      - name: Build conda package
+        env:
+          PKG_VERSION: ${{ steps.version.outputs.version }}
+          PKG_SHA256:  ${{ steps.sha256.outputs.sha256 }}
+        run: |
+          conda build conda/ --output-folder /tmp/conda-pkg
+
+      # ── Upload to Anaconda.org ─────────────────────────────────────────────
+      - name: Upload to Anaconda.org
+        env:
+          ANACONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+        run: |
+          anaconda --token "$ANACONDA_TOKEN" upload \
+              --force \
+              /tmp/conda-pkg/noarch/hypercat-*.conda \
+              /tmp/conda-pkg/noarch/hypercat-*.tar.bz2 2>/dev/null || true
