@@ -92,12 +92,8 @@ docker build -t hypercat .
 
 ### Development install
 
-```bash
-git clone https://github.com/rnikutta/hypercat.git
-cd hypercat
-pip install -e ".[dev]"
-pre-commit install
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full developer setup,
+including pre-commit hooks, running tests, and building the documentation.
 
 ## Quick start
 
@@ -156,23 +152,11 @@ Full documentation is on ReadTheDocs: <https://hypercat.readthedocs.io>
 | [Quick start](https://hypercat.readthedocs.io/en/latest/quickstart.html) | Annotated code examples |
 | [API reference](https://hypercat.readthedocs.io/en/latest/api/core.html) | Full API docs from docstrings |
 
-## Contributing
+## Contributing and bug reports
 
-Contributions of all kinds are welcome — bug fixes, new features, documentation
-improvements, and additional tests.
-
-1. Fork the repository and create a feature branch.
-2. Install in development mode: `pip install -e ".[dev]" && pre-commit install`
-3. Add tests for any new functionality; run the suite with `pytest`.
-4. Open a pull request against `main` with a clear description of the change.
-
-## Bug reports and feature requests
-
-Please open an issue on GitHub:
-<https://github.com/rnikutta/hypercat/issues>
-
-Include the Hypercat version (`python -c "import hypercat; print(hypercat.__version__)"`),
-your Python version, and a minimal reproducible example where applicable.
+Contributions are welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for
+the development setup, PR workflow, and bug-report guidelines. To open an issue
+directly: <https://github.com/rnikutta/hypercat/issues>
 
 ## Citation
 
@@ -195,121 +179,3 @@ BSD 3-Clause — see [LICENSE](./LICENSE).
 ## Authors
 
 Robert Nikutta, Enrique Lopez-Rodriguez, Kohei Ichikawa
-
----
-
-## CI/CD secrets
-
-The publish workflows require four secrets to be stored in the repository.
-All are added the same way:
-
-> **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
-> Enter the name exactly as shown below and paste the value.
-
-The PyPI workflow uses OIDC trusted publishing and needs one extra
-one-time setup step on pypi.org instead of a GitHub secret (see below).
-
----
-
-### `ANACONDA_TOKEN`
-
-**Used by:** `.github/workflows/publish-to-conda.yml`
-
-This token authorises the CI runner to upload packages to your
-[anaconda.org](https://anaconda.org) channel.
-
-**How to obtain:**
-
-1. Log in to <https://anaconda.org>.
-2. Click your avatar (top-right) → **Settings** → **Access**.
-3. Scroll to **Access Tokens** and click **+ Add**.
-4. Fill in a description (e.g. `hypercat-ci`).
-5. Tick **Allow write access to API site** and
-   **Allow uploads to PyPI servers**.
-6. Click **Create** and **copy the token immediately** — it is only
-   shown once.
-
-**Add to GitHub:** name `ANACONDA_TOKEN`, value = the token string.
-
----
-
-### `DOCKERHUB_USERNAME`
-
-**Used by:** `.github/workflows/publish-to-dockerhub.yml`
-
-Your Docker Hub account username (e.g. `rnikutta`). It is stored as a
-secret only so the workflow can reference it without hardcoding a name
-in the YAML.
-
-**How to obtain:**
-
-1. Log in to <https://hub.docker.com>.
-2. Your username is shown in the top-right corner of the page.
-
-**Add to GitHub:** name `DOCKERHUB_USERNAME`, value = your username.
-
----
-
-### `DOCKERHUB_TOKEN`
-
-**Used by:** `.github/workflows/publish-to-dockerhub.yml`
-
-A Docker Hub access token that grants the CI runner permission to push
-images. Using a token (rather than your password) means you can revoke
-CI access independently without changing your account password.
-
-**How to obtain:**
-
-1. Log in to <https://hub.docker.com>.
-2. Click your avatar → **Account Settings → Security**.
-3. Click **New Access Token**.
-4. Description: `hypercat-ci`. Access permissions: **Read, Write, Delete**.
-5. Click **Generate** and **copy the token immediately** — it is only
-   shown once.
-
-**Add to GitHub:** name `DOCKERHUB_TOKEN`, value = the token string.
-
----
-
-### `CODECOV_TOKEN`
-
-**Used by:** `.github/workflows/testing-and-coverage.yml`
-
-Authenticates the coverage upload to [codecov.io](https://codecov.io),
-so coverage reports are associated with the correct repository.
-
-**How to obtain:**
-
-1. Go to <https://app.codecov.io> and sign in with your GitHub account.
-2. Click **+ Add new repository** and select `rnikutta/hypercat`.
-3. Codecov will display a **Repository Upload Token** on the setup page.
-   You can also find it later under **Settings → General** for the repo.
-4. Copy the token.
-
-**Add to GitHub:** name `CODECOV_TOKEN`, value = the token string.
-
----
-
-### PyPI — trusted publisher (no GitHub secret needed)
-
-**Used by:** `.github/workflows/publish-to-pypi.yml`
-
-The PyPI workflow uses [OIDC trusted publishing](https://docs.pypi.org/trusted-publishers/)
-instead of a long-lived API token. GitHub and PyPI negotiate a
-short-lived credential automatically at publish time, so nothing is
-stored as a GitHub secret.
-
-**One-time setup on PyPI:**
-
-1. Log in to <https://pypi.org>.
-2. Go to **Account Settings → Publishing** (in the left sidebar).
-3. Under **Add a new pending publisher**, fill in:
-   - **PyPI project name:** `hypercat`
-   - **Owner:** `rnikutta`
-   - **Repository name:** `hypercat`
-   - **Workflow filename:** `publish-to-pypi.yml`
-   - **Environment name:** *(leave blank)*
-4. Click **Add**.
-
-From then on, every GitHub Release automatically triggers a trusted
-upload — no token rotation required.
