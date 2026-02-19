@@ -214,8 +214,8 @@ def mirror_axis(cube,axis=-2):
     -------
     newcube : array
         Array with 'axis' dimension mirrored, such that
-          newcube.shape = (...,2*nx-1,...)
-        i.e. newcube.shape[axis] always odd.
+        ``newcube.shape = (..., 2*nx-1, ...)``,
+        i.e. ``newcube.shape[axis]`` is always odd.
 
     Examples
     --------

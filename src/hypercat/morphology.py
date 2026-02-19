@@ -749,9 +749,6 @@ def whichside(a,b,verbose=False):
         If -1., b lies to the left of a (b counter-clockwise from a).
         If +1., b lies to the right of a (b clockwise from a).
 
-    Examples
-    --------
-
     """
 
 #    sig = np.sign(np.dot(a,rot90ccw(b)))

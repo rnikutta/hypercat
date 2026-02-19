@@ -50,9 +50,9 @@ class ImageFrame:
             Angular or linear scale of one pixel. See docstring of
             :func:`getValueUnit` for the requirements.
 
-            Recognized angular units: (see ``UNITS['ANGULAR']`` in :module:`units`)
+            Recognized angular units: (see ``UNITS['ANGULAR']`` in :mod:`hypercat.units`)
 
-            Recognized linear units: (see ``UNITS['LINEAR']`` in :module:`units`)
+            Recognized linear units: (see ``UNITS['LINEAR']`` in :mod:`hypercat.units`)
 
             If linear unit, then it is the linear size of a pixel at
             the distance of the source. Then the `distance` argument
@@ -64,7 +64,7 @@ class ImageFrame:
             rather an argument akin to 'pixelscale' above, i.e. str or
             'Quantity' instance.
 
-            Recognized linear units: (see ``UNITS['LINEAR']`` in :module:`units`)
+            Recognized linear units: (see ``UNITS['LINEAR']`` in :mod:`hypercat.units`)
 
         Examples
         --------
@@ -233,7 +233,7 @@ class ImageFrame:
         """
 
         FOV = getQuantity(fov,UNITS['ANGULAR'])
-        self.pixelscale = FOV / np.float(self.npix)
+        self.pixelscale = FOV / float(self.npix)
         self.__computePixelarea()
         self.__computeFOV()
 
@@ -403,7 +403,7 @@ class Image(ImageFrame):
             the requirements.
 
             Recognized brightness units: (see ``UNITS['FLUXDENSITY']`` in
-            :module:`units`)
+            :mod:`hypercat.units`)
 
         Examples
         --------
@@ -588,9 +588,10 @@ def measure_snr(noisy_image,noise_pattern,fraction=1.0):
     Examples
     --------
     .. code-block:: python
+
         noisy_image, noise_pattern = add_noise(img,10.) # requesting SNR=10
         measure_snr(noisy_image, noise_pattern)
-          10.013
+        # 10.013
 
     """
 
@@ -879,7 +880,7 @@ def computeIntCorrections(npix,factor):
 
     checkOdd(npix)
     newnpix = npix*factor
-    newnpix = np.int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
+    newnpix = int((2*np.floor(newnpix//2)+1))  # rounded up or down to the nearest odd integer
     newfactor = newnpix/float(npix)
 
     return newnpix, newfactor
@@ -958,30 +959,32 @@ def trim_square_odd(image):
     Examples
     --------
 
-    # Start with an even-by-even square
-    image = np.zeros((4,4))
-    image[1,1] = 1
-    print(image)
-      [[0. 0. 0. 0.]
-       [0. 1. 0. 0.]
-       [0. 0. 0. 0.]
-       [0. 0. 0. 0.]]
-    trimmed = trim_square_odd(image)
-    print(trimmed)
-      [[0. 0. 0.]
-       [0. 1. 0.]
-       [0. 0. 0.]]
+    .. code-block:: python
 
-    # Try a rectangle, and have the brightest pixel at the edge
-    image = np.zeros((3,4))
-    image[0,1] = 1
-    print(image)
-      [[0. 1. 0. 0.]
-       [0. 0. 0. 0.]
-       [0. 0. 0. 0.]]
-    trimmed = trim_square_odd(image)
-    print(trimmed)
-      [[1.]]
+        # Start with an even-by-even square
+        image = np.zeros((4,4))
+        image[1,1] = 1
+        print(image)
+        # [[0. 0. 0. 0.]
+        #  [0. 1. 0. 0.]
+        #  [0. 0. 0. 0.]
+        #  [0. 0. 0. 0.]]
+        trimmed = trim_square_odd(image)
+        print(trimmed)
+        # [[0. 0. 0.]
+        #  [0. 1. 0.]
+        #  [0. 0. 0.]]
+
+        # Try a rectangle, and have the brightest pixel at the edge
+        image = np.zeros((3,4))
+        image[0,1] = 1
+        print(image)
+        # [[0. 1. 0. 0.]
+        #  [0. 0. 0. 0.]
+        #  [0. 0. 0. 0.]]
+        trimmed = trim_square_odd(image)
+        print(trimmed)
+        # [[1.]]
 
     """
 
@@ -1041,7 +1044,7 @@ def trim_square(img):
 def radial_profile(data, center):
     y, x = np.indices((data.shape))
     r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
-    r = r.astype(np.int)
+    r = r.astype(int)
 
     tbin = np.bincount(r.ravel(), data.ravel())
     nr = np.bincount(r.ravel())

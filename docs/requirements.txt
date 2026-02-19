@@ -1,0 +1,4 @@
+sphinx
+sphinx-rtd-theme>=3.0
+sphinx-copybutton
+sphinx-intersphinx-registry

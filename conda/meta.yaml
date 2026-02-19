@@ -1,0 +1,72 @@
+# Hypercat conda recipe
+#
+# Version and SHA-256 are injected by the CI workflow (publish-to-conda.yml)
+# via environment variables so that this file never needs to be hand-edited
+# for a new release.
+#
+# To build locally (after `conda install conda-build anaconda-client`):
+#
+#   export PKG_VERSION=0.1.11
+#   export PKG_SHA256=$(pip download --no-deps --dest /tmp/hc hypercat==$PKG_VERSION \
+#       && sha256sum /tmp/hc/hypercat-$PKG_VERSION.tar.gz | awk '{print $1}')
+#   conda build conda/
+
+{% set version = environ.get('PKG_VERSION', '0.0.0') %}
+{% set sha256  = environ.get('PKG_SHA256',  '0' * 64) %}
+
+package:
+  name: hypercat
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/h/hypercat/hypercat-{{ version }}.tar.gz
+  sha256: {{ sha256 }}
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - setuptools >=62
+    - setuptools_scm >=6.2
+  run:
+    - python >=3.10
+    - numpy
+    - scipy
+    - scikit-image
+    - astropy
+    - urwid >=2.0.1
+    - h5py
+    - matplotlib
+    - ipython
+    - pandas
+
+test:
+  imports:
+    - hypercat
+    - hypercatgui
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/rnikutta/hypercat
+  license: BSD-3-Clause
+  license_file: LICENSE
+  summary: Hypercube of clumpy AGN tori
+  description: |
+    Hypercat is a Python toolkit for operating on the CLUMPY hypercubes of AGN
+    torus model images. It provides N-dimensional interpolation, physical unit
+    handling, single-dish and interferometric observation simulation,
+    morphological analysis, and an optional interactive GUI.
+  doc_url: https://hypercat.readthedocs.io
+  dev_url: https://github.com/rnikutta/hypercat
+
+extra:
+  recipe-maintainers:
+    - rnikutta

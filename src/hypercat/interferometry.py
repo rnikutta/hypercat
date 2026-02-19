@@ -698,31 +698,33 @@ def correlatedflux(imafft,fftscale,u,v):
 
     """Compute 2D correlated flux, baseline and position angle map from a 2-d FFT map.
 
-       Parameters
-       ----------
-       imafft : array
-           2D FFT of the clumpy torus model from ima2fft
+    Parameters
+    ----------
+    imafft : array
+        2D FFT of the clumpy torus model from ima2fft.
 
-       u_px, v_px : array
-           u and v planes in pixels
+    fftscale : float
+        Conversion scale from FFT pixel to sky angle.
 
-        Returns:
-        --------
-        corrflux : array
-            Correlated flux in 2D uv plane
+    u, v : array
+        u and v plane coordinates in metres.
 
-        BL : array
-        Baseline estimated from uvplanes
+    Returns
+    -------
+    corrflux : array
+        Correlated flux in 2D uv plane.
 
-        Phi : array
-        Position angles estimated from uvplanes
+    BL : array
+        Baseline length estimated from uv planes.
 
+    Phi : array
+        Position angles estimated from uv planes.
 
-        Example
-        -------
-        .. code-block:: python
+    Examples
+    --------
+    .. code-block:: python
 
-           corrflux2D = correlatedflux2D(ori_fft,u_px,v_px,BL,Phi)
+        corrflux, BL, Phi = correlatedflux(imafft, fftscale, u, v)
 
     """
 
